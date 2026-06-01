@@ -31,6 +31,7 @@ This folder is the **single source of truth** for the AI coder building `fronten
 | 17 | [17-AI-CODER-CHECKLIST.md](./17-AI-CODER-CHECKLIST.md) | Definition of done |
 | 18 | [18-COPY-BANK.md](./18-COPY-BANK.md) | Ready-to-use Arabic strings |
 | 19 | [19-LEGAL-TRUST-PAGES.md](./19-LEGAL-TRUST-PAGES.md) | Policies, badges, certifications copy |
+| 20 | [20-AI-CODER-SKILLS.md](./20-AI-CODER-SKILLS.md) | Skills, conventions, library list |
 
 ## Deliverables outside `docs/`
 
