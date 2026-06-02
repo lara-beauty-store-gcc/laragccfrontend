@@ -421,74 +421,70 @@
 
 > §17.0b (flacons vides) = **only** if le factory du lien ci-dessus refuse ton design — sinon ignore.
 
-### 17.0c Brand naming — GCC / KSA (recommended)
+### 17.0c Brand naming — **one beauty brand** for all 3 serums (GCC)
 
-**Goal:** Arabic-first, premium-clinical, halal-safe tone, works on TikTok/Snapchat COD, one house brand for all 3 serums.
+**Goal:** **Smiya waḥda** on every box — feminine, luxury **beauty** (not “Lab” / clinic). Arabic-first · halal-safe · TikTok/Snap friendly.
 
-#### Top pick (recommended): **Bareeq Labs** · بارق لابس
-
-| | |
-|--|--|
-| **Why GCC** | *Bareeq* (بارق) = radiance / luminous skin — **not** “whitening” (تفتيح). Short, easy in Gulf dialect, sounds like a real clinic brand. |
-| **Positioning** | “مختبر العناية بالبشرة” — ingredient % on pack, SFDA-safe *appearance* claims. |
-| **Arabic tagline** | **«بشرة بارقة… بعلم، لا بمبالغة»** |
-| **English (pack secondary)** | *Bareeq Labs — Clinical Serums* |
-
-**3 SKU names (sell names):**
-
-| Serum | EN name | Arabic on box | Hook |
-|-------|---------|---------------|------|
-| #1 GHK-Cu | **Bareeq Blue Firm** | **بلو فيرم — نضارة وشدّ** | 1% GHK-Cu blue |
-| #2 Caffeine eye | **Bareeq Eye Reset** | **آي ريسيت — هالات وانتفاخ** | 8% caffeine roller |
-| #3 Ectoin | **Bareeq Desert Glow** | **ديزرت غلو — حاجز الصحراء** | Ectoin barrier |
-
-**Social:** `@bareeqlabs` · domain to check: `bareeqlabs.com` / `.sa`
-
----
-
-#### Alternative A — if you keep existing repo brand: **Lara Clinical** · لارا كلينيكال
-
-You already ship **Lara Beauty GCC** (`laragccfrontend`). Fastest path: sub-line **Lara Clinical** for the 3 serums (trust transfer, one warehouse story).
-
-- Tagline: **«لارا كلينيكال — سيرومات مركّزة»**
-- SKUs: *Lara Blue Firm* / *Lara Eye Reset* / *Lara Desert Shield* (حاجز instead of glow if you want zero “brightening” nuance)
-
----
-
-#### Alternative B — hero-led (blue serum is ad winner): **Azraq Skin Lab** · أزرق سكين لاب
+#### Top pick: **Jouri** · جوري
 
 | | |
 |--|--|
-| **Why** | *Azraq* (أزرق) = instant link to blue copper peptide — strongest TikTok thumbstop. |
-| **Risk** | Brand feels “one hero product”; harder to stretch if eye serum scales first. |
-| **Tagline** | **«الأزرق اللي يصلّح… مو اللي يبيّض»** (positions vs whitening market) |
+| **Meaning** | وردة دمشق — pure **beauty** & femininity in Arab culture (not medical, not whitening). |
+| **Why GCC** | Short (2 syllables), easy in Saudi/Kuwaiti/Qatari dialect, sounds like a **real beauty house** (Kayali / Huda tier naming style). |
+| **Tagline** | **«جوري… جمال يبان»** |
+| **On every pack** | Logo **JOURI** / **جوري** large — same brand, 3 small lines under it |
+
+**3 products (same brand, different line — optional English):**
+
+| # | Line name (small text) | Arabic descriptor |
+|---|------------------------|-------------------|
+| 1 | Jouri · Blue Firm | سيروم النضارة والشد |
+| 2 | Jouri · Eye Silk | سيروم العين |
+| 3 | Jouri · Desert Dew | سيروم ندى الصحراء |
+
+**Handles:** `@jouri.beauty` · `@jourigcc` · check `jouri.beauty` / `jouri.sa`
 
 ---
 
-#### Alternative C — desert/barrier story: **Rimal Ritual** · رمال ريتشوال
+#### Alternative beauty names (one brand each — pick one)
 
-Premium desert identity for ectoin + GCC audience; slightly more “spa” than “lab”. Good if **Desert Glow** is your lead ad.
+| Brand | Arabic | Vibe |
+|-------|--------|------|
+| **Lulua** | لؤلؤة | Pearl · quiet luxury · all 3 serums = “pearl skin” story |
+| **Layali** | ليالي | Evenings · glamorous Gulf woman · strong for Snap |
+| **Misk** | مسك | Warm luxury · oud-adjacent prestige (GCC loves it) |
+| **Harir** | حرير | Silk · soft skin texture · very beauty |
+| **Narjis** | نرجس | Flower elegance · feminine premium |
 
 ---
 
-#### Names to avoid (GCC COD)
+#### If you already use Lara (repo)
+
+**Lara** alone is already a **beauty** name — you can sell all 3 as:
+
+**LARA** (big) + *Blue Firm / Eye Reset / Desert Glow* (small)
+
+No second brand needed; just don’t use “Lara Labs”.
+
+---
+
+#### Avoid
 
 | Avoid | Why |
 |-------|-----|
-| *White / Fair / Glow Whitening / نور أبيض / تفتيح* | SFDA + low COD trust (whitening baggage in KSA) |
-| *Royal Queen / Miss Princess* | cheap dropship vibe |
-| *Korean XYZ with no Arabic* | Nice One / Sephora buyer skepticism |
-| Long English-only names | weak Snapchat retention |
+| *Labs / Clinical / Science / RX* | feels pharmacy, not beauty |
+| *Whitening / Fair / تفتيح* | KSA COD trust + SFDA |
+| *Queen / Princess / Miss* | cheap dropship |
 
 ---
 
-#### Before you print boxes
+#### Before print
 
-1. Search **SAIP** (Saudi Authority for IP) + UAE MOE trademark for your pick.  
-2. Register **`.sa` / Instagram / TikTok** same handle across GCC.  
-3. One visual system: gold + frosted bottle + Arabic primary, English secondary.
+1. SAIP + UAE trademark search for **Jouri** (or your pick).  
+2. Same @ on TikTok · Snap · Instagram.  
+3. Visual: gold + frosted glass + **جوري** dominant on all 3 boxes.
 
-**Default recommendation:** launch as **Bareeq Labs** unless you already run paid ads as Lara — then **Lara Clinical**.
+**Default:** **Jouri** (جوري) — one beauty brand, 3 serums.
 
 ---
 
