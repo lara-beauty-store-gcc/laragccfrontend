@@ -421,6 +421,75 @@
 
 > §17.0b (flacons vides) = **only** if le factory du lien ci-dessus refuse ton design — sinon ignore.
 
+### 17.0c Brand naming — GCC / KSA (recommended)
+
+**Goal:** Arabic-first, premium-clinical, halal-safe tone, works on TikTok/Snapchat COD, one house brand for all 3 serums.
+
+#### Top pick (recommended): **Bareeq Labs** · بارق لابس
+
+| | |
+|--|--|
+| **Why GCC** | *Bareeq* (بارق) = radiance / luminous skin — **not** “whitening” (تفتيح). Short, easy in Gulf dialect, sounds like a real clinic brand. |
+| **Positioning** | “مختبر العناية بالبشرة” — ingredient % on pack, SFDA-safe *appearance* claims. |
+| **Arabic tagline** | **«بشرة بارقة… بعلم، لا بمبالغة»** |
+| **English (pack secondary)** | *Bareeq Labs — Clinical Serums* |
+
+**3 SKU names (sell names):**
+
+| Serum | EN name | Arabic on box | Hook |
+|-------|---------|---------------|------|
+| #1 GHK-Cu | **Bareeq Blue Firm** | **بلو فيرم — نضارة وشدّ** | 1% GHK-Cu blue |
+| #2 Caffeine eye | **Bareeq Eye Reset** | **آي ريسيت — هالات وانتفاخ** | 8% caffeine roller |
+| #3 Ectoin | **Bareeq Desert Glow** | **ديزرت غلو — حاجز الصحراء** | Ectoin barrier |
+
+**Social:** `@bareeqlabs` · domain to check: `bareeqlabs.com` / `.sa`
+
+---
+
+#### Alternative A — if you keep existing repo brand: **Lara Clinical** · لارا كلينيكال
+
+You already ship **Lara Beauty GCC** (`laragccfrontend`). Fastest path: sub-line **Lara Clinical** for the 3 serums (trust transfer, one warehouse story).
+
+- Tagline: **«لارا كلينيكال — سيرومات مركّزة»**
+- SKUs: *Lara Blue Firm* / *Lara Eye Reset* / *Lara Desert Shield* (حاجز instead of glow if you want zero “brightening” nuance)
+
+---
+
+#### Alternative B — hero-led (blue serum is ad winner): **Azraq Skin Lab** · أزرق سكين لاب
+
+| | |
+|--|--|
+| **Why** | *Azraq* (أزرق) = instant link to blue copper peptide — strongest TikTok thumbstop. |
+| **Risk** | Brand feels “one hero product”; harder to stretch if eye serum scales first. |
+| **Tagline** | **«الأزرق اللي يصلّح… مو اللي يبيّض»** (positions vs whitening market) |
+
+---
+
+#### Alternative C — desert/barrier story: **Rimal Ritual** · رمال ريتشوال
+
+Premium desert identity for ectoin + GCC audience; slightly more “spa” than “lab”. Good if **Desert Glow** is your lead ad.
+
+---
+
+#### Names to avoid (GCC COD)
+
+| Avoid | Why |
+|-------|-----|
+| *White / Fair / Glow Whitening / نور أبيض / تفتيح* | SFDA + low COD trust (whitening baggage in KSA) |
+| *Royal Queen / Miss Princess* | cheap dropship vibe |
+| *Korean XYZ with no Arabic* | Nice One / Sephora buyer skepticism |
+| Long English-only names | weak Snapchat retention |
+
+---
+
+#### Before you print boxes
+
+1. Search **SAIP** (Saudi Authority for IP) + UAE MOE trademark for your pick.  
+2. Register **`.sa` / Instagram / TikTok** same handle across GCC.  
+3. One visual system: gold + frosted bottle + Arabic primary, English secondary.
+
+**Default recommendation:** launch as **Bareeq Labs** unless you already run paid ads as Lara — then **Lara Clinical**.
+
 ---
 
 ### 17.1 The 3 products (final stack)
