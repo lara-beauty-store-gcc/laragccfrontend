@@ -4,13 +4,16 @@
 
 **Research method:** Exa web search + industry benchmarks (CODRocket, eGrow, SFDA, Mordor/IMARC, Frontiers nutraceutical study KSA, saturation guides).
 
+**Latest pivot (June 2026):** Primary go-to-market is **3 premium topical serums** with glass/roller packaging — see **§17** for product specs, packaging, and Alibaba links. Oral nutricosmetics stack below remains valid as Plan B.
+
 ---
 
 ## Executive summary (read this first)
 
 | Decision | Recommendation |
 |----------|----------------|
-| **Niche** | **Premium oral beauty / “beauty from within” (nutricosmetics)** — one branded house, Arabic-first, halal-forward |
+| **Niche (current)** | **Premium topical serums** — one Arabic clinical brand, 3 SKUs (§17) |
+| **Niche (Plan B)** | **Premium oral beauty / “beauty from within” (nutricosmetics)** — one branded house, Arabic-first, halal-forward |
 | **Brand angle** | Not “cheap dropshipping gadgets” — position as **Saudi/GCC oral skincare lab** (clinical tone, ingredient-led, SFDA-safe claims) |
 | **Product 1** | **Fine lines & loss of firmness** → Spermidine + Astaxanthin (gummy or drink sachet) |
 | **Product 2** | **Dark under-eye circles & tired look** → Vitamin K2 (MK-7) + Pycnogenol (gummy) — *direct* eye-area mechanism, not “sleep supplement” |
@@ -394,6 +397,132 @@
 5. Launch Snapchat/TikTok — **dark circles** first, SAR 200–250 test budget.  
 6. Track confirmation & delivery **per product**; kill fast.  
 7. Add **Tabby + 10% COD deposit** before scaling.  
+
+---
+
+## 17. UPDATE (Serum pivot) — Premium 3-serum stack + packaging + Alibaba links
+
+**User decision:** Topical **serums** (not oral) for KSA COD — higher “wow” on TikTok/Snapchat, premium glass packaging, ingredient % on label.
+
+### 17.1 The 3 products (final stack)
+
+| # | KSA pain (Arabic hook) | Product name (EN) | Hero actives (label) | Why less saturated in KSA dropshipping |
+|---|------------------------|-------------------|----------------------|----------------------------------------|
+| **1** | تجاعيد + فقدان شدّة الوجه | **Blue Firm Serum** | Bakuchiol + GHK-Cu (blue serum) | Retinol/collagen-only ads are everywhere; **blue copper + bakuchiol** combo is rarer |
+| **2** | هالات سوداء + انتفاخ تحت العين | **Eye Reset Serum** | Caffeine 5–8% + Tranexamic 2–3% + Ferulic ~0.5% | Caffeine-only rollers are saturated; **multi-actives + % on pack** = trust |
+| **3** | بشرة باهتة / جافة (صحراوية) | **Desert Glow Serum** | Ectoin 1–3% + PGA + HA | Vit C 20% / niacinamide 10% oversold; **ectoin + PGA** is early in GCC COD |
+
+**Retail target:** SAR **149–279** per serum · bundle 3 = SAR **399–549** · always show **% actives** on front + in ad.
+
+**Claims (SFDA-safe):** “يساعد على تقليل **مظهر** التجاعيد / الهالات / الجفاف” — never cure, never body whitening.
+
+---
+
+### 17.2 Packaging spec — what makes KSA clients say “wow”
+
+| SKU | Volume | Bottle (must-have) | Cap / applicator | Liquid look | Box |
+|-----|--------|-------------------|------------------|-------------|-----|
+| **Blue Firm** | **30 ml** | **Frosted glass**, thick flat bottom, heavy in hand | **Gold** aluminum collar + glass dropper (or gold pump) | **Blue** tint (copper peptide visual) | Matte soft-touch + gold foil Arabic logo |
+| **Eye Reset** | **15 ml** | Slim glass or premium PETG **roll-on** tube | **Stainless steel** roller ball (cooling massage) | Clear **gel** (not cream jar) | Slim drawer box or tube sleeve |
+| **Desert Glow** | **30 ml** | Same frosted 30 ml as #1 (family look) | Gold dropper | Clear / slight pearl (ectoin) | Same box line as #1 |
+
+**Non-negotiables before ads:**
+1. Order **filled sample + empty bottle** from same supplier (weight + dropper feel).
+2. **Hot-stamp or silk-screen** logo on bottle (not sticker only).
+3. Arabic + English INCI on box; **no “whitening / تفتيح الجسم”** on any SKU.
+4. TikTok shot list: unbox → dropper close-up → texture on hand → % text on label.
+
+---
+
+### 17.3 Alibaba links — PRODUCT (OEM formula)
+
+#### Serum 1 — Blue Firm (Bakuchiol + Copper peptide)
+
+| Link | Notes |
+|------|--------|
+| https://www.alibaba.com/product-detail/OEM-ODM-Service-Synthetic-Signal-Peptide_1601724612647.html | GHK-Cu blue complex OEM (negotiate **30 ml** + bakuchiol add-on) |
+| https://www.alibaba.com/product-detail/1-GHK-Cu-Blue-Copper-Peptide_1601714227878.html | **1% GHK-Cu** blue serum, 30 ml, GMPC — strong TikTok color |
+| https://www.alibaba.com/product-detail/OEM-Blue-Copper-Peptide-Oligopeptide-Liquid_1601658717344.html | Blue copper + HA + ceramide OEM 30/50 ml |
+| https://www.alibaba.com/product-detail/Wholesale-Bakuchiol-Serum-Private-Label-Natural_1601572690771.html | **1.3% Bakuchiol** OEM — ask factory to **blend with GHK-Cu** in one formula |
+| https://www.alibaba.com/product-detail/Smooth-Skin-Firming-Anti-Aging-Reduces_1600709760296.html | Budget blue copper reference (compare texture) |
+
+**OEM brief to send supplier:** “30 ml frosted gold bottle · blue serum · **0.5–1% bakuchiol + 0.5–1% GHK-Cu** · no retinol · halal cert · sample to Riyadh.”
+
+#### Serum 2 — Eye Reset (Caffeine + TXA + Ferulic + roller)
+
+| Link | Notes |
+|------|--------|
+| https://www.alibaba.com/product-detail/ATOANY-Private-Label-Skincare-Hydrating-Anti_1601266176342.html | **8% caffeine** + roller 15 ml (add TXA via OEM) |
+| https://www.alibaba.com/product-detail/YECUCE-5-Caffeine-Under-Eye-Serum_1601293455028.html | **5% caffeine** roller 15 ml |
+| https://www.alibaba.com/product-detail/Cooling-Caffeine-Eye-Serum-Roller-for_1601725461863.html | MELAO caffeine roller + peptides |
+| https://www.alibaba.com/product-detail/Private-Label-Caffeine-Eye-Serum-Dark_1600961632453.html | Caffeine roller OEM (Shiruoni) |
+| https://www.alibaba.com/product-detail/Private-Label-Anti-Puffiness-Wrinkle-Dark_1601649646482.html | HAICUIER caffeine roller 15 ml |
+| https://www.alibaba.com/product-detail/AVCA-Korean-Peptide-Tranexamic-Acid-Eye_1601677155743.html | **TXA eye cream** 30 ml — use formula ref; put in **15 ml roller** |
+
+**Important:** Ready-made **caffeine + tranexamic + ferulic** in one roller SKU is rare. Short path: pick **ATOANY or YECUCE** roller + OEM add **2% TXA + 0.5% ferulic** (gel base).
+
+**OEM brief:** “15 ml metal roller · gel · **5% caffeine, 2% tranexamic, 0.5% ferulic** · fragrance-free · cooling ball.”
+
+#### Serum 3 — Desert Glow (Ectoin + PGA + HA)
+
+| Link | Notes |
+|------|--------|
+| https://www.alibaba.com/product-detail/Korean-Private-Label-30ml-Xy-Lane_1601720129689.html | **Chingo** 30 ml ectoin + Xy-Lane — premium OEM |
+| https://www.alibaba.com/product-detail/3-Ectoin-Organic-Serum-Cross-Border_1601454479672.html | **MELAO 3% ectoin** 30 ml |
+| https://www.alibaba.com/product-detail/MELAO-Skin-Care-Face-OEM-Skincare_1601250274962.html | MELAO ectoin + HA line |
+| https://www.alibaba.com/product-detail/OEM-No-logo-Brighten-Skin-Tone_1600053452608.html | **Polyglutamic acid + ceramide** — ask to add **ectoin 1–2%** |
+
+**OEM brief:** “30 ml same bottle as Blue Firm · **1–2% ectoin + PGA + multi-weight HA** · ‘desert barrier’ story · no arbutin whitening claims.”
+
+---
+
+### 17.4 Alibaba links — PACKAGING (empty bottles)
+
+#### Face serums #1 & #3 — 30 ml frosted + gold
+
+| Link | Notes |
+|------|--------|
+| https://www.alibaba.com/product-detail/30ml-Clear-Frosted-Glass-Serum-Dropper_1601672084494.html | **Thick bottom** frosted 30 ml, gold/silver cap |
+| https://www.alibaba.com/product-detail/20ml-30ml-Green-Amber-Blue-clear_1600199861124.html | Frosted + **gold aluminum** collar (custom logo MOQ) |
+| https://www.alibaba.com/product-detail/Luxury-Custom-Dropper-Bottle-Transparent-Frosted_1601080534758.html | Luxury frosted 15/30 ml |
+| https://www.alibaba.com/product-detail/Yolio-30ml-50ml-1oz-2oz-Round_1601601959946.html | Round frosted + **golden cap** + pipette |
+| https://www.alibaba.com/product-detail/1-Oz-Clear-Frosted-Glass-Bottle_60835503673.html | Calibrated dropper 30 ml (premium feel) |
+| https://www.alibaba.com/product-detail/Custom-Frosted-Color-square-Flat-30ml_1600980295750.html | Square flat frosted (stands out on shelf) |
+
+**Premium variant (matte black + gold — “men’s gift” look):** search supplier for frosted black 30 ml gold dropper; request **electroplated gold bulb** on dropper (matches JYPackaging-style premium sets).
+
+#### Eye serum #2 — 15 ml roller packaging
+
+| Link | Notes |
+|------|--------|
+| https://www.alibaba.com/product-detail/1ml-2ml-3ml-5ml-10ml-12ml_1600303677083.html | Empty **stainless roller** 5–15 ml |
+| https://www.alibaba.com/product-detail/Private-Label-10ml-Mini-Eye-Cream_1601101618643.html | **Thick-wall** 10 ml glass roller |
+| https://www.alibaba.com/product-detail/Luxury-Custom-3ml-5ml-6ml-8ml_1600398061480.html | Rectangle luxury roll-on (high-end unbox) |
+| https://www.alibaba.com/product-detail/10ml-Empty-Glass-Amber-Semi-transparent_1601252064203.html | Amber/gold cap roller 10 ml |
+
+---
+
+### 17.5 Sample order checklist (~$50–80 before ads)
+
+| Step | Action |
+|------|--------|
+| 1 | Message **3 suppliers** per serum; ask MOQ 100–500, halal/CoA, **5–10 pc sample** shipped to Riyadh |
+| 2 | Order **2 empty bottles** + **1 filled unit** per SKU (6 units total) |
+| 3 | Film: unboxing, weight test, roller glide, dropper drip, label % close-up |
+| 4 | Pick **one winner** for first SAR 200–250 ad test (**Eye Reset** or **Blue Firm**) |
+| 5 | Negotiate **one box design** for all 3 (same brand house) |
+
+---
+
+### 17.6 Revised test priority (serum + $500 budget)
+
+1. **Eye Reset** — fastest emotional hook (dark circles)  
+2. **Blue Firm** — strongest TikTok visual (blue drop)  
+3. **Desert Glow** — barrier/hydration story; bundle upsell after winner  
+
+---
+
+*Section 17 added June 2026 — serum pivot + packaging sourcing. Verify all Alibaba listings before payment (MOQ, formula, certs).*
 
 ---
 
