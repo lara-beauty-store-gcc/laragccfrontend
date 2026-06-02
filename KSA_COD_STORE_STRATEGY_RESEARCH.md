@@ -421,6 +421,25 @@ Use these **only** for samples + OEM. Criteria: lowest Meta/TikTok me-too risk i
 
 **Prix vente suggéré (COD):** 179 / 149 / 179 SAR · bundle 3 = **449 SAR** (perçu valeur >> coût usine).
 
+### 17.0b PACKAGING ONLY — أحسن 3 flacons + boîte wow (liens finaux)
+
+**Règle luxe KSA:** verre lourd · givré · or · **hot-stamp logo** · boîte **soft-touch + dorure** · insert mousse (les 3 ne bougent pas).
+
+| Produit | **1 lien packaging (vide)** | Détail wow |
+|---------|---------------------------|------------|
+| **Blue Firm** (30 ml) | https://www.alibaba.com/product-detail/Luxury-White-Frosted-30ml-Glass-Skincare_1601669844094.html | Givré **fond épais** + col or + pipette verre — le plus “clinic luxury” en main |
+| **Eye Reset** (15 ml) | https://www.alibaba.com/product-detail/10ml-15ml-Frosted-Clear-Amber-Glass_1600909444424.html | Verre **givré 15 ml** + bille **acier** + cap **or** — unboxing TikTok instant |
+| **Desert Glow** (30 ml) | https://www.alibaba.com/product-detail/10ml-15ml-30ml-50ml-100ml-Matte_1601701907952.html | **Noir mat givré** + pipette **or** (différent de #1 mais même gamme luxe) |
+
+**Boîte bundle 3 sérums (obligatoire pour “wow”):**  
+https://www.alibaba.com/product-detail/Cosmetic-Packaging-Paper-Boxes-Vendors-Support_1601600552069.html  
+→ Magnetic rigid box · foam insert · logo doré · **soft-touch**
+
+**Message fournisseur packaging (copy-paste):**  
+*“I need samples: (1) 30ml frosted thick-bottom + gold electroplated dropper bulb x20, (2) 30ml matte black + gold dropper x20, (3) 15ml frosted glass roller gold cap steel ball x30, (4) magnetic gift box with foam for 3 bottles — hot stamp gold logo Arabic + English. Ship 5 sets to Riyadh.”*
+
+**Upgrade option (même flacon #1 et #3):** demander **pipette caoutchouc dorée électrolytique** (pas plastique blanc) — coût +$0.05–0.10/pc mais valeur perçue x2 en vidéo.
+
 ---
 
 ### 17.1 The 3 products (final stack)
