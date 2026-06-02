@@ -404,41 +404,22 @@
 
 **User decision:** Topical **serums** (not oral) for KSA COD — higher “wow” on TikTok/Snapchat, premium glass packaging, ingredient % on label.
 
-### 17.0 THE 3 LINKS ONLY (final pick — one per problem)
+### 17.0 THE 3 LINKS ONLY — **produit complet** (sérum + flacon + boîte OEM)
 
-Use these **only** for samples + OEM. Criteria: lowest Meta/TikTok me-too risk in KSA, strongest packaging/value on camera, sellable at **SAR 149–249** COD with healthy margin.
+**Important:** Ces liens = ce que tu **vends** (formule remplie + packaging fournisseur). **Pas** des flacons vides. Chaque factory fait **logo + boîte + bouteille** sur le même OEM.
 
-| Problem (KSA) | Product | **1 link** | Why this one |
-|---------------|---------|------------|--------------|
-| **تجاعيد / شدّة الوجه** | Blue Firm Serum | https://www.alibaba.com/product-detail/1-GHK-Cu-Blue-Copper-Peptide_1601714227878.html | **1% GHK-Cu** on label (clinical story), **blue** liquid = TikTok hook, GMPC, **30 ml + box** — retinol/collagen-only ads are saturated; blue copper is not |
-| **هالات + انتفاخ العين** | Eye Reset Serum | https://www.alibaba.com/product-detail/ATOANY-Private-Label-Skincare-Hydrating-Anti_1601266176342.html | **8% caffeine** + **metal roller** 15 ml = instant “wow” unbox; % on pack = trust; fewer KSA dropshippers run **8%** vs generic 5% rollers |
-| **جفاف / بشرة باهتة (صحراء)** | Desert Glow Serum | https://www.alibaba.com/product-detail/Korean-Private-Label-30ml-Xy-Lane_1601720129689.html | **Ectoin + Xy-Lane** 30 ml Korean OEM — early in GCC COD vs vit C 20% / niacinamide 10%; premium “barrier” angle, OEM logo/box |
+| Problem (KSA) | Nom boutique | **1 lien (tout-en-un)** | Inclus / wow |
+|---------------|--------------|-------------------------|--------------|
+| **تجاعيد / شدّة** | Blue Firm | https://www.alibaba.com/product-detail/1-GHK-Cu-Blue-Copper-Peptide_1601714227878.html | **1% GHK-Cu** · sérum **bleu** 30 ml · **Packing: Box** · logo or (hot-stamp) — GMPC |
+| **هالات + انتفاخ** | Eye Reset | https://www.alibaba.com/product-detail/ATOANY-Private-Label-Skincare-Hydrating-Anti_1601266176342.html | **8% caféine** · **roller 15 ml** · OEM boîte + étiquette · private label |
+| **جفاف / صحراء** | Desert Glow | https://www.alibaba.com/product-detail/Korean-Private-Label-30ml-Xy-Lane_1601720129689.html | **Ectoin + Xy-Lane** 30 ml · **Packing: Box** · OEM coréen premium |
 
-**Message fournisseur (copy-paste):**
-- Blue Firm: *Sample to Riyadh · frosted glass + gold dropper · keep 1% GHK-Cu · add 0.5% bakuchiol if possible · no whitening claims · Arabic box.*
-- Eye Reset: *Replace retinol with 2% tranexamic + 0.5% ferulic if possible · keep 8% caffeine · 15 ml steel roller · gel texture.*
-- Desert Glow: *Add polyglutamic acid + HA · same 30 ml bottle as Blue Firm · “desert barrier” label · no whitening wording.*
+**Message à envoyer sur CHAQUE lien (même chat):**  
+*“5 finished samples to Riyadh: serum + bottle + box with my logo. Blue Firm = frosted glass 30ml gold dropper. Eye = 15ml steel roller gold cap. Desert = matte black 30ml gold dropper OR match Blue Firm bottle. Soft-touch box gold Arabic logo. No whitening claims.”*
 
-**Prix vente suggéré (COD):** 179 / 149 / 179 SAR · bundle 3 = **449 SAR** (perçu valeur >> coût usine).
+**Prix vente COD:** 179 / 149 / 179 SAR · pack 3 = **449 SAR**.
 
-### 17.0b PACKAGING ONLY — أحسن 3 flacons + boîte wow (liens finaux)
-
-**Règle luxe KSA:** verre lourd · givré · or · **hot-stamp logo** · boîte **soft-touch + dorure** · insert mousse (les 3 ne bougent pas).
-
-| Produit | **1 lien packaging (vide)** | Détail wow |
-|---------|---------------------------|------------|
-| **Blue Firm** (30 ml) | https://www.alibaba.com/product-detail/Luxury-White-Frosted-30ml-Glass-Skincare_1601669844094.html | Givré **fond épais** + col or + pipette verre — le plus “clinic luxury” en main |
-| **Eye Reset** (15 ml) | https://www.alibaba.com/product-detail/10ml-15ml-Frosted-Clear-Amber-Glass_1600909444424.html | Verre **givré 15 ml** + bille **acier** + cap **or** — unboxing TikTok instant |
-| **Desert Glow** (30 ml) | https://www.alibaba.com/product-detail/10ml-15ml-30ml-50ml-100ml-Matte_1601701907952.html | **Noir mat givré** + pipette **or** (différent de #1 mais même gamme luxe) |
-
-**Boîte bundle 3 sérums (obligatoire pour “wow”):**  
-https://www.alibaba.com/product-detail/Cosmetic-Packaging-Paper-Boxes-Vendors-Support_1601600552069.html  
-→ Magnetic rigid box · foam insert · logo doré · **soft-touch**
-
-**Message fournisseur packaging (copy-paste):**  
-*“I need samples: (1) 30ml frosted thick-bottom + gold electroplated dropper bulb x20, (2) 30ml matte black + gold dropper x20, (3) 15ml frosted glass roller gold cap steel ball x30, (4) magnetic gift box with foam for 3 bottles — hot stamp gold logo Arabic + English. Ship 5 sets to Riyadh.”*
-
-**Upgrade option (même flacon #1 et #3):** demander **pipette caoutchouc dorée électrolytique** (pas plastique blanc) — coût +$0.05–0.10/pc mais valeur perçue x2 en vidéo.
+> §17.0b (flacons vides) = **only** if le factory du lien ci-dessus refuse ton design — sinon ignore.
 
 ---
 
