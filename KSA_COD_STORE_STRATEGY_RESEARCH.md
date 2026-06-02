@@ -404,6 +404,25 @@
 
 **User decision:** Topical **serums** (not oral) for KSA COD — higher “wow” on TikTok/Snapchat, premium glass packaging, ingredient % on label.
 
+### 17.0 THE 3 LINKS ONLY (final pick — one per problem)
+
+Use these **only** for samples + OEM. Criteria: lowest Meta/TikTok me-too risk in KSA, strongest packaging/value on camera, sellable at **SAR 149–249** COD with healthy margin.
+
+| Problem (KSA) | Product | **1 link** | Why this one |
+|---------------|---------|------------|--------------|
+| **تجاعيد / شدّة الوجه** | Blue Firm Serum | https://www.alibaba.com/product-detail/1-GHK-Cu-Blue-Copper-Peptide_1601714227878.html | **1% GHK-Cu** on label (clinical story), **blue** liquid = TikTok hook, GMPC, **30 ml + box** — retinol/collagen-only ads are saturated; blue copper is not |
+| **هالات + انتفاخ العين** | Eye Reset Serum | https://www.alibaba.com/product-detail/ATOANY-Private-Label-Skincare-Hydrating-Anti_1601266176342.html | **8% caffeine** + **metal roller** 15 ml = instant “wow” unbox; % on pack = trust; fewer KSA dropshippers run **8%** vs generic 5% rollers |
+| **جفاف / بشرة باهتة (صحراء)** | Desert Glow Serum | https://www.alibaba.com/product-detail/Korean-Private-Label-30ml-Xy-Lane_1601720129689.html | **Ectoin + Xy-Lane** 30 ml Korean OEM — early in GCC COD vs vit C 20% / niacinamide 10%; premium “barrier” angle, OEM logo/box |
+
+**Message fournisseur (copy-paste):**
+- Blue Firm: *Sample to Riyadh · frosted glass + gold dropper · keep 1% GHK-Cu · add 0.5% bakuchiol if possible · no whitening claims · Arabic box.*
+- Eye Reset: *Replace retinol with 2% tranexamic + 0.5% ferulic if possible · keep 8% caffeine · 15 ml steel roller · gel texture.*
+- Desert Glow: *Add polyglutamic acid + HA · same 30 ml bottle as Blue Firm · “desert barrier” label · no whitening wording.*
+
+**Prix vente suggéré (COD):** 179 / 149 / 179 SAR · bundle 3 = **449 SAR** (perçu valeur >> coût usine).
+
+---
+
 ### 17.1 The 3 products (final stack)
 
 | # | KSA pain (Arabic hook) | Product name (EN) | Hero actives (label) | Why less saturated in KSA dropshipping |
