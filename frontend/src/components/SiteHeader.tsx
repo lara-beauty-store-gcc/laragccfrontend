@@ -20,11 +20,11 @@ export function SiteHeader() {
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="group flex shrink-0 items-center gap-2.5" aria-label={brand.nameLocal}>
             <Image
-              src="/images/logo.svg"
+              src={brand.logoUrl || '/images/logo-header.webp'}
               alt={brand.nameLocal}
-              width={44}
-              height={44}
-              className="h-11 w-11 object-contain drop-shadow-sm transition-transform group-hover:scale-105"
+              width={48}
+              height={48}
+              className="h-12 w-12 object-contain drop-shadow-sm transition-transform group-hover:scale-105"
               priority
             />
             <div className="leading-tight">

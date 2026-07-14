@@ -5,8 +5,10 @@ export const businessConfig = {
     tagline: 'علكات يومية تدعم جسمك من الداخل',
     description:
       'علكات لارا — تركيبات مدروسة للنوم، الطاقة، والتركيز. دفع عند الاستلام داخل الإمارات.',
-    logoUrl: '',
-    iconUrl: '',
+    logoUrl: '/images/logo-header.webp',
+    logoIconUrl: '/images/logo-icon.webp',
+    logoWhiteUrl: '/images/logo-white.webp',
+    iconUrl: '/images/logo-icon.webp',
   },
   market: {
     countryName: 'الإمارات',

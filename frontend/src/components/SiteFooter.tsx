@@ -19,11 +19,11 @@ export function SiteFooter() {
           <div className="text-center lg:text-right">
             <div className="flex flex-col items-center gap-3 lg:items-start">
               <Image
-                src="/images/logo.svg"
+                src={brand.logoWhiteUrl || brand.logoUrl || '/images/logo-white.webp'}
                 alt={brand.nameLocal}
-                width={56}
-                height={56}
-                className="h-14 w-14 object-contain"
+                width={64}
+                height={64}
+                className="h-16 w-16 object-contain"
               />
               <p className="font-arabic text-lg font-extrabold">{brand.nameLocal}</p>
               <p className="max-w-sm text-sm leading-relaxed text-white/70">{brand.description}</p>
