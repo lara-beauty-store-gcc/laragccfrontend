@@ -3,6 +3,9 @@ import type { ProductConfig } from '@/config/products';
 import { businessInputs } from '@/config/business';
 
 const { brand } = businessInputs;
+import { businessInputs } from '@/config/business';
+
+const { brand } = businessInputs;
 
 const hues: Record<ProductConfig['placeholderHue'], string> = {
   teal: 'from-teal-100 via-emerald-50 to-teal-200',
