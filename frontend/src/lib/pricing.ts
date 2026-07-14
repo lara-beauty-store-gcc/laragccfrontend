@@ -4,6 +4,7 @@ import type { ProductOffer } from '@/config/types';
 
 const { market } = businessConfig;
 
+/** e.g. 189 د.إ */
 export function formatPrice(amount: number): string {
   const decimals = market.currency === 'AED' ? 2 : 3;
   const fixed = amount.toFixed(decimals);
@@ -11,8 +12,25 @@ export function formatPrice(amount: number): string {
   return `${trimmed} ${market.currencySymbol}`;
 }
 
+/** e.g. 189 درهم إماراتي */
+export function formatPriceLong(amount: number): string {
+  const decimals = market.currency === 'AED' ? 2 : 3;
+  const fixed = amount.toFixed(decimals);
+  const trimmed = fixed.replace(/\.?0+$/, '');
+  return `${trimmed} ${market.currencyName}`;
+}
+
+/** e.g. 189 د.إ — درهم إماراتي */
+export function formatPriceFull(amount: number): string {
+  return `${formatPrice(amount)} — ${market.currencyName}`;
+}
+
 export function formatPriceFrom(amount: number): string {
   return `يبدأ من ${formatPrice(amount)}`;
+}
+
+export function formatPriceFromLong(amount: number): string {
+  return `يبدأ من ${formatPriceLong(amount)}`;
 }
 
 export function offerSavings(offer: ProductOffer): number | null {

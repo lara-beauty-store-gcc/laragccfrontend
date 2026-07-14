@@ -5,7 +5,7 @@ export async function GET() {
     market: 'UAE',
     countryCode: 'AE',
     currency: 'AED',
-    deployTag: 'uae-v3-force-rebuild',
+    deployTag: 'uae-currency-aed-v4',
     repo: 'laragccfrontend',
     timestamp: new Date().toISOString(),
   });

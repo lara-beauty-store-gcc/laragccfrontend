@@ -549,10 +549,12 @@ export function DeliveryCitiesSection({ product }: { product: ProductConfig }) {
 }
 
 export function ProductFAQ({ product }: { product: ProductConfig }) {
+  const one = product.offers.find((o) => o.id === 'one') ?? product.offers[0];
+  const three = product.offers.find((o) => o.id === 'three') ?? product.offers[product.offers.length - 1];
   const base = product.faq ?? [
     {
       question: 'كم السعر والعروض؟',
-      answer: `عروض من ${formatPrice(16)} لعلبة وحدة إلى ${formatPrice(29)} لثلاث علب. الدفع عند الاستلام.`,
+      answer: `عروض من ${formatPrice(one.price)} لعلبة وحدة إلى ${formatPrice(three.price)} لثلاث علب — ${businessConfig.market.currencyName} (${businessConfig.market.currencySymbol}). الدفع عند الاستلام.`,
     },
     {
       question: 'متى أشوف نتيجة؟',

@@ -1,7 +1,7 @@
 import { businessConfig } from '@/config/business';
 import type { ProductConfig } from '@/config/products';
 import { getLowestOfferPrice, products } from '@/config/products';
-import { formatPriceFrom } from '@/lib/pricing';
+import { formatPrice, formatPriceFrom } from '@/lib/pricing';
 
 const { brand, market } = businessConfig;
 
@@ -116,7 +116,7 @@ export function getTestimonials(forProduct?: ProductConfig) {
 
 export function getFaqs(forProduct?: ProductConfig) {
   const ing = forProduct?.mainIngredient ?? 'المكوّنات';
-  const from = forProduct ? formatPriceFrom(getLowestOfferPrice(forProduct)) : 'من 189 د.إ';
+  const from = forProduct ? formatPriceFrom(getLowestOfferPrice(forProduct)) : formatPriceFrom(189);
   return [
     {
       q: 'هل الدفع عند الاستلام متاح داخل الإمارات؟',
@@ -124,7 +124,7 @@ export function getFaqs(forProduct?: ProductConfig) {
     },
     {
       q: 'كم الأسعار؟',
-      a: `العروض ${from} — علبة 189 د.إ، علبتين 239 د.إ، 3 علب 339 د.إ.`,
+      a: `العروض ${from} — علبة ${formatPrice(189)}، علبتين ${formatPrice(239)}، 3 علب ${formatPrice(339)}. كل الأسعار بـ${market.currencyName} (${market.currencySymbol}).`,
     },
     {
       q: 'هل العلكات حلال وبدون جيلاتين حيواني؟',

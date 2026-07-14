@@ -15,6 +15,7 @@ export const businessConfig = {
     direction: 'rtl' as const,
     currency: 'AED',
     currencySymbol: 'د.إ',
+    currencyName: 'درهم إماراتي',
     phoneCountryCode: '+971',
     phoneExample: '501234567',
   },
