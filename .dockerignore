@@ -1,6 +1,20 @@
+# Keep build context small — huge folders cause EasyPanel timeouts / fast failures
+node_modules
+.next
+out
+dist
 .git
 .gitignore
-README.md
 .env
 .env.*
 !.env.example
+npm-debug.log
+*.md
+Dockerfile*
+docker-compose*
+coverage
+.turbo
+.vercel
+*.log
+.DS_Store
+**/ChatGPT Image*.png

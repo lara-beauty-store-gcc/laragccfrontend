@@ -1,52 +1,40 @@
 # laragccfrontend
 
-Frontend dyal Lara Beauty Store GCC — deploy 3la [EasyPanel](https://easypanel.io).
+Frontend dyal **Lara Beauty Store** — store UAE (الإمارات) · COD · AED · deploy 3la [EasyPanel](https://easypanel.io).
 
-## 3lach EasyPanel kaygoul "branch not found"?
+## Market
 
-Had l-repo **private** f GitHub (`lara-beauty-store-gcc/laragccfrontend`). Ila ma connectitich GitHub f EasyPanel b token li 3ndo access l had repo, EasyPanel **ma kay9drch y9ra les branches** — w kayban lik `branch not found` même ila `main` kayna.
+| | قبل (Kuwait) | دابا (UAE) |
+|---|---|---|
+| Country | الكويت | الإمارات |
+| Currency | KWD (د.ك) | AED (د.إ) |
+| Phone | +965 | +971 |
+| Bundles | 16 / 21 / 29 | 189 / 239 / 339 |
+| Upsell | 9 | 99 |
 
-### Fix (darouri)
+## EasyPanel deploy
 
-1. **GitHub → Settings → Developer settings → Personal access tokens**
-   - Classic: scope `repo` (w `admin:repo_hook` ila bghiti auto-deploy)
-   - Fine-grained: zid repo `lara-beauty-store-gcc/laragccfrontend` f **Select repositories** + permission **Contents: Read-only**
-2. **EasyPanel → Settings → GitHub** — paste token, verify "Github connected"
-3. **Create App → Source: GitHub**
-   - Repository: `lara-beauty-store-gcc/laragccfrontend`
-   - Branch: `main` (b **minuscules**, bla espaces)
-   - Build: Dockerfile (kayna f root)
+1. **GitHub → EasyPanel** — repo: `lara-beauty-store-gcc/laragccfrontend`, branch: `main`
+2. **Build:** Dockerfile (root)
+3. **Environment** — copy mn `.env.example`:
+   - `NEXT_PUBLIC_SITE_URL` = domain dyalek
+   - `NEXT_PUBLIC_API_URL` = backend API URL
 
-### Repo URL (ila custom git)
+## Backend
 
+Orders API + CAPI f repo `lara-beauty-store-gcc/laragccbackend` — khassu ykon migrated UAE bach totals w phone validation yتطابقو.
+
+## Dev local
+
+```bash
+npm ci
+npm run dev
 ```
-https://github.com/lara-beauty-store-gcc/laragccfrontend.git
-```
 
-Branch: `main`
-
-## Database f EasyPanel
-
-1. Create service **MySQL** (wla PostgreSQL) f nfs l-project
-2. F l-App → **Environment**, copy mn `.env.example`:
-   - `DB_HOST` = **service name** dyal MySQL f EasyPanel (ex: `mysql`, `laragcc_mysql`)
-   - `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` = values li 3tatek EasyPanel f MySQL service
-3. Redeploy l-app
-
-## Push code
+## Push
 
 ```bash
 git add .
 git commit -m "your message"
 git push origin main
 ```
-
-## Structure
-
-| File | Role |
-|------|------|
-| `Dockerfile` | Build image f EasyPanel |
-| `public/` | Static files (placeholder daba) |
-| `.env.example` | Variables DB / app |
-
-Zid Laravel, Vue, wla React f had repo w push — EasyPanel ghadi yrebuild automatiquement ila auto-deploy enabled.
