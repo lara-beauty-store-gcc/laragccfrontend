@@ -1,7 +1,8 @@
-# EasyPanel: source path = frontend, Dockerfile file = Dockerfile
-# (Same layout as laragccbackend monorepo — store service)
+# EasyPanel: branch frontend, empty source path, port 3000
+# CACHEBUST — change this line to force EasyPanel full rebuild
+ARG CACHEBUST=uae-v3-2026-07-14
 FROM node:20-alpine AS base
-RUN apk add --no-cache libc6-compat curl
+RUN echo "BUILD ${CACHEBUST}" && apk add --no-cache libc6-compat curl
 WORKDIR /app
 
 FROM base AS deps
