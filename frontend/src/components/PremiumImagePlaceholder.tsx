@@ -3,9 +3,6 @@ import type { ProductConfig } from '@/config/products';
 import { businessInputs } from '@/config/business';
 
 const { brand } = businessInputs;
-import { businessInputs } from '@/config/business';
-
-const { brand } = businessInputs;
 
 const hues: Record<ProductConfig['placeholderHue'], string> = {
   teal: 'from-teal-100 via-emerald-50 to-teal-200',
@@ -60,11 +57,11 @@ export function PremiumImagePlaceholder({
 }
 
 export function BrandLogo({ size = 'md' }: { size?: 'sm' | 'md' }) {
-  const dim = size === 'sm' ? 36 : 44;
+  const dim = size === 'sm' ? 36 : 48;
   return (
     <Image
-      src="/images/logo.svg"
-      alt="لارا للجمال"
+      src={brand.logoUrl || '/images/logo-header.webp'}
+      alt={brand.nameLocal}
       width={dim}
       height={dim}
       className="shrink-0 object-contain"
