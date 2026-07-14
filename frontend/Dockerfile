@@ -1,15 +1,16 @@
-# Build store from frontend/ when EasyPanel source path is empty (repo root)
+# EasyPanel: source path = frontend, Dockerfile file = Dockerfile
+# (Same layout as laragccbackend monorepo — store service)
 FROM node:20-alpine AS base
 RUN apk add --no-cache libc6-compat curl
 WORKDIR /app
 
 FROM base AS deps
-COPY frontend/package.json frontend/package-lock.json ./
+COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
-COPY frontend/ .
+COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_OPTIONS=--max-old-space-size=2048
 RUN npm run build && test -d .next
@@ -20,13 +21,13 @@ ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 WORKDIR /app
 
-COPY frontend/package.json frontend/package-lock.json ./
+COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/next.config.mjs ./next.config.mjs
-COPY frontend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 3000

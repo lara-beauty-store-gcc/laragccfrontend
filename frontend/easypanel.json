@@ -2,8 +2,7 @@
   "name": "lara-beauty-store",
   "build": {
     "type": "dockerfile",
-    "dockerfile": "Dockerfile",
-    "context": "frontend"
+    "dockerfile": "Dockerfile"
   },
   "deploy": {
     "port": 3000,

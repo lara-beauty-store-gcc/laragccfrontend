@@ -1,40 +1,66 @@
 # laragccfrontend
 
-Frontend dyal **Lara Beauty Store** — store UAE (الإمارات) · COD · AED · deploy 3la [EasyPanel](https://easypanel.io).
+Frontend dyal **Lara Beauty Store** — UAE (الإمارات) · COD · AED · deploy 3la [EasyPanel](https://easypanel.io).
 
-## Market
+## EasyPanel — settings (مهم!)
 
-| | قبل (Kuwait) | دابا (UAE) |
-|---|---|---|
-| Country | الكويت | الإمارات |
-| Currency | KWD (د.ك) | AED (د.إ) |
-| Phone | +965 | +971 |
-| Bundles | 16 / 21 / 29 | 189 / 239 / 339 |
-| Upsell | 9 | 99 |
+### Option A — source path `frontend` (مُفضّل)
 
-## EasyPanel deploy
+| Setting | Value |
+|---------|--------|
+| Repository | `lara-beauty-store-gcc/laragccfrontend` |
+| Branch | `main` |
+| **Source path** | **`frontend`** |
+| **Dockerfile file** | **`Dockerfile`** |
+| **Proxy port** | **`3000`** |
 
-1. **GitHub → EasyPanel** — repo: `lara-beauty-store-gcc/laragccfrontend`, branch: `main`
-2. **Build:** Dockerfile (root)
-3. **Environment** — copy mn `.env.example`:
-   - `NEXT_PUBLIC_SITE_URL` = domain dyalek
-   - `NEXT_PUBLIC_API_URL` = backend API URL
+### Option B — source path فارغ (repo root)
 
-## Backend
+| Setting | Value |
+|---------|--------|
+| Source path | *(empty)* |
+| Dockerfile file | `Dockerfile` |
+| Proxy port | `3000` |
 
-Orders API + CAPI f repo `lara-beauty-store-gcc/laragccbackend` — khassu ykon migrated UAE bach totals w phone validation yتطابقو.
+### Environment variables
+
+```env
+NODE_ENV=production
+PORT=3000
+HOSTNAME=0.0.0.0
+NEXT_PUBLIC_SITE_URL=https://your-domain.com
+NEXT_PUBLIC_API_URL=https://api.your-domain.com
+```
+
+### Health check
+
+`GET /api/health` on port **3000**
+
+---
+
+## أخطاء شائعة
+
+| المشكل | الحل |
+|--------|------|
+| `package.json missing` | Source path = **`frontend`** |
+| Service not reachable | Proxy port = **3000** (ماشي 80) |
+| branch not found | Branch = **`main`** (minuscules) |
+| Build timeout | Repo private → GitHub token f EasyPanel |
+
+---
 
 ## Dev local
 
 ```bash
+cd frontend
 npm ci
 npm run dev
 ```
 
-## Push
+## Market (UAE)
 
-```bash
-git add .
-git commit -m "your message"
-git push origin main
-```
+| | Value |
+|---|---|
+| Currency | AED (189 / 239 / 339) |
+| Phone | +971 |
+| Upsell | 99 AED |

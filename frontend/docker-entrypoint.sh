@@ -3,7 +3,7 @@ set -e
 
 echo "========================================"
 echo " Lara Beauty Store — container start"
-echo " Build: frontend/ | Port: ${PORT:-3000}"
+echo " Source: frontend/ | Port: ${PORT:-3000}"
 echo "========================================"
 echo "NODE_ENV=${NODE_ENV:-unset}"
 echo "PORT=${PORT:-unset}"
@@ -14,8 +14,8 @@ echo "Files: package.json=$(test -f package.json && echo yes || echo NO) .next=$
 
 if [ ! -f "package.json" ]; then
   echo "[FATAL] package.json missing"
-  echo "EasyPanel → Store → Source path MUST be: frontend"
-  echo "Dockerfile file MUST be: Dockerfile (not frontend/Dockerfile)"
+  echo "EasyPanel → App → Source path MUST be: frontend"
+  echo "EasyPanel → Dockerfile file MUST be: Dockerfile"
   exit 1
 fi
 
