@@ -4,7 +4,19 @@ Frontend dyal **Lara Beauty Store** — UAE (الإمارات) · COD · AED · 
 
 ## EasyPanel — settings (مهم!)
 
-### Option A — source path `frontend` (مُفضّل)
+### Option A — branch `frontend` (مُفضّل لـ EasyPanel)
+
+| Setting | Value |
+|---------|--------|
+| Repository | `lara-beauty-store-gcc/laragccfrontend` |
+| Branch | **`frontend`** |
+| **Source path** | *(empty / `/`)* |
+| **Dockerfile file** | **`Dockerfile`** |
+| **Proxy port** | **`3000`** |
+
+> Branch `frontend` = store kamla f root (auto-synced mn `main`).
+
+### Option B — branch `main` + folder `frontend`
 
 | Setting | Value |
 |---------|--------|
@@ -14,27 +26,32 @@ Frontend dyal **Lara Beauty Store** — UAE (الإمارات) · COD · AED · 
 | **Dockerfile file** | **`Dockerfile`** |
 | **Proxy port** | **`3000`** |
 
-### Option B — source path فارغ (repo root)
-
-| Setting | Value |
-|---------|--------|
-| Source path | *(empty)* |
-| Dockerfile file | `Dockerfile` |
-| Proxy port | `3000` |
-
 ### Environment variables
 
 ```env
 NODE_ENV=production
 PORT=3000
 HOSTNAME=0.0.0.0
-NEXT_PUBLIC_SITE_URL=https://your-domain.com
-NEXT_PUBLIC_API_URL=https://api.your-domain.com
+NEXT_PUBLIC_SITE_URL=https://larabeauty.store
+NEXT_PUBLIC_API_URL=https://api.larabeauty.store
+NEXT_PUBLIC_WHATSAPP_NUMBER=971XXXXXXXXX
+NEXT_PUBLIC_SUPPORT_PHONE=+971 XX XXX XXXX
 ```
 
-### Health check
+### Verify deploy (مهم!)
 
-`GET /api/health` on port **3000**
+Ba3d Deploy f EasyPanel, **khass yاخد 2–5 d9ayeq** (machi 2 seconds).
+
+```bash
+curl https://larabeauty.store/api/health
+```
+
+Khasso yraj3:
+```json
+"deployTag": "thank-you-cod-v6-2026-07-27"
+```
+
+Ila ba9a `uae-currency-aed-v4` → deploy ma dar rebuild. Dir **Redeploy** w chouf build logs.
 
 ---
 
