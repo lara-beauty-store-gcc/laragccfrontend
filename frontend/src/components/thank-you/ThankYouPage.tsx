@@ -16,10 +16,10 @@ import {
   Truck,
 } from 'lucide-react';
 import { businessConfig } from '@/config/business';
-import { buildWhatsAppConfirmUrl, getLastOrder, saveLastOrder, type LastOrder } from '@/lib/order-session';
+import { buildWhatsAppConfirmUrl, getLastOrder, type LastOrder } from '@/lib/order-session';
 import { formatPrice } from '@/lib/pricing';
-import { trackEvent, trackPurchase } from '@/lib/tracking';
-import { getProductBySlug } from '@/config/products';
+import { trackPurchase } from '@/lib/tracking';
+import { RoutineCrossSell } from '@/components/thank-you/RoutineCrossSell';
 
 const { brand, cod, market, support } = businessConfig;
 
@@ -137,57 +137,6 @@ function TrustRow() {
   );
 }
 
-function UpsellOffer({ order, onUpdate }: { order: LastOrder; onUpdate: (o: LastOrder) => void }) {
-  const product = order.productSlug ? getProductBySlug(order.productSlug) : undefined;
-  const [dismissed, setDismissed] = useState(false);
-
-  if (!product?.upsell.enabled || dismissed) return null;
-
-  const upsell = product.upsell;
-
-  function accept() {
-    const updated: LastOrder = {
-      ...order,
-      items: [
-        ...order.items,
-        { sku: product!.sku, name: upsell.label, qty: 1, price: upsell.price },
-      ],
-      total: order.total + upsell.price,
-      upsellShown: true,
-    };
-    saveLastOrder(updated);
-    onUpdate(updated);
-    trackEvent('UpsellAccepted', { value: upsell.price });
-  }
-
-  function skip() {
-    setDismissed(true);
-    trackEvent('UpsellSkipped');
-  }
-
-  return (
-    <div className="rounded-3xl border-2 border-secondary/40 bg-gradient-to-br from-secondary-soft to-white p-5 shadow-card">
-      <p className="text-center text-[10px] font-bold uppercase tracking-wider text-secondary">عرض لمرة واحدة</p>
-      <h3 className="mt-1 text-center font-arabic text-base font-extrabold text-primary">كمّلي الروتين بسعر خاص</h3>
-      <p className="mt-1 text-center text-xs text-muted">{upsell.subtitle}</p>
-      <p className="mt-4 text-center font-arabic text-3xl font-extrabold tabular-nums text-primary">
-        {formatPrice(upsell.price)}
-      </p>
-      <p className="text-center text-sm font-semibold text-foreground">{upsell.label}</p>
-      <button
-        type="button"
-        onClick={accept}
-        className="mt-4 w-full rounded-2xl bg-primary py-3.5 font-arabic text-sm font-bold text-white"
-      >
-        نعم، أضيفي العرض
-      </button>
-      <button type="button" onClick={skip} className="mt-2 w-full py-2 text-xs text-muted">
-        لا شكراً — أكملي التأكيد
-      </button>
-    </div>
-  );
-}
-
 function ThankYouInner() {
   const params = useSearchParams();
   const orderIdParam = params.get('order') ?? '';
@@ -248,12 +197,11 @@ function ThankYouInner() {
 
       <div className="mt-6 space-y-4">
         {order ? <OrderSummary order={order} /> : null}
-        {order ? <UpsellOffer order={order} onUpdate={setOrder} /> : null}
         <NextSteps />
         <TrustRow />
       </div>
 
-      {/* Primary CTA — WhatsApp confirmation (biggest COD lever) */}
+      {/* Primary CTA — WhatsApp confirmation first */}
       {whatsappUrl ? (
         <a
           href={whatsappUrl}
@@ -265,6 +213,9 @@ function ThankYouInner() {
           أكّدي طلبك عبر واتساب الآن
         </a>
       ) : null}
+
+      {/* Cross-sell: other gummies — after confirm, optional, no fake total */}
+      {order ? <div className="mt-6"><RoutineCrossSell order={order} /></div> : null}
 
       <p className="mt-3 text-center text-[11px] text-muted">
         أو اتصلي بنا:{' '}

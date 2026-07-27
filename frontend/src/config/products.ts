@@ -32,7 +32,7 @@ const bundleOffers = (labels: { one: string; two: string; three: string }) => [
 ];
 
 const defaultUpsell = {
-  enabled: true,
+  enabled: false,
   price: 99,
   label: 'علبة إضافية بسعر خاص',
   subtitle: 'كمّلي الروتين — عرض لمرة وحدة بعد الطلب',
