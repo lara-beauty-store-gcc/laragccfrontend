@@ -36,3 +36,19 @@ export function trackViewContent(product: {
 export function trackAddToCart(payload: TrackPayload) {
   trackEvent('AddToCart', payload);
 }
+
+export function trackPurchase(payload: {
+  orderId: string;
+  value: number;
+  currency: string;
+  items: Array<{ sku: string; qty: number; price: number }>;
+}) {
+  trackEvent('Purchase', {
+    content_ids: payload.items.map((i) => i.sku).join(','),
+    content_type: 'product',
+    num_items: payload.items.reduce((n, i) => n + i.qty, 0),
+    value: payload.value,
+    currency: payload.currency,
+    order_id: payload.orderId,
+  });
+}

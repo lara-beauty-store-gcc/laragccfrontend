@@ -6,6 +6,7 @@ import { businessConfig } from '@/config/business';
 import { getProductBySlug, products } from '@/config/products';
 import { useCart } from '@/lib/cart';
 import { formatPrice } from '@/lib/pricing';
+import { saveLastOrder, getLastOrder } from '@/lib/order-session';
 import { trackEvent } from '@/lib/tracking';
 import { isValidUaePhone } from '@/lib/phone';
 
@@ -13,7 +14,7 @@ const { market } = businessConfig;
 
 export function CheckoutModal() {
   const router = useRouter();
-  const { items, isOpen, setOpen, clear, total, addOffer } = useCart();
+  const { items, isOpen, setOpen, clear, total } = useCart();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [area, setArea] = useState('');
@@ -51,23 +52,6 @@ export function CheckoutModal() {
     setLoading(true);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-      const payload = {
-        eventName: 'Purchase',
-        customerName: name.trim(),
-        phone: `${market.phoneCountryCode}${phone.replace(/\D/g, '')}`,
-        area: area.trim(),
-        items: items.map((i) => ({
-          sku: i.sku,
-          name: i.name,
-          qty: i.qty,
-          price: i.price,
-          offerId: i.offerId,
-        })),
-        total,
-        currency: market.currency,
-        paymentMethod: 'COD',
-      };
-
       let orderId = `LARA-${Date.now()}`;
 
       if (apiUrl) {
@@ -97,7 +81,22 @@ export function CheckoutModal() {
         orderId = data.orderNumber || data.orderId || orderId;
       }
 
-      sessionStorage.setItem('lara-last-order', JSON.stringify({ ...payload, orderId }));
+      saveLastOrder({
+        orderId,
+        customerName: name.trim(),
+        phone: `${market.phoneCountryCode}${phone.replace(/\D/g, '')}`,
+        area: area.trim(),
+        items: items.map((i) => ({
+          sku: i.sku,
+          name: i.name,
+          qty: i.qty,
+          price: i.price,
+          offerId: i.offerId,
+        })),
+        total,
+        currency: market.currency,
+        paymentMethod: 'COD',
+      });
 
       const firstSlug = items[0]?.slug;
       const prod = firstSlug ? getProductBySlug(firstSlug) : products[0];
@@ -128,8 +127,26 @@ export function CheckoutModal() {
     if (!upsellProduct) return;
     const extra = upsellProduct.offers[0];
     if (extra) {
-      addOffer(upsellProduct, { ...extra, price: upsellProduct.upsell.price, label: upsellProduct.upsell.label });
-      trackEvent('UpsellAccepted', { value: upsellProduct.upsell.price });
+      const upsellPrice = upsellProduct.upsell.price;
+      const upsellLabel = upsellProduct.upsell.label;
+      const existing = getLastOrder();
+      if (existing) {
+        saveLastOrder({
+          ...existing,
+          items: [
+            ...existing.items,
+            {
+              sku: upsellProduct.sku,
+              name: upsellLabel,
+              qty: 1,
+              price: upsellPrice,
+              offerId: extra.id,
+            },
+          ],
+          total: existing.total + upsellPrice,
+        });
+      }
+      trackEvent('UpsellAccepted', { value: upsellPrice });
     }
     finishAfterUpsell();
   }
@@ -140,8 +157,8 @@ export function CheckoutModal() {
   }
 
   function finishAfterUpsell() {
-    const raw = sessionStorage.getItem('lara-last-order');
-    const orderId = raw ? JSON.parse(raw).orderId : '';
+    const existing = getLastOrder();
+    const orderId = existing?.orderId ?? '';
     setUpsellVisible(false);
     clear();
     setOpen(false);

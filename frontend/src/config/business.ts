@@ -26,7 +26,15 @@ export const businessConfig = {
     paymentLabel: 'دفع عند الاستلام — بدون دفع أونلاين',
     deliveryPromise: 'توصيل 2–4 أيام عمل لكل إمارات الدولة',
     confirmationPromise: 'فريقنا يتصل فيك خلال ساعات لتأكيد العنوان',
+    confirmationWindow: 'خلال ساعتين في أوقات العمل',
     returnGuarantee: 'ضمان استرجاع 30 يوم — فلوسك ترجع إذا ما عجبك الروتين',
+    cashReminder: 'جهّزي المبلغ كاش أو بطاقة عند الاستلام',
+  },
+  support: {
+  /** رقم واتساب بدون + أو مسافات — مثال: 971501234567 */
+    whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '971501234567',
+    phoneDisplay: process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? '+971 50 123 4567',
+    hours: 'يومياً 9 ص — 10 م',
   },
   design: {
     primaryColor: '#134E3A',
