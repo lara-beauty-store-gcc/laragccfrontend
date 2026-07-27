@@ -14,13 +14,17 @@ import {
 } from 'lucide-react';
 import { businessConfig } from '@/config/business';
 import { useCart } from '@/lib/cart';
-import { saveLastOrder } from '@/lib/order-session';
+import { saveLastOrder, type LastOrder } from '@/lib/order-session';
 import { formatPrice } from '@/lib/pricing';
 import { isValidUaePhone } from '@/lib/phone';
 import { trackEvent } from '@/lib/tracking';
 import { Stars } from '@/components/Stars';
+import { RoutineCrossSellPanel } from '@/components/cross-sell/RoutineCrossSellPanel';
+import { getCrossSellProducts } from '@/lib/cross-sell';
 
 const { market, cod } = businessConfig;
+
+type CheckoutStep = 'form' | 'crosssell';
 
 const trustChips = [
   { icon: HandCoins, text: 'دفع عند الاستلام' },
@@ -37,6 +41,16 @@ export function CheckoutModal() {
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [step, setStep] = useState<CheckoutStep>('form');
+  const [pendingOrder, setPendingOrder] = useState<LastOrder | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setStep('form');
+      setPendingOrder(null);
+      setError('');
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : '';
@@ -102,7 +116,7 @@ export function CheckoutModal() {
         orderId = data.orderNumber || data.orderId || orderId;
       }
 
-      saveLastOrder({
+      const savedOrder: LastOrder = {
         orderId,
         customerName: name.trim(),
         phone: `${market.phoneCountryCode}${phone.replace(/\D/g, '')}`,
@@ -118,11 +132,19 @@ export function CheckoutModal() {
         total,
         currency: market.currency,
         paymentMethod: 'COD',
-      });
+      };
 
+      saveLastOrder(savedOrder);
       trackEvent('Lead', { value: total, currency: market.currency });
 
       clear();
+
+      if (getCrossSellProducts(savedOrder).length > 0) {
+        setPendingOrder(savedOrder);
+        setStep('crosssell');
+        return;
+      }
+
       setOpen(false);
       router.push(`/thank-you?order=${orderId}`);
     } catch {
@@ -131,6 +153,14 @@ export function CheckoutModal() {
       setLoading(false);
     }
   }
+
+  function finishToThankYou() {
+    if (!pendingOrder) return;
+    setOpen(false);
+    router.push(`/thank-you?order=${pendingOrder.orderId}`);
+  }
+
+  const stepThreeActive = step === 'crosssell';
 
   return (
     <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
@@ -143,14 +173,16 @@ export function CheckoutModal() {
         <div className="shrink-0 border-b border-border bg-surface-rose px-5 py-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-primary/70">خطوة أخيرة</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-primary/70">
+                {step === 'crosssell' ? 'خطوة اختيارية' : 'خطوة أخيرة'}
+              </p>
               <h2 id="checkout-title" className="font-arabic text-lg font-extrabold text-primary">
-                أكّدي طلبك — بدون دفع أونلاين
+                {step === 'crosssell' ? 'كمّلي روتينك' : 'أكّدي طلبك — بدون دفع أونلاين'}
               </h2>
             </div>
             <button
               type="button"
-              onClick={() => setOpen(false)}
+              onClick={() => (step === 'crosssell' ? finishToThankYou() : setOpen(false))}
               className="rounded-full bg-white p-2 text-muted shadow-sm hover:bg-surface"
               aria-label="إغلاق"
             >
@@ -166,19 +198,32 @@ export function CheckoutModal() {
             </span>
             <span className="h-px flex-1 bg-primary/30" />
             <span className="flex items-center gap-1 text-primary">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[9px] text-white">2</span>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[9px] text-white">✓</span>
               بياناتك
             </span>
             <span className="h-px flex-1 bg-border" />
-            <span className="flex items-center gap-1 text-muted">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full border border-border text-[9px]">3</span>
-              توصيل
+            <span className={`flex items-center gap-1 ${stepThreeActive ? 'text-primary' : 'text-muted'}`}>
+              <span
+                className={`flex h-5 w-5 items-center justify-center rounded-full text-[9px] ${
+                  stepThreeActive ? 'bg-primary text-white' : 'border border-border'
+                }`}
+              >
+                3
+              </span>
+              روتينك
             </span>
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-4">
-          {items.length === 0 ? (
+          {step === 'crosssell' && pendingOrder ? (
+            <RoutineCrossSellPanel
+              order={pendingOrder}
+              variant="checkout"
+              onSkip={finishToThankYou}
+              skipLabel="لا شكراً — كملي لصفحة التأكيد"
+            />
+          ) : items.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted">السلة فاضية</p>
           ) : (
             <>
@@ -307,8 +352,8 @@ export function CheckoutModal() {
           )}
         </div>
 
-        {/* Sticky CTA */}
-        {items.length > 0 ? (
+        {/* Sticky CTA — form step only */}
+        {items.length > 0 && step === 'form' ? (
           <div className="shrink-0 border-t border-border bg-white px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
             <p className="mb-2 text-center text-[10px] text-muted">{cod.paymentLabel}</p>
             <button

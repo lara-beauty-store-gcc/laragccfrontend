@@ -42,3 +42,25 @@ export function buildWhatsAppAddOnUrl(
   const digits = whatsappNumber.replace(/\D/g, '');
   return `https://wa.me/${digits}?text=${encodeURIComponent(lines.join('\n'))}`;
 }
+
+export function buildWhatsAppMultiAddOnUrl(
+  order: LastOrder,
+  products: ProductConfig[],
+  whatsappNumber: string,
+): string {
+  const lines = [
+    `مرحباً ${order.customerName.split(' ')[0]} 👋`,
+    `أريد إضافة منتجات لطلبي رقم: ${order.orderId}`,
+    '',
+    '📦 الإضافات:',
+    ...products.map(
+      (p) => `• ${p.shortName} — من ${crossSellPrice(p)} ${order.currency}`,
+    ),
+    '',
+    'نأكد العنوان والكمية مع الطلب الحالي.',
+    'شكراً — لارا للجمال',
+  ];
+
+  const digits = whatsappNumber.replace(/\D/g, '');
+  return `https://wa.me/${digits}?text=${encodeURIComponent(lines.join('\n'))}`;
+}
