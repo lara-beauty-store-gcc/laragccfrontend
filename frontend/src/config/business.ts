@@ -46,6 +46,10 @@ export const businessConfig = {
     phoneDisplay: process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? '+971 50 123 4567',
     hours: 'يومياً 9 ص — 10 م',
   },
+  social: {
+    tiktok: 'https://www.tiktok.com/@lara_beauty_gcc',
+    tiktokHandle: '@lara_beauty_gcc',
+  },
   design: {
     primaryColor: '#134E3A',
     primaryDarkColor: '#0F3D2E',

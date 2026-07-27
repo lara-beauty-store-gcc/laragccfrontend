@@ -5,7 +5,7 @@ import { businessInputs } from '@/config/business';
 import { products } from '@/config/products';
 import { getTrustBadges } from '@/lib/marketing';
 
-const { brand, market } = businessInputs;
+const { brand, market, social } = businessInputs;
 
 const footerIcons = [ShieldCheck, Leaf, Truck, Heart];
 
@@ -27,6 +27,14 @@ export function SiteFooter() {
               />
               <p className="font-arabic text-lg font-extrabold">{brand.nameLocal}</p>
               <p className="max-w-sm text-sm leading-relaxed text-white/70">{brand.description}</p>
+              <a
+                href={social.tiktok}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-bold text-white/90 transition hover:bg-white/10"
+              >
+                تابعينا على TikTok · {social.tiktokHandle}
+              </a>
             </div>
           </div>
 
