@@ -20,6 +20,16 @@ export const businessConfig = {
     currencyName: 'درهم إماراتي',
     phoneCountryCode: '+971',
     phoneExample: '501234567',
+    emirates: [
+      'دبي',
+      'أبوظبي',
+      'الشارقة',
+      'عجمان',
+      'رأس الخيمة',
+      'الفجيرة',
+      'أم القيوين',
+      'العين',
+    ],
   },
   cod: {
     enabled: true,

@@ -38,6 +38,11 @@ export function offerSavings(offer: ProductOffer): number | null {
   return offer.compareAtPrice - offer.price;
 }
 
+export function perUnitPrice(offer: Pick<ProductOffer, 'price' | 'quantity'>): number {
+  if (offer.quantity <= 1) return offer.price;
+  return Math.round(offer.price / offer.quantity);
+}
+
 export function formatSavings(offer: ProductOffer): string | null {
   const s = offerSavings(offer);
   if (!s) return null;

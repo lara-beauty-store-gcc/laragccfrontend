@@ -13,7 +13,7 @@ import {
 import type { ProductConfig } from '@/config/products';
 import type { ProductOffer } from '@/config/types';
 import { businessConfig } from '@/config/business';
-import { formatPrice, formatPriceFrom } from '@/lib/pricing';
+import { formatPrice } from '@/lib/pricing';
 import { ProductImageCarousel } from './ProductImageCarousel';
 import { ProductOfferSelector } from './ProductOfferSelector';
 import { Stars } from '../Stars';
@@ -93,8 +93,14 @@ export function ProductHero({
             </div>
 
             <p className="font-arabic text-lg font-extrabold text-primary sm:text-xl">
-              {formatPriceFrom(selectedOffer.price)}
-              <span className="mr-2 text-sm font-medium text-muted">/ علبة</span>
+              {formatPrice(selectedOffer.price)}
+              {selectedOffer.quantity > 1 ? (
+                <span className="mr-2 text-sm font-medium text-muted">
+                  · {formatPrice(Math.round(selectedOffer.price / selectedOffer.quantity))} / علبة
+                </span>
+              ) : (
+                <span className="mr-2 text-sm font-medium text-muted">/ علبة واحدة</span>
+              )}
             </p>
 
             {product.scarcityLine ? (

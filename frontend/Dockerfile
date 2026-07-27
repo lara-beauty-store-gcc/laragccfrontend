@@ -1,6 +1,6 @@
 # EasyPanel: branch frontend, empty source path, port 3000
 # CACHEBUST — change this line to force EasyPanel full rebuild
-ARG CACHEBUST=thank-you-cod-v6-2026-07-27
+ARG CACHEBUST=checkout-cod-v7-2026-07-27
 FROM node:20-alpine AS base
 RUN echo "BUILD ${CACHEBUST}" && apk add --no-cache libc6-compat curl
 WORKDIR /app

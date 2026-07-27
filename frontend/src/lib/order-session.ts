@@ -11,10 +11,12 @@ export type LastOrder = {
   customerName: string;
   phone: string;
   area?: string;
+  productSlug?: string;
   items: LastOrderItem[];
   total: number;
   currency: string;
   paymentMethod: string;
+  upsellShown?: boolean;
 };
 
 const STORAGE_KEY = 'lara-last-order';

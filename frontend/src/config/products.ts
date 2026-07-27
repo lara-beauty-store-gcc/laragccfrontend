@@ -8,7 +8,6 @@ const bundleOffers = (labels: { one: string; two: string; three: string }) => [
     label: labels.one,
     subtitle: 'شهر كامل — 60 علكة',
     price: 189,
-    compareAtPrice: 189,
     badge: '',
   },
   {
