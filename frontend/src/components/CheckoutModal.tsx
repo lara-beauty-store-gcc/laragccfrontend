@@ -26,7 +26,7 @@ const { market, cod, checkout } = businessConfig;
 
 export function CheckoutModal() {
   const router = useRouter();
-  const { items, isOpen, view, setView, close, clear, total, close: closeCart } = useCart();
+  const { items, isOpen, view, setView, close, clear, total, remove, updateQty, close: closeCart } = useCart();
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -234,7 +234,11 @@ export function CheckoutModal() {
               </div>
 
               <div className="mt-5">
-                <CheckoutProductSummary items={items} />
+                <CheckoutProductSummary
+                  items={items}
+                  onUpdateQty={updateQty}
+                  onRemove={remove}
+                />
               </div>
 
               <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-white px-4 py-3">
