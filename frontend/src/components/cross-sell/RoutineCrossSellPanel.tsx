@@ -93,7 +93,8 @@ export function RoutineCrossSellPanel({
         area: order.area,
         items: selectedProducts.map((product) => ({
           sku: product.sku,
-          name: product.shortName,
+          name: product.name,
+          productName: product.name,
           slug: product.slug,
           quantity: 1,
           lineTotal: crossSellPrice(product),

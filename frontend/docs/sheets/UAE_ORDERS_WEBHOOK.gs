@@ -37,7 +37,7 @@ function cellNumber(value) {
 }
 
 function doGet() {
-  return jsonResponse({ ok: true, service: 'lara-orders-webhook', version: '2026-07-28' });
+  return jsonResponse({ ok: true, service: 'lara-orders-webhook', version: '2026-07-29' });
 }
 
 function doPost(e) {

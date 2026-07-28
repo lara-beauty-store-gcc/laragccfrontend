@@ -110,7 +110,8 @@ export function CheckoutModal() {
         sourceUrl: typeof window !== 'undefined' ? window.location.href : '',
         items: items.map((i) => ({
           sku: i.sku,
-          name: i.offerLabel,
+          name: i.name,
+          productName: i.name,
           slug: i.slug,
           quantity: i.offerQuantity * i.qty,
           lineTotal: i.price * i.qty,
@@ -125,11 +126,12 @@ export function CheckoutModal() {
         productSlug: items[0]?.slug,
         items: items.map((i) => ({
           sku: i.sku,
-          name: i.offerLabel,
+          name: i.name,
           slug: i.slug,
           qty: i.qty,
           price: i.price,
           offerId: i.offerId,
+          offerLabel: i.offerLabel,
         })),
         total,
         currency: orderCurrency,

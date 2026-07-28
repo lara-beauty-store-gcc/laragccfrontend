@@ -3,6 +3,7 @@ import { businessConfig } from '@/config/business';
 export type OrderLinePayload = {
   sku: string;
   name: string;
+  productName?: string;
   slug: string;
   quantity: number;
   lineTotal: number;

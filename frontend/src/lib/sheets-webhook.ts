@@ -1,5 +1,5 @@
 import { businessConfig } from '@/config/business';
-import { normalizeSheetItems, type RawSheetItem, type SheetsOrderItem } from '@/lib/sheets-export';
+import { normalizeSheetItems, formatSheetOrderDate, type RawSheetItem, type SheetsOrderItem } from '@/lib/sheets-export';
 import { runtimeEnv, sheetsWebhookSecret, sheetsWebhookUrl } from '@/lib/runtime-env';
 import { formatPhoneForSheet, normalizeCustomerName } from '@/lib/phone';
 
@@ -39,32 +39,7 @@ export function mapPayloadToSheetItems(payload: SheetsOrderPayload): SheetsOrder
 }
 
 function formatDubaiSheetDate(input?: string): string {
-  const date = input ? new Date(input) : new Date();
-  if (Number.isNaN(date.getTime())) {
-    return new Intl.DateTimeFormat('en-GB', {
-      timeZone: 'Asia/Dubai',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    })
-      .format(new Date())
-      .replace(',', '');
-  }
-
-  return new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Asia/Dubai',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  })
-    .format(date)
-    .replace(',', '');
+  return formatSheetOrderDate(input);
 }
 
 /** Flat row — matches user's Apps Script (one POST = one sheet row). */

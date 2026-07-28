@@ -1,4 +1,5 @@
 import { businessConfig } from '@/config/business';
+import { getProductBySlug } from '@/config/products';
 
 import { formatPhoneForSheet } from '@/lib/phone';
 
@@ -46,6 +47,26 @@ export type SheetOrderContext = {
   date?: string;
   orderIds?: string[];
 };
+
+export function formatSheetOrderDate(input?: string | Date): string {
+  const parsed = input instanceof Date ? input : input ? new Date(input) : new Date();
+  const date = Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Dubai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(date);
+
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? '00';
+
+  return `${get('year')}-${get('month')}-${get('day')} ${get('hour')}:${get('minute')}`;
+}
 
 export function isGarbageSerializedValue(value: string): boolean {
   const trimmed = value.trim();
@@ -165,10 +186,16 @@ export function pickProductName(raw: RawSheetItem): string {
   const fromProduct = serializeProductValue(raw.product);
   if (fromProduct) return fromProduct;
 
-  const candidates = [raw.name, raw.productName, raw.title, raw.label, raw.shortName];
+  const candidates = [raw.productName, raw.name, raw.title, raw.label, raw.shortName];
   for (const candidate of candidates) {
     const serialized = serializeProductValue(candidate);
     if (serialized) return serialized;
+  }
+
+  const slug = pickSlug(raw);
+  if (slug) {
+    const product = getProductBySlug(slug);
+    if (product?.name) return product.name.trim();
   }
 
   return '';
@@ -244,7 +271,7 @@ export function buildSheetRows(
     sourceUrl: ctx.sourceUrl,
   });
 
-  const date = String(ctx.date || new Date().toISOString());
+  const date = ctx.date ? formatSheetOrderDate(ctx.date) : formatSheetOrderDate();
   const country = String(ctx.country || 'AE').trim() || 'AE';
   const name = String(ctx.customerName || '').trim();
   const phone = formatPhoneForSheet(String(ctx.phone || ''));
