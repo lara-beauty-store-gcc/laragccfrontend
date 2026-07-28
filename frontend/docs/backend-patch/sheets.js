@@ -164,72 +164,91 @@ export async function forwardToGoogleSheets(eventName, payload) {
   const currency = payload.currency || 'AED';
   const isUae = currency === 'AED';
   const sourceUrl = payload.sourceUrl || payload.source_url || siteBaseUrl();
-  const items = payload.items || payload.products || [];
+  const items = toUaeSheetItems(payload.items || payload.products || [], sourceUrl);
+  const orderNumber = payload.order_number || payload.orderId || `LARA-${Date.now().toString(36).toUpperCase()}`;
+  const name = payload.customer_name || payload.customerName || payload.full_name || '';
+  const phone = formatPhoneForSheet(
+    payload.phone_display || payload.phone_e164 || payload.phone_raw || payload.phone,
+  );
+  const country = payload.country || 'AE';
+  const date = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Dubai', hour12: false });
 
-  const body = isUae
-    ? {
-        secret: config.sheetsWebhookSecret || undefined,
-        date: new Date().toISOString(),
-        customer_name: payload.customer_name || payload.customerName || payload.full_name,
-        full_name: payload.full_name || payload.customer_name || payload.customerName,
-        phone: formatPhoneForSheet(payload.phone_display || payload.phone_e164 || payload.phone_raw || payload.phone),
-        phone_raw: payload.phone_raw || payload.phone,
-        phone_display: formatPhoneForSheet(payload.phone_display || payload.phone_e164 || payload.phone_raw || payload.phone),
-        country: payload.country || 'AE',
-        currency,
-        area: payload.area_notes || payload.area || '',
-        items: toUaeSheetItems(items, sourceUrl),
-        source_url: sourceUrl,
-      }
-    : {
-        secret: config.sheetsWebhookSecret || undefined,
-        event: eventName,
-        timestamp: new Date().toISOString(),
-        order_number: payload.order_number || payload.orderId,
-        order_id: payload.orderId || payload.order_number,
-        customer_name: payload.customer_name || payload.customerName || payload.full_name,
-        full_name: payload.full_name || payload.customer_name || payload.customerName,
-        phone_e164: formatPhoneForSheet(payload.phone_e164 || payload.phone),
-        area_notes: payload.area_notes || payload.area,
-        items: toUaeSheetItems(items, sourceUrl),
-        subtotal_kwd: payload.subtotal_kwd ?? payload.value,
-        total_kwd: payload.total_kwd ?? payload.value,
-        currency,
-        payment_method: payload.payment_method || 'COD',
-        upsell_accepted: payload.upsell_accepted ?? false,
-        upsell_product: payload.upsell_product_id,
-        upsell_amount_kwd: payload.upsell_amount_kwd,
-        event_id: payload.eventId,
-        source_url: sourceUrl,
-        status: 'pending_confirmation',
-      };
-
-  if (!body.items.length) {
+  if (!items.length) {
     log.warn('Google Sheets webhook skipped: no valid items after normalization');
     return { ok: false, error: 'no_valid_items' };
   }
 
+  const orderIds = [];
+
   try {
-    const res = await fetch(config.sheetsWebhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
+    for (let index = 0; index < items.length; index += 1) {
+      const item = items[index];
+      const orderId = index === 0 ? orderNumber : `${orderNumber}-${index + 1}`;
+      const row = isUae
+        ? {
+            secret: config.sheetsWebhookSecret || undefined,
+            date,
+            'order id': orderId,
+            order_id: orderId,
+            order_number: orderId,
+            name,
+            customer_name: name,
+            phone,
+            phone_e164: phone,
+            product: item.product,
+            url: item.url,
+            source_url: item.url || sourceUrl,
+            sku: item.sku,
+            quantite: item.quantity,
+            quantity: item.quantity,
+            totalprice: item.totalPrice,
+            total_aed: item.totalPrice,
+            total: item.totalPrice,
+            country,
+            currency,
+          }
+        : {
+            secret: config.sheetsWebhookSecret || undefined,
+            event: eventName,
+            date,
+            'order id': orderId,
+            order_id: orderId,
+            order_number: orderId,
+            name,
+            customer_name: name,
+            phone_e164: phone,
+            product: item.product,
+            url: item.url,
+            sku: item.sku,
+            quantite: item.quantity,
+            totalprice: item.totalPrice,
+            currency,
+            source_url: sourceUrl,
+          };
 
-    const text = await res.text();
-    let data = {};
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = { raw: text };
+      const res = await fetch(config.sheetsWebhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(row),
+      });
+
+      const text = await res.text();
+      let data = {};
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { raw: text };
+      }
+
+      if (!res.ok || data.ok === false) {
+        log.warn('Google Sheets webhook failed', res.status, text);
+        return { ok: false, status: res.status, body: text, data };
+      }
+
+      orderIds.push(String(data.order_id || orderId));
     }
 
-    if (!res.ok || data.ok === false) {
-      log.warn('Google Sheets webhook failed', res.status, text);
-      return { ok: false, status: res.status, body: text, data };
-    }
-
-    return { ok: true, orderIds: data.order_ids, orderId: data.order_id };
+    return { ok: true, orderIds, orderId: orderIds[0] };
   } catch (err) {
     log.error('Google Sheets webhook error', err.message);
     return { ok: false, error: err.message };

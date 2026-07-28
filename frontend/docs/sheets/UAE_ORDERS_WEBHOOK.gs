@@ -1,329 +1,134 @@
-/**
- * Lara Beauty UAE — Google Sheets webhook
- *
- * Spreadsheet: Sheet Orders Lara beauty
- * https://docs.google.com/spreadsheets/d/1n_vZl2t3X_KV0Rkpj6dR9TZRRm3OETv3IjIdzcH-diU
- *
- * Columns (row 1):
- * date | order id | country | name | phone | product | url | sku | quantite | totalprice | currency
- */
-
 const SCRIPT_SECRET = 'lara-beauty-secret-2026';
-
 const SPREADSHEET_ID = '1n_vZl2t3X_KV0Rkpj6dR9TZRRm3OETv3IjIdzcH-diU';
+const SHEET_NAME = 'Tabellenblatt1';
 
-const SHEET_CANDIDATES = [
-  'Tabellenblatt1',
-  'Sheet Orders Lara beauty',
-  'Commandes',
-  'Sheet1',
+const HEADERS = [
+  'date',
+  'order id',
+  'country',
+  'name',
+  'phone',
+  'product',
+  'url',
+  'sku',
+  'quantite',
+  'totalprice',
+  'currency',
 ];
 
-const JAVA_ARRAY_REF = /^\[L[\w.$]+;@[0-9a-f]+$/i;
+function isJavaObjectRef(value) {
+  return /^\[L[a-zA-Z0-9./]+;@[0-9a-f]+$/i.test(String(value || ''));
+}
+
+function cell(value) {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') {
+    var s = value.trim();
+    return isJavaObjectRef(s) ? '' : s;
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return '';
+}
+
+function cellNumber(value) {
+  var n = Number(value);
+  if (!isFinite(n) || n < 0) return 0;
+  return n;
+}
 
 function doGet() {
-  const sheet = resolveOrdersSheet_();
-  return jsonResponse({
-    ok: true,
-    sheet: sheet ? sheet.getName() : null,
-    rows: sheet ? sheet.getLastRow() : 0,
-  });
+  return jsonResponse({ ok: true, service: 'lara-orders-webhook', version: '2026-07-28' });
 }
 
 function doPost(e) {
   try {
-    const body = JSON.parse(e.postData.contents);
+    if (!e || !e.postData || !e.postData.contents) {
+      return jsonResponse({ ok: false, error: 'empty_body' }, 400);
+    }
+
+    var body = JSON.parse(e.postData.contents);
 
     if (body.secret !== SCRIPT_SECRET) {
       return jsonResponse({ ok: false, error: 'unauthorized' }, 401);
     }
 
-    const sheet = resolveOrdersSheet_();
+    var orderId = cell(body['order id'] || body.order_id || body.order_number);
+    var name = cell(body.name || body.customer_name || body.full_name);
+    var phone = cell(body.phone || body.phone_e164 || body.phone_display);
+    var product = cell(body.product);
+    var url = cell(body.url || body.source_url);
+    var sku = cell(body.sku);
+    var country = cell(body.country) || 'AE';
+    var currency = cell(body.currency) || 'AED';
+    var date =
+      cell(body.date) ||
+      Utilities.formatDate(new Date(), 'Asia/Dubai', 'yyyy-MM-dd HH:mm');
+    var quantite = cellNumber(body.quantite || body.quantity);
+    var totalprice = cellNumber(
+      body.totalprice || body['total price'] || body.total_aed || body.total_amount || body.total,
+    );
+
+    if (!orderId || !name || !phone) {
+      return jsonResponse({ ok: false, error: 'incomplete_row' }, 400);
+    }
+    if (!product || isJavaObjectRef(product)) {
+      return jsonResponse({ ok: false, error: 'invalid_product' }, 400);
+    }
+    if (!totalprice) {
+      return jsonResponse({ ok: false, error: 'invalid_total' }, 400);
+    }
+    if (!quantite) quantite = 1;
+
+    var ss = getSpreadsheet_();
+    if (!ss) {
+      return jsonResponse({ ok: false, error: 'spreadsheet_not_linked' }, 500);
+    }
+
+    var sheet = ss.getSheetByName(SHEET_NAME) || ss.getSheets()[0];
     if (!sheet) {
       return jsonResponse({ ok: false, error: 'sheet_not_found' }, 500);
     }
 
-    ensureHeaders_(sheet);
-
-    const rawItems = flattenItems_(body.items);
-    if (rawItems.length === 0) {
-      return jsonResponse({ ok: false, error: 'empty_items' }, 400);
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(HEADERS);
     }
 
-    const orderIds = [];
-    const createdAt = formatSheetDate_(body.date) || formatSheetDate_(new Date().toISOString());
-    const country = asString_(body.country) || 'AE';
-    const currency = asString_(body.currency) || 'AED';
-    const customerName = pickCustomerName_(body);
-    const phone = formatPhone_(body.phone_display || body.phone_e164 || body.phone || body.phone_raw || '');
-    const sourceUrl = asString_(body.source_url || body.sourceUrl);
-    const presetIds = Array.isArray(body.order_ids) ? body.order_ids : [];
-
-    rawItems.forEach(function (raw, index) {
-      const item = normalizeItem_(raw, sourceUrl);
-      if (!item.product && !item.sku) return;
-
-      const orderId = presetIds[index] ? String(presetIds[index]) : nextOrderId_();
-      orderIds.push(orderId);
-
-      sheet.appendRow([
-        createdAt,
-        orderId,
-        country,
-        customerName,
-        phone,
-        item.product,
-        item.url,
-        item.sku,
-        item.quantity,
-        item.totalPrice,
-        currency,
-      ]);
-    });
-
-    if (orderIds.length === 0) {
-      return jsonResponse({ ok: false, error: 'no_valid_items' }, 400);
+    var data = sheet.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
+      if (String(data[i][1]) === orderId) {
+        return jsonResponse({ ok: true, success: true, duplicate: true, order_id: orderId });
+      }
     }
 
-    return jsonResponse({ ok: true, order_ids: orderIds, order_id: orderIds[0], sheet: sheet.getName() });
+    sheet.appendRow([
+      date,
+      orderId,
+      country,
+      name,
+      phone,
+      product,
+      url,
+      sku,
+      quantite,
+      totalprice,
+      currency,
+    ]);
+
+    return jsonResponse({ ok: true, success: true, sheet: sheet.getName(), order_id: orderId });
   } catch (err) {
     return jsonResponse({ ok: false, error: String(err) }, 500);
   }
 }
 
-function flattenItems_(items) {
-  if (!items) return [];
-  if (Array.isArray(items)) {
-    var out = [];
-    items.forEach(function (entry) {
-      if (Array.isArray(entry)) {
-        out = out.concat(flattenItems_(entry));
-      } else if (entry && typeof entry === 'object') {
-        out.push(entry);
-      }
-    });
-    return out;
-  }
-  if (typeof items === 'object') return [items];
-  return [];
-}
-
-function normalizeItem_(raw, sourceUrl) {
-  var quantity = pickQuantity_(raw);
-  var product = productLabelForSheet_(raw);
-  var slug = asString_(raw.slug || raw.productId).replace(/^\/+|\/+$/g, '');
-  var url = asString_(raw.url || raw.product_url);
-  if (!url && slug) {
-    url = sourceUrl ? sourceUrl.replace(/\/$/, '') + '/products/' + slug : '';
-  }
-  if (!url) url = asString_(sourceUrl);
-
-  return {
-    product: product,
-    url: url,
-    sku: asString_(raw.sku || raw.SKU),
-    quantity: quantity,
-    totalPrice: pickTotalPrice_(raw, quantity),
-  };
-}
-
-function productLabelForSheet_(raw) {
-  var name = pickProductName_(raw);
-  if (!name) return '';
-  if (name.indexOf('\n') >= 0) return name;
-  return formatProductLabel_(name, pickQuantity_(raw));
-}
-
-function pickProductName_(raw) {
-  var fromProduct = serializeProduct_(raw.product);
-  if (fromProduct) return fromProduct;
-
-  var fields = [raw.name, raw.productName, raw.title, raw.label, raw.shortName];
-  for (var i = 0; i < fields.length; i++) {
-    var value = serializeProduct_(fields[i]);
-    if (value) return value;
-  }
-  return '';
-}
-
-function serializeProduct_(value) {
-  if (value == null || value === '') return '';
-
-  if (typeof value === 'string') {
-    var trimmed = value.trim();
-    if (!trimmed || isGarbageSerialized_(trimmed)) return '';
-    return trimmed;
-  }
-
-  if (typeof value === 'number' || typeof value === 'boolean') {
-    return String(value);
-  }
-
-  if (Array.isArray(value)) {
-    var lines = [];
-    value.forEach(function (entry) {
-      if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
-        var nestedName = serializeProduct_(entry.name || entry.productName || entry.product || entry.title || entry.label);
-        if (!nestedName) return;
-        var nestedQty = pickQuantity_(entry);
-        lines.push(formatProductLabel_(nestedName, nestedQty));
-        return;
-      }
-      var line = serializeProduct_(entry);
-      if (line) lines.push(line);
-    });
-    return lines.join('\n');
-  }
-
-  if (typeof value === 'object') {
-    var objectName = serializeProduct_(value.name || value.productName || value.product || value.title || value.label);
-    if (!objectName) return '';
-    return formatProductLabel_(objectName, pickQuantity_(value));
-  }
-
-  var fallback = String(value).trim();
-  return isGarbageSerialized_(fallback) ? '' : fallback;
-}
-
-function formatProductLabel_(name, quantity) {
-  var clean = String(name || '').trim();
-  if (!clean) return '';
-  var qty = Math.max(1, Math.floor(Number(quantity) || 1));
-  return qty > 1 ? clean + ' x' + qty : clean;
-}
-
-function isGarbageSerialized_(value) {
-  if (!value) return true;
-  if (JAVA_ARRAY_REF.test(value)) return true;
-  if (value === '[object Object]') return true;
-  if (value === 'undefined' || value === 'null') return true;
-  return false;
-}
-
-function pickQuantity_(raw) {
-  return Math.max(1, Number(raw.quantity || raw.qty || raw.quantite) || 1);
-}
-
-function pickTotalPrice_(raw, quantity) {
-  var candidates = [raw.totalPrice, raw.totalprice, raw.lineTotal, raw.lineTotalAed, raw.lineTotalKwd, raw.price];
-  for (var i = 0; i < candidates.length; i++) {
-    var n = Number(candidates[i]);
-    if (!isNaN(n) && n > 0) return Math.round(n * 100) / 100;
-  }
-
-  var unitAed = Number(raw.unitPriceAed);
-  if (!isNaN(unitAed) && unitAed > 0) return Math.round(unitAed * quantity * 100) / 100;
-
-  var unitKwd = Number(raw.unitPriceKwd);
-  if (!isNaN(unitKwd) && unitKwd > 0) return Math.round(unitKwd * quantity * 100) / 100;
-
-  return 0;
-}
-
-function pickCustomerName_(body) {
-  var candidates = [body.full_name, body.customer_name, body.customerName, body.name];
-  for (var i = 0; i < candidates.length; i++) {
-    var text = asString_(candidates[i]);
-    if (text) return text;
-  }
-  return '';
-}
-
-function formatSheetDate_(value) {
-  if (!value) return '';
-  var d = new Date(value);
-  if (isNaN(d.getTime())) return asString_(value);
-  return Utilities.formatDate(d, 'Asia/Dubai', 'yyyy-MM-dd HH:mm');
-}
-
-function asString_(value) {
-  if (value == null) return '';
-  var text = String(value).trim();
-  return isGarbageSerialized_(text) ? '' : text;
-}
-
-function resolveOrdersSheet_() {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-
-  for (var i = 0; i < SHEET_CANDIDATES.length; i++) {
-    var candidate = ss.getSheetByName(SHEET_CANDIDATES[i]);
-    if (candidate) return candidate;
-  }
-
-  var sheets = ss.getSheets();
-  return sheets.length ? sheets[0] : null;
-}
-
-function ensureHeaders_(sheet) {
-  if (sheet.getLastRow() > 0) return;
-
-  sheet.appendRow([
-    'date',
-    'order id',
-    'country',
-    'name',
-    'phone',
-    'product',
-    'url',
-    'sku',
-    'quantite',
-    'totalprice',
-    'currency',
-  ]);
-}
-
-function nextOrderId_() {
-  const lock = LockService.getScriptLock();
-  lock.waitLock(10000);
-
-  try {
-    const props = PropertiesService.getScriptProperties();
-    const current = parseInt(props.getProperty('ORDER_COUNTER') || '0', 10);
-    const next = current + 1;
-    props.setProperty('ORDER_COUNTER', String(next));
-    return String(next).padStart(5, '0');
-  } finally {
-    lock.releaseLock();
-  }
-}
-
-function formatPhone_(input) {
-  var text = asString_(input);
-  if (text && text.indexOf('+971') === 0) return text;
-
-  var digits = String(input || '').replace(/\D/g, '');
-
-  if (digits.startsWith('971') && digits.length >= 12) {
-    return '+' + digits.slice(0, 12);
-  }
-
-  if (digits.startsWith('05') && digits.length >= 10) {
-    return '+971' + digits.slice(1);
-  }
-
-  if (digits.startsWith('0') && digits.length === 10) {
-    return '+971' + digits.slice(1);
-  }
-
-  if (digits.length === 9 && /^5[024568]/.test(digits)) {
-    return '+971' + digits;
-  }
-
-  if (String(input || '').trim().indexOf('+') === 0) {
-    return String(input).replace(/\s|-/g, '');
-  }
-
-  if (digits.startsWith('971') && digits.length === 12) {
-    return '+' + digits;
-  }
-
-  return digits.length >= 9 ? '+971' + digits.slice(-9) : text;
+function getSpreadsheet_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (ss) return ss;
+  if (SPREADSHEET_ID) return SpreadsheetApp.openById(SPREADSHEET_ID);
+  return null;
 }
 
 function jsonResponse(obj, code) {
-  if (code && code !== 200) {
-    obj._httpStatus = code;
-  }
+  if (code && code !== 200) obj._httpStatus = code;
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(
     ContentService.MimeType.JSON,
   );
