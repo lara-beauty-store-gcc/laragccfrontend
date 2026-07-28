@@ -5,7 +5,7 @@ export async function GET() {
     market: 'UAE',
     countryCode: 'AE',
     currency: 'AED',
-    deployTag: 'crosssell-skip-cta-v15-2026-07-28',
+    deployTag: 'uae-phone-digits-only-v16-2026-07-28',
     repo: 'laragccfrontend',
     timestamp: new Date().toISOString(),
   });

@@ -331,7 +331,7 @@ export function CheckoutModal() {
                     />
                   </div>
                   <div className="mt-1 flex items-center justify-between text-[10px] text-muted">
-                    <span>9 أرقام — مثال: {UAE_PHONE_EXAMPLE} أو 05{UAE_PHONE_EXAMPLE.slice(1)}</span>
+                    <span>لازم {UAE_PHONE_DIGITS} أرقام بعد +971</span>
                     <span
                       className={`font-mono tabular-nums ${
                         phone.length === UAE_PHONE_DIGITS ? 'font-bold text-primary' : ''
