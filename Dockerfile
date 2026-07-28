@@ -1,5 +1,5 @@
 # Build store from frontend/ when EasyPanel source path is empty (repo root)
-ARG CACHEBUST=flat-row-webhook-v35-2026-07-28
+ARG CACHEBUST=no-duplicate-orders-v36-2026-07-28
 FROM node:20-alpine AS base
 RUN echo "BUILD ${CACHEBUST}"
 RUN apk add --no-cache libc6-compat curl

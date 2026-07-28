@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
   HandCoins,
@@ -64,6 +64,7 @@ export function CheckoutModal() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [pendingOrder, setPendingOrder] = useState<LastOrder | null>(null);
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     if (!isOpen) {
@@ -115,6 +116,7 @@ export function CheckoutModal() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (submittingRef.current || loading) return;
     setError('');
 
     if (!phone.trim()) {
@@ -137,6 +139,7 @@ export function CheckoutModal() {
     const area = address.trim() ? `${emirate} — ${address.trim()}` : emirate;
 
     setLoading(true);
+    submittingRef.current = true;
     try {
       const phoneE164 = normalizeUaePhone(phone);
       if (!phoneE164) {
@@ -202,6 +205,7 @@ export function CheckoutModal() {
         setError('صار خطأ — جربي مرة ثانية');
       }
     } finally {
+      submittingRef.current = false;
       setLoading(false);
     }
   }

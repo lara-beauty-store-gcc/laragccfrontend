@@ -183,11 +183,8 @@ export async function POST(req: Request) {
       orderIds: localOrderIds,
     };
 
-    // Sheets + API in parallel — sheets carries the full name; API is capped at 2.5s.
-    const [sheets, api] = await Promise.all([
-      forwardOrderToSheetsWithRetry(sheetPayload, 2, 150),
-      forwardToBackendApi(body, customerName, phoneE164, normalizedItems),
-    ]);
+    // Sheets first — only path when successful (API also writes to sheet → duplicates).
+    const sheets = await forwardOrderToSheetsWithRetry(sheetPayload, 2, 150);
 
     let orderIds = localOrderIds;
     let source: 'sheets' | 'api' | 'local' = 'local';
@@ -199,18 +196,21 @@ export async function POST(req: Request) {
     if (sheets.ok) {
       orderIds = sheets.orderIds;
       source = 'sheets';
-    } else if (api?.apiSheets === 'synced') {
-      orderIds = api.orderIds;
-      source = 'api';
-      sheetSynced = true;
-    } else if (api) {
-      orderIds = api.orderIds;
-      source = 'api';
-      sheetError = sheets.reason;
-      sheetDetail = sheets.detail;
     } else {
-      sheetError = sheets.reason;
-      sheetDetail = sheets.detail;
+      const api = await forwardToBackendApi(body, customerName, phoneE164, normalizedItems);
+      if (api?.apiSheets === 'synced') {
+        orderIds = api.orderIds;
+        source = 'api';
+        sheetSynced = true;
+      } else if (api) {
+        orderIds = api.orderIds;
+        source = 'api';
+        sheetError = sheets.reason;
+        sheetDetail = sheets.detail;
+      } else {
+        sheetError = sheets.reason;
+        sheetDetail = sheets.detail;
+      }
     }
 
     if (!sheetSynced) {
