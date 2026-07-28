@@ -78,9 +78,34 @@ export function CheckoutModal() {
   }, [isOpen, items.length, view, setView]);
 
   useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : '';
+    if (!isOpen) return;
+
+    const scrollY = window.scrollY;
+    const { style } = document.body;
+    const prev = {
+      position: style.position,
+      top: style.top,
+      left: style.left,
+      right: style.right,
+      width: style.width,
+      overflow: style.overflow,
+    };
+
+    style.position = 'fixed';
+    style.top = `-${scrollY}px`;
+    style.left = '0';
+    style.right = '0';
+    style.width = '100%';
+    style.overflow = 'hidden';
+
     return () => {
-      document.body.style.overflow = '';
+      style.position = prev.position;
+      style.top = prev.top;
+      style.left = prev.left;
+      style.right = prev.right;
+      style.width = prev.width;
+      style.overflow = prev.overflow;
+      window.scrollTo(0, scrollY);
     };
   }, [isOpen]);
 
@@ -191,10 +216,11 @@ export function CheckoutModal() {
   }[view];
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+    <div className="checkout-modal-root fixed inset-0 z-[100] flex items-end justify-center overflow-hidden bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
       <div
-        className="flex max-h-[94vh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:max-h-[90vh] sm:rounded-3xl"
+        className="checkout-modal-panel flex h-[min(94dvh,100%)] max-h-[94dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:h-auto sm:max-h-[min(90dvh,100%)] sm:rounded-3xl"
         role="dialog"
+        aria-modal="true"
         aria-labelledby="checkout-title"
       >
         <div className="shrink-0 border-b border-border bg-surface-rose px-5 py-4">
@@ -263,7 +289,7 @@ export function CheckoutModal() {
           ) : null}
         </div>
 
-        <div className="flex-1 overflow-y-auto px-5 py-4">
+        <div className="checkout-modal-scroll min-h-0 flex-1 overflow-y-auto overflow-x-clip px-5 py-4">
           {view === 'crosssell' && pendingOrder ? (
             <RoutineCrossSellPanel
               order={pendingOrder}

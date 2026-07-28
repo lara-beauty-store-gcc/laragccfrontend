@@ -51,88 +51,98 @@ export function ProductHero({
   ctaLabelText: string;
   ctaRef: React.Ref<HTMLDivElement>;
 }) {
+  const buyBox = (
+    <div className="space-y-4 rounded-3xl border border-primary/15 bg-white/90 p-4 shadow-card backdrop-blur-sm sm:p-5">
+      <ProductOfferSelector
+        product={product}
+        selectedId={selectedOffer.id}
+        onSelect={onSelectOffer}
+      />
+
+      <div ref={ctaRef}>
+        <button
+          type="button"
+          onClick={onAddToCart}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-sm font-bold text-white shadow-soft transition hover:bg-primary/90 active:scale-[0.99]"
+        >
+          {ctaLabelText}
+          <ArrowLeft className="h-5 w-5 shrink-0" aria-hidden />
+        </button>
+        <p className="mt-3 text-center text-[11px] font-medium text-muted">
+          {cod.paymentLabel} · {formatPrice(selectedOffer.price)}
+        </p>
+      </div>
+    </div>
+  );
+
   return (
     <section
       id="add-to-cart-section"
-      className="bg-gradient-to-br from-background via-surface-rose to-primary-soft py-8 sm:py-12"
+      className="overflow-x-clip bg-gradient-to-br from-background via-surface-rose to-primary-soft py-6 sm:py-12"
     >
       <div className="mx-auto max-w-container px-4 sm:px-6 lg:px-8">
-        <div className="grid items-start gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-16">
-          <div className="relative flex justify-center">
+        <div className="grid items-start gap-5 sm:gap-8 lg:grid-cols-2 lg:gap-16">
+          <div className="relative mx-auto w-full max-w-lg justify-self-center lg:max-w-none lg:justify-self-auto">
             <div className="absolute inset-0 scale-150 rounded-full bg-primary/10 blur-3xl" aria-hidden />
             <ProductImageCarousel product={product} />
           </div>
 
-          <div className="min-w-0 space-y-5">
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {heroStats.map((s) => (
-                <div
-                  key={s.label}
-                  className="rounded-xl border border-border bg-white/80 px-2 py-2.5 text-center backdrop-blur-sm"
-                >
-                  <p className="text-[10px] font-medium text-muted">{s.label}</p>
-                  <p className="mt-0.5 text-[11px] font-extrabold text-primary sm:text-xs">{s.value}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5">
-              <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-              <span className="text-xs font-bold text-primary">
-                {product.routineNameLocal} · {product.routineNameEnglish}
-              </span>
-            </div>
-
-            <h1 className="font-arabic text-2xl font-extrabold leading-[1.15] tracking-tight text-foreground sm:text-3xl lg:text-4xl">
-              {product.heroHeadline}
-            </h1>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <Stars rating={product.rating} count={product.reviewsCount} />
-              <span className="text-xs text-muted">· تقييم مؤكد</span>
-            </div>
-
-            <p className="font-arabic text-lg font-extrabold text-primary sm:text-xl">
-              {formatPrice(selectedOffer.price)}
-              {selectedOffer.quantity > 1 ? (
-                <span className="mr-2 text-sm font-medium text-muted">
-                  · {formatPrice(Math.round(selectedOffer.price / selectedOffer.quantity))} / علبة
-                </span>
-              ) : (
-                <span className="mr-2 text-sm font-medium text-muted">/ علبة واحدة</span>
-              )}
-            </p>
-
-            {product.scarcityLine ? (
-              <div className="flex items-start gap-2 rounded-2xl border border-secondary/30 bg-secondary-soft px-4 py-3">
-                <Flame className="mt-0.5 h-5 w-5 shrink-0 text-secondary" aria-hidden />
-                <p className="text-xs font-bold leading-relaxed text-foreground sm:text-sm">{product.scarcityLine}</p>
+          <div className="flex min-w-0 flex-col gap-5">
+            <div className="order-2 space-y-4 lg:order-1">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {heroStats.map((s) => (
+                  <div
+                    key={s.label}
+                    className="rounded-xl border border-border bg-white/80 px-2 py-2.5 text-center backdrop-blur-sm"
+                  >
+                    <p className="text-[10px] font-medium text-muted">{s.label}</p>
+                    <p className="mt-0.5 text-[11px] font-extrabold text-primary sm:text-xs">{s.value}</p>
+                  </div>
+                ))}
               </div>
-            ) : null}
 
-            <p className="text-sm leading-relaxed text-muted">{product.heroSubheadline}</p>
+              <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5">
+                <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+                <span className="text-xs font-bold text-primary">
+                  {product.routineNameLocal} · {product.routineNameEnglish}
+                </span>
+              </div>
 
-            <ProductOfferSelector
-              product={product}
-              selectedId={selectedOffer.id}
-              onSelect={onSelectOffer}
-            />
+              <h1 className="font-arabic text-2xl font-extrabold leading-[1.15] tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+                {product.heroHeadline}
+              </h1>
 
-            <div ref={ctaRef}>
-              <button
-                type="button"
-                onClick={onAddToCart}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-sm font-bold text-white shadow-soft transition hover:bg-primary/90"
-              >
-                {ctaLabelText}
-                <ArrowLeft className="h-5 w-5 shrink-0" aria-hidden />
-              </button>
-              <p className="mt-3 text-center text-[11px] font-medium text-muted">
-                {cod.paymentLabel} · {formatPrice(selectedOffer.price)}
+              <div className="flex flex-wrap items-center gap-3">
+                <Stars rating={product.rating} count={product.reviewsCount} />
+                <span className="text-xs text-muted">· تقييم مؤكد</span>
+              </div>
+
+              <p className="font-arabic text-lg font-extrabold text-primary sm:text-xl">
+                {formatPrice(selectedOffer.price)}
+                {selectedOffer.quantity > 1 ? (
+                  <span className="mr-2 text-sm font-medium text-muted">
+                    · {formatPrice(Math.round(selectedOffer.price / selectedOffer.quantity))} / علبة
+                  </span>
+                ) : (
+                  <span className="mr-2 text-sm font-medium text-muted">/ علبة واحدة</span>
+                )}
               </p>
+
+              {product.scarcityLine ? (
+                <div className="flex items-start gap-2 rounded-2xl border border-secondary/30 bg-secondary-soft px-4 py-3">
+                  <Flame className="mt-0.5 h-5 w-5 shrink-0 text-secondary" aria-hidden />
+                  <p className="text-xs font-bold leading-relaxed text-foreground sm:text-sm">
+                    {product.scarcityLine}
+                  </p>
+                </div>
+              ) : null}
+
+              <p className="text-sm leading-relaxed text-muted">{product.heroSubheadline}</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="order-1 lg:order-2">{buyBox}</div>
+
+            <div className="order-3 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:order-3">
               {miniTrust.map((item) => (
                 <div
                   key={item.title}
@@ -148,7 +158,7 @@ export function ProductHero({
         </div>
       </div>
 
-      <div className="mt-8 border-y border-foreground/10 bg-foreground text-white sm:mt-10">
+      <div className="mt-6 overflow-x-clip border-y border-foreground/10 bg-foreground text-white sm:mt-10">
         <div className="mx-auto flex max-w-container flex-col gap-4 px-4 py-6 sm:px-6 sm:py-8 lg:grid lg:grid-cols-4 lg:gap-5 lg:px-8">
           {product.badges.map((badge, i) => {
             const Icon = stripIcons[i % stripIcons.length];

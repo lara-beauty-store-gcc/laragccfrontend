@@ -20,7 +20,7 @@ export function CartLineItem({ line, onRemove, onUpdateQty, compact = false }: C
 
   return (
     <article
-      className={`group flex gap-3 rounded-2xl border border-border bg-white transition ${
+      className={`group flex min-w-0 max-w-full gap-3 rounded-2xl border border-border bg-white transition ${
         compact ? 'p-3' : 'p-3.5 shadow-sm'
       }`}
     >
