@@ -53,14 +53,33 @@ export function ProductTrustStrip() {
 
 export function InsightStatSection({ product }: { product: ProductConfig }) {
   const stat = product.insightStat;
-  if (!stat) return null;
 
   return (
     <ProductPageSection variant="white">
-      <div className="mx-auto max-w-3xl rounded-3xl bg-primary p-6 text-center text-white shadow-soft sm:p-8">
-        <p className="font-arabic text-4xl font-extrabold text-secondary sm:text-5xl">{stat.value}</p>
-        <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed sm:text-base">{stat.label}</p>
-        {stat.source ? <p className="mt-3 text-[11px] text-white/60">{stat.source}</p> : null}
+      <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-10">
+        <div className="lg:col-span-5">
+          <div className="mx-auto w-full max-w-md lg:max-w-none">
+            <ProductMedia
+              product={product}
+              imageKey="problemImage"
+              alt={product.imageAlts.problemImage}
+              variant="section"
+              frameClassName="overflow-hidden rounded-[2rem] border-8 border-white shadow-2xl"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col justify-center gap-6 lg:col-span-7">
+          <p className="text-base leading-relaxed text-muted sm:text-lg">{product.emotionalPain}</p>
+
+          {stat ? (
+            <div className="rounded-3xl bg-primary p-6 text-white shadow-soft sm:p-8">
+              <p className="font-arabic text-4xl font-extrabold text-secondary sm:text-5xl">{stat.value}</p>
+              <p className="mt-4 text-sm leading-relaxed sm:text-base">{stat.label}</p>
+              {stat.source ? <p className="mt-3 text-[11px] text-white/60">{stat.source}</p> : null}
+            </div>
+          ) : null}
+        </div>
       </div>
     </ProductPageSection>
   );
