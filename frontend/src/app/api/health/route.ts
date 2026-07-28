@@ -12,7 +12,7 @@ export async function GET() {
       market: 'UAE',
       countryCode: 'AE',
       currency: 'AED',
-      deployTag: 'simple-checkout-v37-2026-07-28',
+      deployTag: 'nama-style-checkout-v38-2026-07-28',
       repo: 'laragccfrontend',
       orderFlow: 'sheets-only-then-api-fallback',
       apiUrl: apiBaseUrl() ? 'configured' : 'missing',

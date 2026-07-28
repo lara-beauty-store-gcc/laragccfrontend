@@ -67,7 +67,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [items, hydrated]);
 
   const openCart = useCallback(() => {
-    setView('cart');
+    setView('checkout');
     setIsOpen(true);
   }, []);
 
@@ -118,7 +118,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           },
         ];
       });
-      setView('cart');
+      setView('checkout');
       setIsOpen(true);
     },
     [],
