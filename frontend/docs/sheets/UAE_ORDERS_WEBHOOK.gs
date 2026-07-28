@@ -55,7 +55,7 @@ function doPost(e) {
     const country = asString_(body.country) || 'AE';
     const currency = asString_(body.currency) || 'AED';
     const customerName = pickCustomerName_(body);
-    const phone = formatPhone_(body.phone || body.phone_e164 || '');
+    const phone = formatPhone_(body.phone_display || body.phone_e164 || body.phone || body.phone_raw || '');
     const sourceUrl = asString_(body.source_url || body.sourceUrl);
     const presetIds = Array.isArray(body.order_ids) ? body.order_ids : [];
 
@@ -288,21 +288,28 @@ function nextOrderId_() {
 }
 
 function formatPhone_(input) {
-  const digits = String(input || '').replace(/\D/g, '');
+  var text = asString_(input);
+  if (text && text.indexOf('+971') === 0) return text;
+
+  var digits = String(input || '').replace(/\D/g, '');
 
   if (digits.startsWith('971') && digits.length >= 12) {
     return '+' + digits.slice(0, 12);
+  }
+
+  if (digits.startsWith('05') && digits.length >= 10) {
+    return '+971' + digits.slice(1);
   }
 
   if (digits.startsWith('0') && digits.length === 10) {
     return '+971' + digits.slice(1);
   }
 
-  if (digits.length === 9) {
+  if (digits.length === 9 && /^5[024568]/.test(digits)) {
     return '+971' + digits;
   }
 
-  if (String(input || '').trim().startsWith('+')) {
+  if (String(input || '').trim().indexOf('+') === 0) {
     return String(input).replace(/\s|-/g, '');
   }
 
@@ -310,7 +317,7 @@ function formatPhone_(input) {
     return '+' + digits;
   }
 
-  return digits.length >= 9 ? '+971' + digits.slice(-9) : '';
+  return digits.length >= 9 ? '+971' + digits.slice(-9) : text;
 }
 
 function jsonResponse(obj, code) {

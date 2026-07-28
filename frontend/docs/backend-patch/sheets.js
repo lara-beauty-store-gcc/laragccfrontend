@@ -130,15 +130,21 @@ function toUaeSheetItems(items = [], sourceUrl) {
 }
 
 function formatPhoneForSheet(input) {
-  const digits = String(input || '').replace(/\D/g, '');
+  const local = String(input || '').replace(/\D/g, '');
+  const m = local.match(/^(?:971)?0?(5[024568]\d{7})$/);
+  if (m) return `+971${m[1]}`;
 
+  const digits = String(input || '').replace(/\D/g, '');
   if (digits.startsWith('971') && digits.length >= 12) {
     return `+${digits.slice(0, 12)}`;
+  }
+  if (digits.startsWith('05') && digits.length >= 10) {
+    return `+971${digits.slice(1)}`;
   }
   if (digits.startsWith('0') && digits.length === 10) {
     return `+971${digits.slice(1)}`;
   }
-  if (digits.length === 9) {
+  if (digits.length === 9 && /^5[024568]/.test(digits)) {
     return `+971${digits}`;
   }
   if (String(input || '').trim().startsWith('+')) {
@@ -147,7 +153,7 @@ function formatPhoneForSheet(input) {
   if (digits.startsWith('971') && digits.length === 12) {
     return `+${digits}`;
   }
-  return digits.length >= 9 ? `+971${digits.slice(-9)}` : '';
+  return '';
 }
 
 export async function forwardToGoogleSheets(eventName, payload) {
@@ -166,7 +172,9 @@ export async function forwardToGoogleSheets(eventName, payload) {
         date: new Date().toISOString(),
         customer_name: payload.customer_name || payload.customerName || payload.full_name,
         full_name: payload.full_name || payload.customer_name || payload.customerName,
-        phone: formatPhoneForSheet(payload.phone_e164 || payload.phone),
+        phone: formatPhoneForSheet(payload.phone_display || payload.phone_e164 || payload.phone_raw || payload.phone),
+        phone_raw: payload.phone_raw || payload.phone,
+        phone_display: formatPhoneForSheet(payload.phone_display || payload.phone_e164 || payload.phone_raw || payload.phone),
         country: payload.country || 'AE',
         currency,
         area: payload.area_notes || payload.area || '',

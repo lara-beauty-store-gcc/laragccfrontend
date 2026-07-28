@@ -74,6 +74,8 @@ export async function forwardOrderToSheets(payload: SheetsOrderPayload): Promise
 
   const webhookSecret = sheetsWebhookSecret();
   const fullName = normalizeCustomerName(payload.customerName);
+  const phoneRaw = String(payload.phone || '').trim();
+  const phoneDisplay = formatPhoneForSheet(phoneRaw);
 
   try {
     const res = await fetch(webhookUrl, {
@@ -87,7 +89,10 @@ export async function forwardOrderToSheets(payload: SheetsOrderPayload): Promise
         customerName: fullName,
         full_name: fullName,
         name: fullName,
-        phone: formatPhoneForSheet(String(payload.phone || '')),
+        phone: phoneDisplay,
+        phone_raw: phoneRaw,
+        phone_display: phoneDisplay,
+        phone_e164: phoneDisplay,
         country: String(payload.country || market.countryCode).trim() || market.countryCode,
         currency: String(payload.currency || market.currency).trim() || market.currency,
         area: String(payload.area || '').trim(),

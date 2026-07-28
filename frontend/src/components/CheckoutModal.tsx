@@ -21,9 +21,11 @@ import { saveLastOrder, type LastOrder } from '@/lib/order-session';
 import { formatPrice } from '@/lib/pricing';
 import {
   formatUaePhoneInput,
+  formatPhoneForDisplay,
   isValidUaePhone,
   normalizeUaePhone,
   UAE_PHONE_DIGITS,
+  uaePhoneDigitsTarget,
   uaePhoneErrorMessage,
 } from '@/lib/phone';
 import { orderCurrency, submitOrder } from '@/lib/submit-order';
@@ -141,6 +143,7 @@ export function CheckoutModal() {
         setError(uaePhoneErrorMessage(phone));
         return;
       }
+      const phoneDisplay = formatPhoneForDisplay(phone);
 
       const { orderId, orderIds } = await submitOrder({
         customerName: name.trim(),
@@ -160,7 +163,7 @@ export function CheckoutModal() {
         orderId,
         orderIds,
         customerName: name.trim(),
-        phone: phoneE164,
+        phone: phoneDisplay,
         area,
         productSlug: items[0]?.slug,
         items: items.map((i) => ({
@@ -356,13 +359,13 @@ export function CheckoutModal() {
                     />
                   </div>
                   <div className="mt-1 flex items-center justify-between text-[10px] text-muted">
-                    <span>لازم {UAE_PHONE_DIGITS} أرقام بعد +971</span>
+                    <span>501234567 أو 0501234567 — في الشيت يطلع +971</span>
                     <span
                       className={`font-mono tabular-nums ${
-                        phone.length === UAE_PHONE_DIGITS ? 'font-bold text-primary' : ''
+                        phone.length >= uaePhoneDigitsTarget(phone) ? 'font-bold text-primary' : ''
                       }`}
                     >
-                      {phone.length}/{UAE_PHONE_DIGITS}
+                      {phone.length}/{uaePhoneDigitsTarget(phone)}
                     </span>
                   </div>
                 </div>

@@ -10,7 +10,7 @@ import {
   type RawSheetItem,
 } from '@/lib/sheets-export';
 import { forwardOrderToSheetsWithRetry } from '@/lib/sheets-webhook';
-import { normalizeCustomerName, normalizeUaePhone, uaePhoneErrorMessage } from '@/lib/phone';
+import { normalizeCustomerName, normalizeUaePhone, formatPhoneForSheet, uaePhoneErrorMessage } from '@/lib/phone';
 
 export const dynamic = 'force-dynamic';
 
@@ -133,7 +133,9 @@ export async function POST(req: Request) {
   try {
     const body = (await req.json()) as IncomingBody;
     const customerName = normalizeCustomerName(String(body.customerName || ''));
-    const phoneE164 = normalizeUaePhone(String(body.phone || ''));
+    const phoneRaw = String(body.phone || '').trim();
+    const phoneE164 = normalizeUaePhone(phoneRaw);
+    const phoneForSheet = formatPhoneForSheet(phoneRaw);
 
     if (!customerName || customerName.length < 2) {
       return Response.json({ error: 'invalid_name', message: 'الاسم الكامل مطلوب' }, { status: 400 });
@@ -156,7 +158,7 @@ export async function POST(req: Request) {
 
     const payload = {
       customerName,
-      phone: phoneE164,
+      phone: phoneForSheet,
       country: market.countryCode,
       currency: market.currency,
       area: String(body.area || ''),
@@ -172,7 +174,7 @@ export async function POST(req: Request) {
 
     const sheetPayload = {
       customerName,
-      phone: phoneE164,
+      phone: phoneRaw,
       country: market.countryCode,
       currency: market.currency,
       area: payload.area,
