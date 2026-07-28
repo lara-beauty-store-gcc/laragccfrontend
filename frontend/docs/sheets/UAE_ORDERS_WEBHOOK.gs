@@ -286,11 +286,15 @@ function formatPhone_(input) {
     return '+971' + digits;
   }
 
-  if (String(input || '').startsWith('+')) {
+  if (String(input || '').trim().startsWith('+')) {
     return String(input).replace(/\s|-/g, '');
   }
 
-  return digits ? '+' + digits : '';
+  if (digits.startsWith('971') && digits.length === 12) {
+    return '+' + digits;
+  }
+
+  return digits.length >= 9 ? '+971' + digits.slice(-9) : '';
 }
 
 function jsonResponse(obj, code) {

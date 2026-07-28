@@ -129,6 +129,27 @@ function toUaeSheetItems(items = [], sourceUrl) {
     .filter((item) => item.product || item.sku);
 }
 
+function formatPhoneForSheet(input) {
+  const digits = String(input || '').replace(/\D/g, '');
+
+  if (digits.startsWith('971') && digits.length >= 12) {
+    return `+${digits.slice(0, 12)}`;
+  }
+  if (digits.startsWith('0') && digits.length === 10) {
+    return `+971${digits.slice(1)}`;
+  }
+  if (digits.length === 9) {
+    return `+971${digits}`;
+  }
+  if (String(input || '').trim().startsWith('+')) {
+    return String(input).replace(/\s|-/g, '');
+  }
+  if (digits.startsWith('971') && digits.length === 12) {
+    return `+${digits}`;
+  }
+  return digits.length >= 9 ? `+971${digits.slice(-9)}` : '';
+}
+
 export async function forwardToGoogleSheets(eventName, payload) {
   if (!config.sheetsWebhookUrl) {
     return { ok: true, skipped: true, reason: 'sheets_not_configured' };
@@ -144,7 +165,7 @@ export async function forwardToGoogleSheets(eventName, payload) {
         secret: config.sheetsWebhookSecret || undefined,
         date: new Date().toISOString(),
         customer_name: payload.customer_name || payload.customerName,
-        phone: payload.phone_e164 || payload.phone,
+        phone: formatPhoneForSheet(payload.phone_e164 || payload.phone),
         country: payload.country || 'AE',
         currency,
         area: payload.area_notes || payload.area || '',
@@ -158,7 +179,7 @@ export async function forwardToGoogleSheets(eventName, payload) {
         order_number: payload.order_number || payload.orderId,
         order_id: payload.orderId || payload.order_number,
         customer_name: payload.customer_name || payload.customerName,
-        phone_e164: payload.phone_e164 || payload.phone,
+        phone_e164: formatPhoneForSheet(payload.phone_e164 || payload.phone),
         area_notes: payload.area_notes || payload.area,
         items: toUaeSheetItems(items, sourceUrl),
         subtotal_kwd: payload.subtotal_kwd ?? payload.value,

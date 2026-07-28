@@ -12,7 +12,7 @@ export async function GET() {
       market: 'UAE',
       countryCode: 'AE',
       currency: 'AED',
-      deployTag: 'instant-sheets-sync-v30-2026-07-28',
+      deployTag: 'sheet-phone-plus971-v31-2026-07-28',
       repo: 'laragccfrontend',
       orderFlow: 'parallel-sheets-api',
       apiUrl: apiBaseUrl() ? 'configured' : 'missing',

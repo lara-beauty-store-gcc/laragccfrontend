@@ -1,5 +1,5 @@
 # Build store from frontend/ when EasyPanel source path is empty (repo root)
-ARG CACHEBUST=instant-sheets-sync-v30-2026-07-28
+ARG CACHEBUST=sheet-phone-plus971-v31-2026-07-28
 FROM node:20-alpine AS base
 RUN echo "BUILD ${CACHEBUST}"
 RUN apk add --no-cache libc6-compat curl

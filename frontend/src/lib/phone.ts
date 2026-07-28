@@ -40,6 +40,28 @@ export function uaePhoneErrorMessage(input: string): string {
   return `رقم الجوال لازم يكون ${UAE_PHONE_DIGITS} أرقام`;
 }
 
+/** Always +971XXXXXXXXX for Google Sheets / exports. */
+export function formatPhoneForSheet(input: string): string {
+  const normalized = normalizeUaePhone(input);
+  if (normalized) return normalized;
+
+  const digits = input.replace(/\D/g, '');
+  if (digits.startsWith('971') && digits.length >= 12) {
+    return `+${digits.slice(0, 12)}`;
+  }
+  if (digits.startsWith('0') && digits.length === 10) {
+    return `+971${digits.slice(1)}`;
+  }
+  if (digits.length === 9) {
+    return `+971${digits}`;
+  }
+  if (input.trim().startsWith('+')) {
+    return input.replace(/\s|[-().]/g, '');
+  }
+
+  return digits ? `+${digits}` : '';
+}
+
 /** @deprecated use isValidUaePhone */
 export const isValidKuwaitPhone = isValidUaePhone;
 

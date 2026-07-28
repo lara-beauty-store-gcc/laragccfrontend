@@ -1,5 +1,7 @@
 import { businessConfig } from '@/config/business';
 
+import { formatPhoneForSheet } from '@/lib/phone';
+
 export type SheetsOrderItem = {
   product: string;
   url: string;
@@ -245,7 +247,7 @@ export function buildSheetRows(
   const date = String(ctx.date || new Date().toISOString());
   const country = String(ctx.country || 'AE').trim() || 'AE';
   const name = String(ctx.customerName || '').trim();
-  const phone = String(ctx.phone || '').trim();
+  const phone = formatPhoneForSheet(String(ctx.phone || ''));
   const currency = String(ctx.currency || 'AED').trim() || 'AED';
   const presetIds = Array.isArray(ctx.orderIds) ? ctx.orderIds.map(String) : [];
 

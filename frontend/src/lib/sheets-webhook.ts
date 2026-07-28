@@ -1,6 +1,7 @@
 import { businessConfig } from '@/config/business';
 import { normalizeSheetItems, type RawSheetItem, type SheetsOrderItem } from '@/lib/sheets-export';
 import { runtimeEnv, sheetsWebhookSecret, sheetsWebhookUrl } from '@/lib/runtime-env';
+import { formatPhoneForSheet } from '@/lib/phone';
 
 export type { SheetsOrderItem };
 
@@ -82,7 +83,7 @@ export async function forwardOrderToSheets(payload: SheetsOrderPayload): Promise
         secret: webhookSecret,
         date: payload.date || new Date().toISOString(),
         customer_name: String(payload.customerName || '').trim(),
-        phone: String(payload.phone || '').trim(),
+        phone: formatPhoneForSheet(String(payload.phone || '')),
         country: String(payload.country || market.countryCode).trim() || market.countryCode,
         currency: String(payload.currency || market.currency).trim() || market.currency,
         area: String(payload.area || '').trim(),
