@@ -5,6 +5,7 @@ import { businessInputs } from '@/config/business';
 import { products } from '@/config/products';
 import { getTrustBadges } from '@/lib/marketing';
 import { SocialLinks } from '@/components/social/SocialLinks';
+import { SupportContact } from '@/components/SupportContact';
 
 const { brand, market } = businessInputs;
 
@@ -49,7 +50,7 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-10 grid gap-8 border-t border-white/10 pt-10 sm:grid-cols-2">
+        <div className="mt-10 grid gap-8 border-t border-white/10 pt-10 sm:grid-cols-3">
           <div>
             <p className="mb-3 font-arabic text-sm font-bold text-secondary">العلكات</p>
             <ul className="space-y-2 text-sm text-white/75">
@@ -62,6 +63,7 @@ export function SiteFooter() {
               ))}
             </ul>
           </div>
+          <SupportContact variant="footer" />
           <div>
             <p className="mb-3 font-arabic text-sm font-bold text-secondary">توصيل</p>
             <p className="text-sm leading-relaxed text-white/75">

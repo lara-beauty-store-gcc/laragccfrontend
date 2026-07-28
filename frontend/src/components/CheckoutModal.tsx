@@ -22,7 +22,7 @@ import { Stars } from '@/components/Stars';
 import { RoutineCrossSellPanel } from '@/components/cross-sell/RoutineCrossSellPanel';
 import { getCrossSellProducts } from '@/lib/cross-sell';
 
-const { market, cod } = businessConfig;
+const { market, cod, support } = businessConfig;
 
 type CheckoutStep = 'form' | 'crosssell';
 
@@ -369,6 +369,10 @@ export function CheckoutModal() {
             </button>
             <p className="mt-2 text-center text-[10px] leading-relaxed text-muted">
               ما في دفع أونلاين · تدفعين لما يوصلك الطلب · {cod.returnGuarantee.split('—')[0]}
+              <br />
+              <a href={`mailto:${support.email}`} className="text-primary hover:underline">
+                {support.email}
+              </a>
             </p>
           </div>
         ) : null}

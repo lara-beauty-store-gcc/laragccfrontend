@@ -6,11 +6,14 @@ import { AnnouncementBar } from '@/components/AnnouncementBar';
 import { SiteHeader } from '@/components/SiteHeader';
 import './globals.css';
 
-const { brand, market, design } = businessInputs;
+const { brand, market, design, support } = businessInputs;
 
 export const metadata: Metadata = {
   title: `${brand.nameLocal} | علكات يومية — ${market.countryName}`,
   description: brand.description,
+  other: {
+    'contact:email': support.email,
+  },
 };
 
 export const viewport: Viewport = {

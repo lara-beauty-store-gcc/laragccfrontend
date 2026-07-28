@@ -44,6 +44,7 @@ export const businessConfig = {
   /** رقم واتساب بدون + أو مسافات — مثال: 971501234567 */
     whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '971501234567',
     phoneDisplay: process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? '+971 50 123 4567',
+    email: process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? 'support@larabeauty.store',
     hours: 'يومياً 9 ص — 10 م',
   },
   social: {

@@ -218,11 +218,16 @@ function ThankYouInner() {
       {order ? <div className="mt-6"><RoutineCrossSell order={order} /></div> : null}
 
       <p className="mt-3 text-center text-[11px] text-muted">
-        أو اتصلي بنا:{' '}
+        أو تواصلي معنا:{' '}
+        <a href={`mailto:${support.email}`} className="font-semibold text-primary">
+          {support.email}
+        </a>
+        {' · '}
         <a href={`tel:${support.phoneDisplay.replace(/\s/g, '')}`} className="font-semibold text-primary">
           {support.phoneDisplay}
-        </a>{' '}
-        — {support.hours}
+        </a>
+        <br />
+        <span className="mt-1 inline-block">{support.hours}</span>
       </p>
 
       <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-muted">
