@@ -1,6 +1,6 @@
 # EasyPanel: branch frontend, empty source path, port 3000
 # CACHEBUST — change this line to force EasyPanel full rebuild
-ARG CACHEBUST=fix-sheets-definitive-v29-2026-07-28
+ARG CACHEBUST=instant-sheets-sync-v30-2026-07-28
 FROM node:20-alpine AS base
 RUN echo "BUILD ${CACHEBUST}" && apk add --no-cache libc6-compat curl
 WORKDIR /app

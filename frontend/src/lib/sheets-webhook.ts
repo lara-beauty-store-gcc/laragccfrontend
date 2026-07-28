@@ -37,6 +37,29 @@ export function mapPayloadToSheetItems(payload: SheetsOrderPayload): SheetsOrder
   });
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function forwardOrderToSheetsWithRetry(
+  payload: SheetsOrderPayload,
+  attempts = 4,
+  delayMs = 300,
+): Promise<SheetsForwardResult & { attempts: number; latencyMs: number }> {
+  const started = Date.now();
+  let last: SheetsForwardResult = { ok: false, reason: 'sheets_not_attempted' };
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    last = await forwardOrderToSheets(payload);
+    if (last.ok) {
+      return { ...last, attempts: attempt, latencyMs: Date.now() - started };
+    }
+    if (attempt < attempts) await sleep(delayMs);
+  }
+
+  return { ...last, attempts, latencyMs: Date.now() - started };
+}
+
 export async function forwardOrderToSheets(payload: SheetsOrderPayload): Promise<SheetsForwardResult> {
   const webhookUrl = sheetsWebhookUrl();
   if (!webhookUrl) {
