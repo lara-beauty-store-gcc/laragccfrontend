@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
   HandCoins,
-  MapPin,
   Phone,
   ShieldCheck,
   Star,
@@ -24,8 +23,6 @@ import {
   formatPhoneForDisplay,
   isValidUaePhone,
   normalizeUaePhone,
-  UAE_PHONE_DIGITS,
-  uaePhoneDigitsTarget,
   uaePhoneErrorMessage,
 } from '@/lib/phone';
 import { orderCurrency, submitOrder } from '@/lib/submit-order';
@@ -59,8 +56,6 @@ export function CheckoutModal() {
   } = useCart();
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
-  const [emirate, setEmirate] = useState('');
-  const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [pendingOrder, setPendingOrder] = useState<LastOrder | null>(null);
@@ -119,6 +114,10 @@ export function CheckoutModal() {
     if (submittingRef.current || loading) return;
     setError('');
 
+    if (!name.trim()) {
+      setError('الاسم الكامل مطلوب');
+      return;
+    }
     if (!phone.trim()) {
       setError('رقم الجوال مطلوب');
       return;
@@ -127,16 +126,6 @@ export function CheckoutModal() {
       setError(uaePhoneErrorMessage(phone));
       return;
     }
-    if (!name.trim()) {
-      setError('الاسم الكامل مطلوب');
-      return;
-    }
-    if (!emirate) {
-      setError('اختاري الإمارة');
-      return;
-    }
-
-    const area = address.trim() ? `${emirate} — ${address.trim()}` : emirate;
 
     setLoading(true);
     submittingRef.current = true;
@@ -151,7 +140,6 @@ export function CheckoutModal() {
       const { orderId, orderIds } = await submitOrder({
         customerName: name.trim(),
         phone,
-        area,
         sourceUrl: typeof window !== 'undefined' ? window.location.href : '',
         items: items.map((i) => ({
           sku: i.sku,
@@ -167,7 +155,6 @@ export function CheckoutModal() {
         orderIds,
         customerName: name.trim(),
         phone: phoneDisplay,
-        area,
         productSlug: items[0]?.slug,
         items: items.map((i) => ({
           sku: i.sku,
@@ -200,7 +187,7 @@ export function CheckoutModal() {
       if (message.includes('invalid_phone') || message.includes('جوال')) {
         setError(uaePhoneErrorMessage(phone));
       } else if (message.includes('sheet_sync') || message.includes('الشيت')) {
-        setError('ما قدرنا نسجّل الطلب — تأكدي من رقم الجوال (يبدأ بـ 50/52/54/55/56/58) وجربي مرة ثانية');
+        setError('ما قدرنا نسجّل الطلب — جربي مرة ثانية');
       } else {
         setError('صار خطأ — جربي مرة ثانية');
       }
@@ -340,7 +327,23 @@ export function CheckoutModal() {
                 ))}
               </div>
 
-              <form id="cod-checkout-form" onSubmit={submit} className="mt-5 space-y-3">
+              <form id="cod-checkout-form" onSubmit={submit} className="mt-5 space-y-4">
+                <div>
+                  <label className="mb-1.5 flex items-center gap-1.5 text-xs font-bold text-foreground">
+                    <User className="h-3.5 w-3.5 text-primary" aria-hidden />
+                    الاسم الكامل
+                  </label>
+                  <input
+                    required
+                    autoFocus
+                    autoComplete="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full rounded-xl border-2 border-border bg-white px-4 py-3.5 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
+                    placeholder="مثال: نورة العتيبي"
+                  />
+                </div>
+
                 <div>
                   <label className="mb-1.5 flex items-center gap-1.5 text-xs font-bold text-foreground">
                     <Phone className="h-3.5 w-3.5 text-primary" aria-hidden />
@@ -352,7 +355,6 @@ export function CheckoutModal() {
                     </span>
                     <input
                       required
-                      autoFocus
                       type="tel"
                       inputMode="numeric"
                       autoComplete="tel-national"
@@ -362,64 +364,9 @@ export function CheckoutModal() {
                       placeholder={market.phoneExample}
                     />
                   </div>
-                  <div className="mt-1 flex items-center justify-between text-[10px] text-muted">
-                    <span>501234567 أو 0501234567 — في الشيت يطلع +971</span>
-                    <span
-                      className={`font-mono tabular-nums ${
-                        phone.length >= uaePhoneDigitsTarget(phone) ? 'font-bold text-primary' : ''
-                      }`}
-                    >
-                      {phone.length}/{uaePhoneDigitsTarget(phone)}
-                    </span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-1.5 flex items-center gap-1.5 text-xs font-bold text-foreground">
-                    <User className="h-3.5 w-3.5 text-primary" aria-hidden />
-                    الاسم الكامل
-                  </label>
-                  <input
-                    required
-                    autoComplete="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-xl border-2 border-border bg-white px-4 py-3.5 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                    placeholder="مثال: نورة العتيبي"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-1.5 flex items-center gap-1.5 text-xs font-bold text-foreground">
-                    <MapPin className="h-3.5 w-3.5 text-primary" aria-hidden />
-                    الإمارة
-                  </label>
-                  <select
-                    required
-                    value={emirate}
-                    onChange={(e) => setEmirate(e.target.value)}
-                    className="w-full rounded-xl border-2 border-border bg-white px-4 py-3.5 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                  >
-                    <option value="">اختاري إمارتك</option>
-                    {market.emirates.map((city) => (
-                      <option key={city} value={city}>
-                        {city}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-xs font-bold text-muted">
-                    العنوان التفصيلي <span className="font-normal">(اختياري)</span>
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    className="w-full resize-none rounded-xl border-2 border-border bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                    placeholder="الحي، الشارع، رقم المبنى..."
-                  />
+                  <p className="mt-1.5 text-[10px] text-muted">
+                    9 أرقام بعد +971 — تقدرين تكتبي 501234567 أو 0501234567
+                  </p>
                 </div>
 
                 {error ? (
@@ -466,7 +413,7 @@ export function CheckoutModal() {
               className="flex w-full flex-col items-center rounded-2xl bg-primary py-4 font-arabic text-white shadow-lg transition hover:bg-primary/90 active:scale-[0.99] disabled:opacity-60"
             >
               <span className="text-sm font-extrabold">
-                {loading ? 'جاري الإرسال...' : 'أطلبي الآن — دفع عند الاستلام'}
+                {loading ? 'جاري الإرسال...' : 'تأكيد الطلب — دفع عند الاستلام'}
               </span>
               <span className="mt-0.5 text-lg font-extrabold tabular-nums">{formatPrice(total)}</span>
             </button>
