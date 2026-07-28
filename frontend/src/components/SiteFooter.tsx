@@ -27,14 +27,24 @@ export function SiteFooter() {
               />
               <p className="font-arabic text-lg font-extrabold">{brand.nameLocal}</p>
               <p className="max-w-sm text-sm leading-relaxed text-white/70">{brand.description}</p>
-              <a
-                href={social.tiktok}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-bold text-white/90 transition hover:bg-white/10"
-              >
-                تابعينا على TikTok · {social.tiktokHandle}
-              </a>
+              <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-start">
+                <a
+                  href={social.tiktok}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-bold text-white/90 transition hover:bg-white/10"
+                >
+                  TikTok · {social.tiktokHandle}
+                </a>
+                <a
+                  href={social.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-bold text-white/90 transition hover:bg-white/10"
+                >
+                  Facebook
+                </a>
+              </div>
             </div>
           </div>
 

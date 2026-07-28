@@ -49,6 +49,8 @@ export const businessConfig = {
   social: {
     tiktok: 'https://www.tiktok.com/@lara_beauty_gcc',
     tiktokHandle: '@lara_beauty_gcc',
+    facebook: 'https://www.facebook.com/profile.php?id=61592789362233',
+    facebookLabel: 'لارا للجمال على فيسبوك',
   },
   design: {
     primaryColor: '#134E3A',
