@@ -65,6 +65,13 @@ export function formatPhoneForSheet(input: string): string {
   return digits ? `+${digits}` : '';
 }
 
+/** Collapse whitespace but keep the full name (never take first word only). */
+export function normalizeCustomerName(input: string): string {
+  return String(input || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 /** @deprecated use isValidUaePhone */
 export const isValidKuwaitPhone = isValidUaePhone;
 

@@ -51,10 +51,10 @@ function doPost(e) {
     }
 
     const orderIds = [];
-    const createdAt = asString_(body.date) || new Date().toISOString();
+    const createdAt = formatSheetDate_(body.date) || formatSheetDate_(new Date().toISOString());
     const country = asString_(body.country) || 'AE';
     const currency = asString_(body.currency) || 'AED';
-    const customerName = asString_(body.customer_name || body.customerName);
+    const customerName = pickCustomerName_(body);
     const phone = formatPhone_(body.phone || body.phone_e164 || '');
     const sourceUrl = asString_(body.source_url || body.sourceUrl);
     const presetIds = Array.isArray(body.order_ids) ? body.order_ids : [];
@@ -218,6 +218,22 @@ function pickTotalPrice_(raw, quantity) {
   if (!isNaN(unitKwd) && unitKwd > 0) return Math.round(unitKwd * quantity * 100) / 100;
 
   return 0;
+}
+
+function pickCustomerName_(body) {
+  var candidates = [body.full_name, body.customer_name, body.customerName, body.name];
+  for (var i = 0; i < candidates.length; i++) {
+    var text = asString_(candidates[i]);
+    if (text) return text;
+  }
+  return '';
+}
+
+function formatSheetDate_(value) {
+  if (!value) return '';
+  var d = new Date(value);
+  if (isNaN(d.getTime())) return asString_(value);
+  return Utilities.formatDate(d, 'Asia/Dubai', 'yyyy-MM-dd HH:mm');
 }
 
 function asString_(value) {

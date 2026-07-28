@@ -10,9 +10,11 @@ import {
   type RawSheetItem,
 } from '@/lib/sheets-export';
 import { forwardOrderToSheetsWithRetry } from '@/lib/sheets-webhook';
-import { normalizeUaePhone, uaePhoneErrorMessage } from '@/lib/phone';
+import { normalizeCustomerName, normalizeUaePhone, uaePhoneErrorMessage } from '@/lib/phone';
 
 export const dynamic = 'force-dynamic';
+
+const API_TIMEOUT_MS = 2500;
 
 type IncomingBody = {
   customerName?: string;
@@ -60,6 +62,7 @@ type ApiOrderResult = {
 
 async function forwardToBackendApi(
   body: IncomingBody,
+  customerName: string,
   phoneE164: string,
   normalizedItems: ReturnType<typeof normalizeOrderItems>,
 ) {
@@ -67,17 +70,24 @@ async function forwardToBackendApi(
   if (!apiUrl) return null;
 
   const localDigits = phoneE164.replace(/\D/g, '').replace(/^971/, '');
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
   try {
     const res = await fetch(`${apiUrl.replace(/\/$/, '')}/api/v1/orders`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
       body: JSON.stringify({
-        customerName: body.customerName,
+        customerName,
+        customer_name: customerName,
+        full_name: customerName,
         phone: localDigits,
         area: body.area,
         country: market.countryCode,
         currency: market.currency,
+        skipSheets: true,
+        sheetSyncedBy: 'frontend',
         items: normalizedItems.map((item) => ({
           sku: item.sku,
           name: item.product,
@@ -112,6 +122,8 @@ async function forwardToBackendApi(
     };
   } catch {
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -120,7 +132,7 @@ export async function POST(req: Request) {
 
   try {
     const body = (await req.json()) as IncomingBody;
-    const customerName = String(body.customerName || '').trim();
+    const customerName = normalizeCustomerName(String(body.customerName || ''));
     const phoneE164 = normalizeUaePhone(String(body.phone || ''));
 
     if (!customerName || customerName.length < 2) {
@@ -140,6 +152,8 @@ export async function POST(req: Request) {
     }
 
     const normalizedItems = normalizeOrderItems(items);
+    const localOrderIds = generateLaraOrderIds(normalizedItems.length);
+
     const payload = {
       customerName,
       phone: phoneE164,
@@ -164,37 +178,37 @@ export async function POST(req: Request) {
       area: payload.area,
       sourceUrl: payload.sourceUrl,
       items: payload.items,
-      orderIds: generateLaraOrderIds(payload.items.length),
+      orderIds: localOrderIds,
     };
 
-    // API first — ~2s, writes to Google Sheet via api.larabeauty.store
-    const api = await forwardToBackendApi(body, phoneE164, normalizedItems);
+    // Sheets + API in parallel — sheets carries the full name; API is capped at 2.5s.
+    const [sheets, api] = await Promise.all([
+      forwardOrderToSheetsWithRetry(sheetPayload, 2, 150),
+      forwardToBackendApi(body, customerName, phoneE164, normalizedItems),
+    ]);
 
-    let orderIds = api?.orderIds ?? sheetPayload.orderIds!;
-    let source: 'sheets' | 'api' | 'local' = api ? 'api' : 'local';
-    let sheetSynced = api?.apiSheets === 'synced';
+    let orderIds = localOrderIds;
+    let source: 'sheets' | 'api' | 'local' = 'local';
+    let sheetSynced = sheets.ok;
     let sheetError: string | undefined;
     let sheetDetail: string | undefined;
-    let sheetLatencyMs = 0;
+    const sheetLatencyMs = sheets.latencyMs;
 
-    if (!sheetSynced) {
-      const sheets = await forwardOrderToSheetsWithRetry(
-        {
-          ...sheetPayload,
-          orderIds: expandOrderIds(orderIds, payload.items.length),
-        },
-        3,
-        200,
-      );
-      sheetLatencyMs = sheets.latencyMs;
-      if (sheets.ok) {
-        sheetSynced = true;
-        orderIds = sheets.orderIds;
-        source = 'sheets';
-      } else {
-        sheetError = sheets.reason;
-        sheetDetail = sheets.detail;
-      }
+    if (sheets.ok) {
+      orderIds = sheets.orderIds;
+      source = 'sheets';
+    } else if (api?.apiSheets === 'synced') {
+      orderIds = api.orderIds;
+      source = 'api';
+      sheetSynced = true;
+    } else if (api) {
+      orderIds = api.orderIds;
+      source = 'api';
+      sheetError = sheets.reason;
+      sheetDetail = sheets.detail;
+    } else {
+      sheetError = sheets.reason;
+      sheetDetail = sheets.detail;
     }
 
     if (!sheetSynced) {
@@ -211,10 +225,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const local = await persistOrdersLocally(
-      payload,
-      expandOrderIds(orderIds, payload.items.length),
-    );
+    const local = await persistOrdersLocally(payload, expandOrderIds(orderIds, payload.items.length));
     await markOrdersSynced(local.orderIds);
 
     return Response.json({

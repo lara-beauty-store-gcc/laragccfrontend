@@ -147,12 +147,15 @@ router.post('/', async (req, res) => {
       sendMetaEvent('Purchase', capiPayload, ctx),
       sendTiktokEvent('Purchase', capiPayload, ctx),
       sendSnapEvent('Purchase', capiPayload, ctx),
-      forwardToGoogleSheets('Purchase', {
-        ...capiPayload,
-        country,
-        order_number: orderNumber,
-        customer_name: name,
-        phone_e164: phoneE164,
+      body.skipSheets || body.sheetSyncedBy === 'frontend'
+        ? Promise.resolve({ ok: true, skipped: true, reason: 'frontend_sheets' })
+        : forwardToGoogleSheets('Purchase', {
+            ...capiPayload,
+            country,
+            order_number: orderNumber,
+            customer_name: name,
+            full_name: name,
+            phone_e164: phoneE164,
         area_notes: order.areaNotes,
         items: dbItems,
         total_kwd: isUae ? undefined : total,
