@@ -13,4 +13,5 @@ coverage
 .vercel
 *.log
 .DS_Store
+data
 **/ChatGPT Image*.png
