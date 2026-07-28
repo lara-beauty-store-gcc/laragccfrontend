@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, CircleCheckBig, Plus, Sparkles } from 'lucide-react';
 import type { ProductConfig } from '@/config/products';
 import {
@@ -23,6 +23,8 @@ type RoutineCrossSellPanelProps = {
   skipLabel?: string;
 };
 
+const AUTO_SKIP_SECONDS = 10;
+
 export function RoutineCrossSellPanel({
   order,
   variant,
@@ -34,6 +36,30 @@ export function RoutineCrossSellPanel({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [addedMessage, setAddedMessage] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(AUTO_SKIP_SECONDS);
+  const onSkipRef = useRef(onSkip);
+
+  useEffect(() => {
+    onSkipRef.current = onSkip;
+  }, [onSkip]);
+
+  useEffect(() => {
+    if (variant !== 'checkout' || selected.size > 0 || syncing) return;
+
+    setSecondsLeft(AUTO_SKIP_SECONDS);
+    const interval = window.setInterval(() => {
+      setSecondsLeft((current) => {
+        if (current <= 1) {
+          window.clearInterval(interval);
+          onSkipRef.current();
+          return 0;
+        }
+        return current - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [variant, selected.size, syncing, suggestions.length]);
 
   useEffect(() => {
     if (suggestions.length) {
@@ -148,12 +174,21 @@ export function RoutineCrossSellPanel({
       </div>
 
       <div className="mt-4 space-y-3">
+        {variant === 'checkout' && selected.size === 0 && !syncing ? (
+          <p className="text-center text-xs font-semibold text-muted">
+            بنكمّلك للتأكيد تلقائياً خلال{' '}
+            <span className="font-arabic tabular-nums text-primary">{secondsLeft}</span> ثانية
+          </p>
+        ) : null}
+
         <button
           type="button"
           onClick={onSkip}
           className="w-full rounded-2xl border-2 border-primary bg-white py-4 font-arabic text-base font-extrabold text-primary shadow-sm transition hover:bg-primary/5 active:scale-[0.99]"
         >
-          {skipLabel}
+          {variant === 'checkout' && selected.size === 0 && !syncing
+            ? `${skipLabel} (${secondsLeft})`
+            : skipLabel}
         </button>
 
         <button
