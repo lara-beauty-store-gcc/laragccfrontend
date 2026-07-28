@@ -6,24 +6,18 @@
  *
  * Columns (row 1):
  * date | order id | country | name | phone | product | url | sku | quantite | totalprice | currency
- *
- * Deploy: Extensions → Apps Script → paste → Deploy → Web app
- *   Execute as: Me · Who has access: Anyone
- *
- * EasyPanel env (frontend service):
- *   GOOGLE_SHEETS_WEBHOOK_URL = Web app URL (.../exec)
- *   SHEETS_WEBHOOK_SECRET     = same as SCRIPT_SECRET below
  */
 
 const SCRIPT_SECRET = 'CHANGE_ME_SAME_AS_EASYPANEL';
 
-/** Worksheet tab names to try (first match wins). */
 const SHEET_CANDIDATES = [
   'Tabellenblatt1',
   'Sheet Orders Lara beauty',
   'Commandes',
   'Sheet1',
 ];
+
+const JAVA_ARRAY_REF = /^\[L[\w.$]+;@[0-9a-f]+$/i;
 
 function doGet() {
   const sheet = resolveOrdersSheet_();
@@ -49,21 +43,24 @@ function doPost(e) {
 
     ensureHeaders_(sheet);
 
-    const items = Array.isArray(body.items) ? body.items : [];
-    if (items.length === 0) {
+    const rawItems = flattenItems_(body.items);
+    if (rawItems.length === 0) {
       return jsonResponse({ ok: false, error: 'empty_items' }, 400);
     }
 
     const orderIds = [];
-    const createdAt = body.date || new Date().toISOString();
-    const country = body.country || 'AE';
-    const currency = body.currency || 'AED';
-    const customerName = body.customer_name || '';
-    const phone = formatPhone_(body.phone || '');
-
+    const createdAt = asString_(body.date) || new Date().toISOString();
+    const country = asString_(body.country) || 'AE';
+    const currency = asString_(body.currency) || 'AED';
+    const customerName = asString_(body.customer_name || body.customerName);
+    const phone = formatPhone_(body.phone || body.phone_e164 || '');
+    const sourceUrl = asString_(body.source_url || body.sourceUrl);
     const presetIds = Array.isArray(body.order_ids) ? body.order_ids : [];
 
-    items.forEach(function (item, index) {
+    rawItems.forEach(function (raw, index) {
+      const item = normalizeItem_(raw, sourceUrl);
+      if (!item.product && !item.sku) return;
+
       const orderId = presetIds[index] ? String(presetIds[index]) : nextOrderId_();
       orderIds.push(orderId);
 
@@ -73,19 +70,158 @@ function doPost(e) {
         country,
         customerName,
         phone,
-        item.product || '',
-        item.url || '',
-        item.sku || '',
-        Number(item.quantity) || 1,
-        Number(item.totalPrice) || 0,
+        item.product,
+        item.url,
+        item.sku,
+        item.quantity,
+        item.totalPrice,
         currency,
       ]);
     });
+
+    if (orderIds.length === 0) {
+      return jsonResponse({ ok: false, error: 'no_valid_items' }, 400);
+    }
 
     return jsonResponse({ ok: true, order_ids: orderIds, order_id: orderIds[0], sheet: sheet.getName() });
   } catch (err) {
     return jsonResponse({ ok: false, error: String(err) }, 500);
   }
+}
+
+function flattenItems_(items) {
+  if (!items) return [];
+  if (Array.isArray(items)) {
+    var out = [];
+    items.forEach(function (entry) {
+      if (Array.isArray(entry)) {
+        out = out.concat(flattenItems_(entry));
+      } else if (entry && typeof entry === 'object') {
+        out.push(entry);
+      }
+    });
+    return out;
+  }
+  if (typeof items === 'object') return [items];
+  return [];
+}
+
+function normalizeItem_(raw, sourceUrl) {
+  var quantity = pickQuantity_(raw);
+  var product = productLabelForSheet_(raw);
+  var slug = asString_(raw.slug || raw.productId).replace(/^\/+|\/+$/g, '');
+  var url = asString_(raw.url || raw.product_url);
+  if (!url && slug) {
+    url = sourceUrl ? sourceUrl.replace(/\/$/, '') + '/products/' + slug : '';
+  }
+  if (!url) url = asString_(sourceUrl);
+
+  return {
+    product: product,
+    url: url,
+    sku: asString_(raw.sku || raw.SKU),
+    quantity: quantity,
+    totalPrice: pickTotalPrice_(raw, quantity),
+  };
+}
+
+function productLabelForSheet_(raw) {
+  var name = pickProductName_(raw);
+  if (!name) return '';
+  if (name.indexOf('\n') >= 0) return name;
+  return formatProductLabel_(name, pickQuantity_(raw));
+}
+
+function pickProductName_(raw) {
+  var fromProduct = serializeProduct_(raw.product);
+  if (fromProduct) return fromProduct;
+
+  var fields = [raw.name, raw.productName, raw.title, raw.label, raw.shortName];
+  for (var i = 0; i < fields.length; i++) {
+    var value = serializeProduct_(fields[i]);
+    if (value) return value;
+  }
+  return '';
+}
+
+function serializeProduct_(value) {
+  if (value == null || value === '') return '';
+
+  if (typeof value === 'string') {
+    var trimmed = value.trim();
+    if (!trimmed || isGarbageSerialized_(trimmed)) return '';
+    return trimmed;
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    var lines = [];
+    value.forEach(function (entry) {
+      if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+        var nestedName = serializeProduct_(entry.name || entry.productName || entry.product || entry.title || entry.label);
+        if (!nestedName) return;
+        var nestedQty = pickQuantity_(entry);
+        lines.push(formatProductLabel_(nestedName, nestedQty));
+        return;
+      }
+      var line = serializeProduct_(entry);
+      if (line) lines.push(line);
+    });
+    return lines.join('\n');
+  }
+
+  if (typeof value === 'object') {
+    var objectName = serializeProduct_(value.name || value.productName || value.product || value.title || value.label);
+    if (!objectName) return '';
+    return formatProductLabel_(objectName, pickQuantity_(value));
+  }
+
+  var fallback = String(value).trim();
+  return isGarbageSerialized_(fallback) ? '' : fallback;
+}
+
+function formatProductLabel_(name, quantity) {
+  var clean = String(name || '').trim();
+  if (!clean) return '';
+  var qty = Math.max(1, Math.floor(Number(quantity) || 1));
+  return qty > 1 ? clean + ' x' + qty : clean;
+}
+
+function isGarbageSerialized_(value) {
+  if (!value) return true;
+  if (JAVA_ARRAY_REF.test(value)) return true;
+  if (value === '[object Object]') return true;
+  if (value === 'undefined' || value === 'null') return true;
+  return false;
+}
+
+function pickQuantity_(raw) {
+  return Math.max(1, Number(raw.quantity || raw.qty || raw.quantite) || 1);
+}
+
+function pickTotalPrice_(raw, quantity) {
+  var candidates = [raw.totalPrice, raw.totalprice, raw.lineTotal, raw.lineTotalAed, raw.lineTotalKwd, raw.price];
+  for (var i = 0; i < candidates.length; i++) {
+    var n = Number(candidates[i]);
+    if (!isNaN(n) && n > 0) return Math.round(n * 100) / 100;
+  }
+
+  var unitAed = Number(raw.unitPriceAed);
+  if (!isNaN(unitAed) && unitAed > 0) return Math.round(unitAed * quantity * 100) / 100;
+
+  var unitKwd = Number(raw.unitPriceKwd);
+  if (!isNaN(unitKwd) && unitKwd > 0) return Math.round(unitKwd * quantity * 100) / 100;
+
+  return 0;
+}
+
+function asString_(value) {
+  if (value == null) return '';
+  var text = String(value).trim();
+  return isGarbageSerialized_(text) ? '' : text;
 }
 
 function resolveOrdersSheet_() {
@@ -133,7 +269,6 @@ function nextOrderId_() {
   }
 }
 
-/** Store +971501234567 (E.164). Accepts any 9-digit UAE local number. */
 function formatPhone_(input) {
   const digits = String(input || '').replace(/\D/g, '');
 

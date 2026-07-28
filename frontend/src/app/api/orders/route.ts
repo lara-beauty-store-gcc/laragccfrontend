@@ -1,22 +1,21 @@
 import { businessConfig } from '@/config/business';
 import { markOrdersSynced, persistOrdersLocally } from '@/lib/order-store';
+import {
+  flattenRawItems,
+  normalizeSheetItem,
+  pickProductName,
+  pickQuantity,
+  type RawSheetItem,
+} from '@/lib/sheets-export';
 import { forwardOrderToSheets } from '@/lib/sheets-webhook';
 import { syncUnsyncedOrdersToSheets } from '@/lib/sheets-sync';
 import { normalizeUaePhone, uaePhoneErrorMessage } from '@/lib/phone';
-
-type IncomingItem = {
-  sku?: string;
-  name?: string;
-  slug?: string;
-  quantity?: number;
-  lineTotal?: number;
-};
 
 type IncomingBody = {
   customerName?: string;
   phone?: string;
   area?: string;
-  items?: IncomingItem[];
+  items?: RawSheetItem[];
   sourceUrl?: string;
 };
 
@@ -26,28 +25,33 @@ function siteBaseUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL || 'https://larabeauty.store').replace(/\/$/, '');
 }
 
-function normalizeItems(items: IncomingItem[]) {
-  return items.map((item) => {
-    const slug = String(item.slug || '').trim();
-    const quantity = Math.max(1, Number(item.quantity) || 1);
-    const lineTotal = Number(item.lineTotal) || 0;
+function normalizeOrderItems(items: RawSheetItem[]) {
+  const ctx = { siteBaseUrl: siteBaseUrl() };
 
-    return {
-      product: String(item.name || '').trim(),
-      url: slug ? `${siteBaseUrl()}/products/${slug}` : siteBaseUrl(),
-      sku: String(item.sku || '').trim(),
-      quantity,
-      totalPrice: lineTotal,
-      slug,
-      unitPriceAed: lineTotal / quantity,
-    };
-  });
+  return flattenRawItems(items)
+    .map((raw) => {
+      const sheet = normalizeSheetItem(raw, ctx);
+      const quantity = pickQuantity(raw);
+      const slug = String(raw.slug || raw.productId || '').trim();
+      const lineTotal = sheet.totalPrice;
+
+      return {
+        product: pickProductName(raw) || sheet.product,
+        url: sheet.url,
+        sku: sheet.sku,
+        quantity,
+        totalPrice: lineTotal,
+        slug,
+        unitPriceAed: quantity > 0 ? lineTotal / quantity : 0,
+      };
+    })
+    .filter((item) => item.product || item.sku);
 }
 
 async function forwardToLegacyApi(
   body: IncomingBody,
   phoneE164: string,
-  normalizedItems: ReturnType<typeof normalizeItems>,
+  normalizedItems: ReturnType<typeof normalizeOrderItems>,
 ) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!apiUrl) return null;
@@ -72,6 +76,7 @@ async function forwardToLegacyApi(
           items: normalizedItems.map((item) => ({
             sku: item.sku,
             name: item.product,
+            productName: item.product,
             productId: item.slug,
             slug: item.slug,
             quantity: item.quantity,
@@ -125,7 +130,7 @@ export async function POST(req: Request) {
       return Response.json({ error: 'empty_cart', message: 'السلة فارغة' }, { status: 400 });
     }
 
-    const normalizedItems = normalizeItems(items);
+    const normalizedItems = normalizeOrderItems(items);
     const payload = {
       customerName,
       phone: phoneE164,

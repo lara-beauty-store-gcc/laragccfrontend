@@ -10,7 +10,7 @@ export async function GET() {
     market: 'UAE',
     countryCode: 'AE',
     currency: 'AED',
-    deployTag: 'nama-product-layout-v21-2026-07-28',
+    deployTag: 'fix-sheets-product-serialize-v22-2026-07-28',
     repo: 'laragccfrontend',
     sheetsWebhook: sheetsWebhookConfigured() ? 'configured' : 'missing',
     unsyncedOrders: batches.reduce((sum, batch) => sum + batch.orderIds.length, 0),

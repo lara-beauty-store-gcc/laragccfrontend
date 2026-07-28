@@ -1,29 +1,132 @@
 import { config } from '../config.js';
 import { log } from '../logger.js';
 
+const JAVA_ARRAY_REF = /^\[L[\w.$]+;@[0-9a-f]+$/i;
+
 function siteBaseUrl() {
   return (config.frontendUrl || 'https://larabeauty.store').replace(/\/$/, '');
 }
 
-function toUaeSheetItems(items = [], sourceUrl) {
-  return items.map((item) => {
-    const slug = item.productId || item.slug || '';
-    const quantity = Number(item.quantity) || 1;
-    const lineTotal =
-      Number(item.lineTotalAed) ||
-      Number(item.lineTotalKwd) ||
-      Number(item.unitPriceAed) * quantity ||
-      Number(item.unitPriceKwd) * quantity ||
-      0;
+function isGarbageSerialized(value) {
+  if (!value) return true;
+  if (JAVA_ARRAY_REF.test(value)) return true;
+  if (value === '[object Object]') return true;
+  if (value === 'undefined' || value === 'null') return true;
+  return false;
+}
 
-    return {
-      product: item.productName || item.name || '',
-      url: slug ? `${siteBaseUrl()}/products/${slug}` : sourceUrl || siteBaseUrl(),
-      sku: item.sku || '',
-      quantity,
-      totalPrice: lineTotal,
-    };
-  });
+function serializeProduct(value) {
+  if (value == null || value === '') return '';
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return isGarbageSerialized(trimmed) ? '' : trimmed;
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map((entry) => {
+        if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+          const name = serializeProduct(
+            entry.name || entry.productName || entry.product || entry.title || entry.label,
+          );
+          if (!name) return '';
+          const qty = Math.max(1, Number(entry.quantity || entry.qty || entry.quantite) || 1);
+          return qty > 1 ? `${name} x${qty}` : name;
+        }
+        return serializeProduct(entry);
+      })
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  if (typeof value === 'object') {
+    const name = serializeProduct(
+      value.name || value.productName || value.product || value.title || value.label,
+    );
+    if (!name) return '';
+    const qty = Math.max(1, Number(value.quantity || value.qty || value.quantite) || 1);
+    return qty > 1 ? `${name} x${qty}` : name;
+  }
+
+  const fallback = String(value).trim();
+  return isGarbageSerialized(fallback) ? '' : fallback;
+}
+
+function pickProductName(item) {
+  const fromProduct = serializeProduct(item.product);
+  if (fromProduct) return fromProduct;
+
+  for (const field of [item.name, item.productName, item.title, item.label, item.shortName]) {
+    const value = serializeProduct(field);
+    if (value) return value;
+  }
+
+  return '';
+}
+
+function pickQuantity(item) {
+  return Math.max(1, Number(item.quantity || item.qty || item.quantite) || 1);
+}
+
+function pickTotalPrice(item, quantity) {
+  for (const candidate of [
+    item.totalPrice,
+    item.totalprice,
+    item.lineTotal,
+    item.lineTotalAed,
+    item.lineTotalKwd,
+    item.price,
+  ]) {
+    const n = Number(candidate);
+    if (Number.isFinite(n) && n > 0) return Math.round(n * 100) / 100;
+  }
+
+  const unitAed = Number(item.unitPriceAed);
+  if (Number.isFinite(unitAed) && unitAed > 0) return Math.round(unitAed * quantity * 100) / 100;
+
+  const unitKwd = Number(item.unitPriceKwd);
+  if (Number.isFinite(unitKwd) && unitKwd > 0) return Math.round(unitKwd * quantity * 100) / 100;
+
+  return 0;
+}
+
+function flattenItems(items) {
+  if (!items) return [];
+  if (Array.isArray(items)) {
+    return items.flatMap((entry) => {
+      if (Array.isArray(entry)) return flattenItems(entry);
+      if (entry && typeof entry === 'object') return [entry];
+      return [];
+    });
+  }
+  if (typeof items === 'object') return [items];
+  return [];
+}
+
+function toUaeSheetItems(items = [], sourceUrl) {
+  const base = siteBaseUrl();
+
+  return flattenItems(items)
+    .map((item) => {
+      const quantity = pickQuantity(item);
+      const slug = String(item.productId || item.slug || '').trim().replace(/^\/+|\/+$/g, '');
+      const name = pickProductName(item);
+      const product = name.includes('\n') ? name : quantity > 1 ? `${name} x${quantity}` : name;
+
+      return {
+        product,
+        url: String(item.url || item.product_url || '').trim() || (slug ? `${base}/products/${slug}` : sourceUrl || base),
+        sku: String(item.sku || '').trim(),
+        quantity,
+        totalPrice: pickTotalPrice(item, quantity),
+      };
+    })
+    .filter((item) => item.product || item.sku);
 }
 
 export async function forwardToGoogleSheets(eventName, payload) {
@@ -57,7 +160,7 @@ export async function forwardToGoogleSheets(eventName, payload) {
         customer_name: payload.customer_name || payload.customerName,
         phone_e164: payload.phone_e164 || payload.phone,
         area_notes: payload.area_notes || payload.area,
-        items,
+        items: toUaeSheetItems(items, sourceUrl),
         subtotal_kwd: payload.subtotal_kwd ?? payload.value,
         total_kwd: payload.total_kwd ?? payload.value,
         currency,
@@ -69,6 +172,11 @@ export async function forwardToGoogleSheets(eventName, payload) {
         source_url: sourceUrl,
         status: 'pending_confirmation',
       };
+
+  if (!body.items.length) {
+    log.warn('Google Sheets webhook skipped: no valid items after normalization');
+    return { ok: false, error: 'no_valid_items' };
+  }
 
   try {
     const res = await fetch(config.sheetsWebhookUrl, {
