@@ -1,5 +1,7 @@
 import { businessConfig } from '@/config/business';
 import { markOrdersSynced, persistOrdersLocally } from '@/lib/order-store';
+import { forwardOrderToSheets } from '@/lib/sheets-webhook';
+import { syncUnsyncedOrdersToSheets } from '@/lib/sheets-sync';
 import { normalizeUaePhone, uaePhoneErrorMessage } from '@/lib/phone';
 
 type IncomingItem = {
@@ -22,14 +24,6 @@ const { market } = businessConfig;
 
 function siteBaseUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL || 'https://larabeauty.store').replace(/\/$/, '');
-}
-
-function sheetsWebhookUrl() {
-  return (
-    process.env.GOOGLE_SHEETS_WEBHOOK_URL ||
-    process.env.ORDERS_SHEETS_WEBHOOK_URL ||
-    ''
-  );
 }
 
 function normalizeItems(items: IncomingItem[]) {
@@ -109,62 +103,6 @@ async function forwardToLegacyApi(
   return null;
 }
 
-async function forwardToSheets(
-  body: IncomingBody,
-  phoneE164: string,
-  normalizedItems: ReturnType<typeof normalizeItems>,
-  orderIds?: string[],
-) {
-  const webhookUrl = sheetsWebhookUrl();
-  if (!webhookUrl) return null;
-
-  const webhookSecret = process.env.SHEETS_WEBHOOK_SECRET || '';
-
-  try {
-    const sheetsRes = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        secret: webhookSecret,
-        date: new Date().toISOString(),
-        customer_name: body.customerName,
-        phone: phoneE164,
-        country: market.countryCode,
-        currency: market.currency,
-        area: body.area || '',
-        items: normalizedItems.map(({ product, url, sku, quantity, totalPrice }) => ({
-          product,
-          url,
-          sku,
-          quantity,
-          totalPrice,
-        })),
-        order_ids: orderIds,
-        source_url: body.sourceUrl || siteBaseUrl(),
-      }),
-    });
-
-    const sheetsData = await sheetsRes.json().catch(() => ({}));
-    if (!sheetsRes.ok || sheetsData.ok === false) return null;
-
-    const returnedIds: string[] = Array.isArray(sheetsData.order_ids)
-      ? sheetsData.order_ids.map(String)
-      : sheetsData.order_id
-        ? [String(sheetsData.order_id)]
-        : orderIds || [];
-
-    if (returnedIds.length === 0) return null;
-
-    return {
-      orderId: returnedIds[0],
-      orderIds: returnedIds,
-      source: 'sheets' as const,
-    };
-  } catch {
-    return null;
-  }
-}
-
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as IncomingBody;
@@ -206,10 +144,21 @@ export async function POST(req: Request) {
 
     const local = await persistOrdersLocally(payload);
 
-    const sheets = await forwardToSheets(body, phoneE164, normalizedItems, local.orderIds);
-    if (sheets) {
+    const sheets = await forwardOrderToSheets({
+      customerName,
+      phone: phoneE164,
+      country: market.countryCode,
+      currency: market.currency,
+      area: payload.area,
+      sourceUrl: payload.sourceUrl,
+      items: payload.items,
+      orderIds: local.orderIds,
+    });
+
+    if (sheets.ok) {
       await markOrdersSynced(sheets.orderIds);
-      return Response.json({ success: true, ...sheets });
+      void syncUnsyncedOrdersToSheets();
+      return Response.json({ success: true, orderId: sheets.orderIds[0], orderIds: sheets.orderIds, source: 'sheets' });
     }
 
     const legacy = await forwardToLegacyApi(body, phoneE164, normalizedItems);
@@ -218,15 +167,16 @@ export async function POST(req: Request) {
       return Response.json({ success: true, ...legacy });
     }
 
-    void forwardToSheets(body, phoneE164, normalizedItems, local.orderIds).then(async (retry) => {
-      if (retry) await markOrdersSynced(retry.orderIds);
-    });
+    void syncUnsyncedOrdersToSheets();
 
     return Response.json({
       success: true,
       orderId: local.orderIds[0],
       orderIds: local.orderIds,
       source: 'local',
+      sheetSynced: false,
+      sheetError: sheets.reason,
+      sheetDetail: sheets.detail,
     });
   } catch {
     return Response.json(

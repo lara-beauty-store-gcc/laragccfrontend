@@ -118,3 +118,64 @@ export async function listUnsyncedOrders() {
   const store = await readStore();
   return store.orders.filter((row) => !row.sheetSynced);
 }
+
+export type UnsyncedOrderBatch = {
+  key: string;
+  createdAt: string;
+  customerName: string;
+  phone: string;
+  country: string;
+  currency: string;
+  area: string;
+  sourceUrl: string;
+  orderIds: string[];
+  items: Array<{
+    product: string;
+    url: string;
+    sku: string;
+    quantity: number;
+    totalPrice: number;
+  }>;
+};
+
+function batchKey(row: StoredOrderRow) {
+  return `${row.createdAt}|${row.customerName}|${row.phone}|${row.area}`;
+}
+
+export async function listUnsyncedOrderBatches(): Promise<UnsyncedOrderBatch[]> {
+  const unsynced = await listUnsyncedOrders();
+  const batches = new Map<string, UnsyncedOrderBatch>();
+
+  for (const row of unsynced) {
+    const key = batchKey(row);
+    const existing = batches.get(key);
+    const item = {
+      product: row.product,
+      url: row.url,
+      sku: row.sku,
+      quantity: row.quantity,
+      totalPrice: row.totalPrice,
+    };
+
+    if (existing) {
+      existing.orderIds.push(row.orderId);
+      existing.items.push(item);
+      continue;
+    }
+
+    batches.set(key, {
+      key,
+      createdAt: row.createdAt,
+      customerName: row.customerName,
+      phone: row.phone,
+      country: row.country,
+      currency: row.currency,
+      area: row.area,
+      sourceUrl: row.sourceUrl,
+      orderIds: [row.orderId],
+      items: [item],
+    });
+  }
+
+  return Array.from(batches.values());
+}

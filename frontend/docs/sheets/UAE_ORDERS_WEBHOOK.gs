@@ -1,19 +1,38 @@
 /**
  * Lara Beauty UAE — Google Sheets webhook
  *
- * Sheet columns (row 1):
+ * Spreadsheet: Sheet Orders Lara beauty
+ * https://docs.google.com/spreadsheets/d/1n_vZl2t3X_KV0Rkpj6dR9TZRRm3OETv3IjIdzcH-diU
+ *
+ * Columns (row 1):
  * date | order id | country | name | phone | product | url | sku | quantite | totalprice | currency
  *
  * Deploy: Extensions → Apps Script → paste → Deploy → Web app
  *   Execute as: Me · Who has access: Anyone
  *
  * EasyPanel env (frontend service):
- *   GOOGLE_SHEETS_WEBHOOK_URL = Web app URL
+ *   GOOGLE_SHEETS_WEBHOOK_URL = Web app URL (.../exec)
  *   SHEETS_WEBHOOK_SECRET     = same as SCRIPT_SECRET below
  */
 
 const SCRIPT_SECRET = 'CHANGE_ME_SAME_AS_EASYPANEL';
-const SHEET_NAME = 'Sheet Orders Lara beauty';
+
+/** Worksheet tab names to try (first match wins). */
+const SHEET_CANDIDATES = [
+  'Tabellenblatt1',
+  'Sheet Orders Lara beauty',
+  'Commandes',
+  'Sheet1',
+];
+
+function doGet() {
+  const sheet = resolveOrdersSheet_();
+  return jsonResponse({
+    ok: true,
+    sheet: sheet ? sheet.getName() : null,
+    rows: sheet ? sheet.getLastRow() : 0,
+  });
+}
 
 function doPost(e) {
   try {
@@ -23,9 +42,9 @@ function doPost(e) {
       return jsonResponse({ ok: false, error: 'unauthorized' }, 401);
     }
 
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    const sheet = resolveOrdersSheet_();
     if (!sheet) {
-      return jsonResponse({ ok: false, error: 'sheet_not_found', sheet: SHEET_NAME }, 500);
+      return jsonResponse({ ok: false, error: 'sheet_not_found' }, 500);
     }
 
     ensureHeaders_(sheet);
@@ -63,10 +82,22 @@ function doPost(e) {
       ]);
     });
 
-    return jsonResponse({ ok: true, order_ids: orderIds, order_id: orderIds[0] });
+    return jsonResponse({ ok: true, order_ids: orderIds, order_id: orderIds[0], sheet: sheet.getName() });
   } catch (err) {
     return jsonResponse({ ok: false, error: String(err) }, 500);
   }
+}
+
+function resolveOrdersSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  for (var i = 0; i < SHEET_CANDIDATES.length; i++) {
+    var candidate = ss.getSheetByName(SHEET_CANDIDATES[i]);
+    if (candidate) return candidate;
+  }
+
+  var sheets = ss.getSheets();
+  return sheets.length ? sheets[0] : null;
 }
 
 function ensureHeaders_(sheet) {
@@ -102,19 +133,19 @@ function nextOrderId_() {
   }
 }
 
-/** Store +971501234567 (E.164). Accepts 05... or 971... from the site. */
+/** Store +971501234567 (E.164). Accepts any 9-digit UAE local number. */
 function formatPhone_(input) {
   const digits = String(input || '').replace(/\D/g, '');
 
-  if (digits.startsWith('971') && digits.length === 12) {
-    return '+' + digits;
+  if (digits.startsWith('971') && digits.length >= 12) {
+    return '+' + digits.slice(0, 12);
   }
 
-  if (digits.startsWith('05') && digits.length === 10) {
+  if (digits.startsWith('0') && digits.length === 10) {
     return '+971' + digits.slice(1);
   }
 
-  if (digits.length === 9 && digits.charAt(0) === '5') {
+  if (digits.length === 9) {
     return '+971' + digits;
   }
 
