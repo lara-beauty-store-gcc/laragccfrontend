@@ -18,6 +18,8 @@ if [ ! -f "server.js" ] && [ ! -f "package.json" ]; then
 fi
 
 echo "[OK] Orders data dir: ${ORDERS_DATA_DIR:-/app/data}"
+echo "[OK] API URL: ${NEXT_PUBLIC_API_URL:-missing}"
+echo "[OK] Sheets webhook: $([ -n "${GOOGLE_SHEETS_WEBHOOK_URL:-}" ] && echo configured || echo missing)"
 mkdir -p "${ORDERS_DATA_DIR:-/app/data}"
 
 if [ -f "server.js" ]; then

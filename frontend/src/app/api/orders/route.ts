@@ -1,4 +1,5 @@
 import { businessConfig } from '@/config/business';
+import { expandOrderIds, generateLaraOrderIds } from '@/lib/order-ids';
 import { markOrdersSynced, persistOrdersLocally } from '@/lib/order-store';
 import {
   flattenRawItems,
@@ -48,7 +49,7 @@ function normalizeOrderItems(items: RawSheetItem[]) {
     .filter((item) => item.product || item.sku);
 }
 
-async function forwardToLegacyApi(
+async function forwardToBackendApi(
   body: IncomingBody,
   phoneE164: string,
   normalizedItems: ReturnType<typeof normalizeOrderItems>,
@@ -99,7 +100,7 @@ async function forwardToLegacyApi(
 
       if (orderIds.length === 0) continue;
 
-      return { orderId: orderIds[0], orderIds, source: 'api' as const };
+      return { orderId: orderIds[0], orderIds, source: 'api' as const, sheetSynced: true };
     } catch {
       // try next format
     }
@@ -147,8 +148,16 @@ export async function POST(req: Request) {
       })),
     };
 
-    const local = await persistOrdersLocally(payload);
+    // 1) Backend API — LARA-XXXX IDs + Google Sheets via api.larabeauty.store
+    const api = await forwardToBackendApi(body, phoneE164, normalizedItems);
+    if (api) {
+      await persistOrdersLocally(payload, expandOrderIds(api.orderIds, payload.items.length));
+      await markOrdersSynced(api.orderIds);
+      return Response.json({ success: true, ...api });
+    }
 
+    // 2) Direct Google Sheets webhook (when API is down)
+    const sheetOrderIds = generateLaraOrderIds(payload.items.length);
     const sheets = await forwardOrderToSheets({
       customerName,
       phone: phoneE164,
@@ -157,21 +166,24 @@ export async function POST(req: Request) {
       area: payload.area,
       sourceUrl: payload.sourceUrl,
       items: payload.items,
-      orderIds: local.orderIds,
+      orderIds: sheetOrderIds,
     });
 
     if (sheets.ok) {
-      await markOrdersSynced(sheets.orderIds);
-      void syncUnsyncedOrdersToSheets();
-      return Response.json({ success: true, orderId: sheets.orderIds[0], orderIds: sheets.orderIds, source: 'sheets' });
-    }
-
-    const legacy = await forwardToLegacyApi(body, phoneE164, normalizedItems);
-    if (legacy) {
+      const local = await persistOrdersLocally(payload, sheets.orderIds);
       await markOrdersSynced(local.orderIds);
-      return Response.json({ success: true, ...legacy });
+      void syncUnsyncedOrdersToSheets();
+      return Response.json({
+        success: true,
+        orderId: sheets.orderIds[0],
+        orderIds: sheets.orderIds,
+        source: 'sheets',
+        sheetSynced: true,
+      });
     }
 
+    // 3) Local backup — still LARA- IDs, replay to Sheets when webhook is available
+    const local = await persistOrdersLocally(payload, sheetOrderIds);
     void syncUnsyncedOrdersToSheets();
 
     return Response.json({

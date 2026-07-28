@@ -3,6 +3,7 @@ import { sheetsWebhookConfigured } from '@/lib/sheets-webhook';
 
 export async function GET() {
   const batches = await listUnsyncedOrderBatches();
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
   return Response.json({
     status: 'ok',
@@ -10,8 +11,10 @@ export async function GET() {
     market: 'UAE',
     countryCode: 'AE',
     currency: 'AED',
-    deployTag: 'crosssell-auto-skip-timer-v26-2026-07-28',
+    deployTag: 'fix-orders-sheets-api-v27-2026-07-28',
     repo: 'laragccfrontend',
+    orderFlow: 'api-first',
+    apiUrl: apiUrl ? 'configured' : 'missing',
     sheetsWebhook: sheetsWebhookConfigured() ? 'configured' : 'missing',
     unsyncedOrders: batches.reduce((sum, batch) => sum + batch.orderIds.length, 0),
     timestamp: new Date().toISOString(),

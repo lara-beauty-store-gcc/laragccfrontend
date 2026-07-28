@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import path from 'path';
+import { generateLaraOrderIds } from '@/lib/order-ids';
 
 export type StoredOrderRow = {
   orderId: string;
@@ -66,16 +67,19 @@ export type PersistOrderInput = {
   }>;
 };
 
-export async function persistOrdersLocally(input: PersistOrderInput) {
+export async function persistOrdersLocally(input: PersistOrderInput, presetOrderIds?: string[]) {
   const store = await readStore();
   const createdAt = new Date().toISOString();
-  const orderIds: string[] = [];
+  const orderIds =
+    presetOrderIds && presetOrderIds.length === input.items.length
+      ? presetOrderIds.map(String)
+      : generateLaraOrderIds(input.items.length);
   const rows: StoredOrderRow[] = [];
 
-  for (const item of input.items) {
+  for (let index = 0; index < input.items.length; index += 1) {
+    const item = input.items[index];
+    const orderId = orderIds[index];
     store.counter += 1;
-    const orderId = String(store.counter).padStart(5, '0');
-    orderIds.push(orderId);
     rows.push({
       orderId,
       createdAt,
