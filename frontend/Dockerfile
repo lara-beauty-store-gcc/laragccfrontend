@@ -20,7 +20,10 @@ FROM base AS runner
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
+ENV ORDERS_DATA_DIR=/app/data
 WORKDIR /app
+
+RUN mkdir -p /app/data
 
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force

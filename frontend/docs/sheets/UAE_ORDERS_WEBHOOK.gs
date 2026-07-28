@@ -42,8 +42,10 @@ function doPost(e) {
     const customerName = body.customer_name || '';
     const phone = formatPhone_(body.phone || '');
 
-    items.forEach(function (item) {
-      const orderId = nextOrderId_();
+    const presetIds = Array.isArray(body.order_ids) ? body.order_ids : [];
+
+    items.forEach(function (item, index) {
+      const orderId = presetIds[index] ? String(presetIds[index]) : nextOrderId_();
       orderIds.push(orderId);
 
       sheet.appendRow([

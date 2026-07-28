@@ -53,6 +53,8 @@ SHEETS_WEBHOOK_SECRET=
 
 كل منتج = صف واحد + رقم طلب تسلسلي (`00001`, `00002`…). الجوال يتسجّل بصيغة `+971501234567`.
 
+**ملاحظة:** الطلبات كتتحفظ دابا على السيرفر حتى بلا Google Sheet. باش توصل للـ Sheet، زيد `GOOGLE_SHEETS_WEBHOOK_URL` فـ EasyPanel.
+
 ### Verify deploy (مهم!)
 
 Ba3d Deploy f EasyPanel, **khass yاخد 2–5 d9ayeq** (machi 2 seconds).

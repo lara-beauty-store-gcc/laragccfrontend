@@ -8,3 +8,5 @@ frontend/.next
 frontend/out
 frontend/.env
 frontend/.env.local
+frontend/data
+data

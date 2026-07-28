@@ -1,4 +1,5 @@
 import { businessConfig } from '@/config/business';
+import { markOrdersSynced, persistOrdersLocally } from '@/lib/order-store';
 import { normalizeUaePhone } from '@/lib/phone';
 
 type IncomingItem = {
@@ -23,6 +24,14 @@ function siteBaseUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL || 'https://larabeauty.store').replace(/\/$/, '');
 }
 
+function sheetsWebhookUrl() {
+  return (
+    process.env.GOOGLE_SHEETS_WEBHOOK_URL ||
+    process.env.ORDERS_SHEETS_WEBHOOK_URL ||
+    ''
+  );
+}
+
 function normalizeItems(items: IncomingItem[]) {
   return items.map((item) => {
     const slug = String(item.slug || '').trim();
@@ -41,7 +50,11 @@ function normalizeItems(items: IncomingItem[]) {
   });
 }
 
-async function forwardToLegacyApi(body: IncomingBody, phoneE164: string, normalizedItems: ReturnType<typeof normalizeItems>) {
+async function forwardToLegacyApi(
+  body: IncomingBody,
+  phoneE164: string,
+  normalizedItems: ReturnType<typeof normalizeItems>,
+) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!apiUrl) return null;
 
@@ -87,12 +100,9 @@ async function forwardToLegacyApi(body: IncomingBody, phoneE164: string, normali
 
       if (orderIds.length === 0) continue;
 
-      return {
-        orderId: orderIds[0],
-        orderIds,
-      };
+      return { orderId: orderIds[0], orderIds, source: 'api' as const };
     } catch {
-      // try next phone format
+      // try next format
     }
   }
 
@@ -103,48 +113,56 @@ async function forwardToSheets(
   body: IncomingBody,
   phoneE164: string,
   normalizedItems: ReturnType<typeof normalizeItems>,
+  orderIds?: string[],
 ) {
-  const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
-  const webhookSecret = process.env.SHEETS_WEBHOOK_SECRET || '';
+  const webhookUrl = sheetsWebhookUrl();
   if (!webhookUrl) return null;
 
-  const sheetsRes = await fetch(webhookUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      secret: webhookSecret,
-      date: new Date().toISOString(),
-      customer_name: body.customerName,
-      phone: phoneE164,
-      country: market.countryCode,
-      currency: market.currency,
-      area: body.area || '',
-      items: normalizedItems.map(({ product, url, sku, quantity, totalPrice }) => ({
-        product,
-        url,
-        sku,
-        quantity,
-        totalPrice,
-      })),
-      source_url: body.sourceUrl || siteBaseUrl(),
-    }),
-  });
+  const webhookSecret = process.env.SHEETS_WEBHOOK_SECRET || '';
 
-  const sheetsData = await sheetsRes.json().catch(() => ({}));
-  if (!sheetsRes.ok || sheetsData.ok === false) return null;
+  try {
+    const sheetsRes = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        secret: webhookSecret,
+        date: new Date().toISOString(),
+        customer_name: body.customerName,
+        phone: phoneE164,
+        country: market.countryCode,
+        currency: market.currency,
+        area: body.area || '',
+        items: normalizedItems.map(({ product, url, sku, quantity, totalPrice }) => ({
+          product,
+          url,
+          sku,
+          quantity,
+          totalPrice,
+        })),
+        order_ids: orderIds,
+        source_url: body.sourceUrl || siteBaseUrl(),
+      }),
+    });
 
-  const orderIds: string[] = Array.isArray(sheetsData.order_ids)
-    ? sheetsData.order_ids.map(String)
-    : sheetsData.order_id
-      ? [String(sheetsData.order_id)]
-      : [];
+    const sheetsData = await sheetsRes.json().catch(() => ({}));
+    if (!sheetsRes.ok || sheetsData.ok === false) return null;
 
-  if (orderIds.length === 0) return null;
+    const returnedIds: string[] = Array.isArray(sheetsData.order_ids)
+      ? sheetsData.order_ids.map(String)
+      : sheetsData.order_id
+        ? [String(sheetsData.order_id)]
+        : orderIds || [];
 
-  return {
-    orderId: orderIds[0],
-    orderIds,
-  };
+    if (returnedIds.length === 0) return null;
+
+    return {
+      orderId: returnedIds[0],
+      orderIds: returnedIds,
+      source: 'sheets' as const,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function POST(req: Request) {
@@ -170,25 +188,46 @@ export async function POST(req: Request) {
     }
 
     const normalizedItems = normalizeItems(items);
+    const payload = {
+      customerName,
+      phone: phoneE164,
+      country: market.countryCode,
+      currency: market.currency,
+      area: String(body.area || ''),
+      sourceUrl: body.sourceUrl || siteBaseUrl(),
+      items: normalizedItems.map(({ product, url, sku, quantity, totalPrice }) => ({
+        product,
+        url,
+        sku,
+        quantity,
+        totalPrice,
+      })),
+    };
+
+    const local = await persistOrdersLocally(payload);
+
+    const sheets = await forwardToSheets(body, phoneE164, normalizedItems, local.orderIds);
+    if (sheets) {
+      await markOrdersSynced(sheets.orderIds);
+      return Response.json({ success: true, ...sheets });
+    }
 
     const legacy = await forwardToLegacyApi(body, phoneE164, normalizedItems);
     if (legacy) {
-      return Response.json({ success: true, ...legacy, source: 'api' });
+      await markOrdersSynced(local.orderIds);
+      return Response.json({ success: true, ...legacy });
     }
 
-    const sheets = await forwardToSheets(body, phoneE164, normalizedItems);
-    if (sheets) {
-      return Response.json({ success: true, ...sheets, source: 'sheets' });
-    }
+    void forwardToSheets(body, phoneE164, normalizedItems, local.orderIds).then(async (retry) => {
+      if (retry) await markOrdersSynced(retry.orderIds);
+    });
 
-    return Response.json(
-      {
-        error: 'orders_not_configured',
-        message:
-          'ما قدرنا نسجّل الطلب — السيرفر محتاج تحديث لأرقام الإمارات (+971). تواصلي مع الدعم: support@larabeauty.store',
-      },
-      { status: 503 },
-    );
+    return Response.json({
+      success: true,
+      orderId: local.orderIds[0],
+      orderIds: local.orderIds,
+      source: 'local',
+    });
   } catch {
     return Response.json(
       { error: 'internal_error', message: 'صار خطأ — حاولي مرة ثانية' },
