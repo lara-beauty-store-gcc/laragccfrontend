@@ -11,7 +11,7 @@ import { useCart } from '@/lib/cart';
 const { brand } = businessInputs;
 
 export function SiteHeader() {
-  const { count, setOpen } = useCart();
+  const { count, openCart } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -60,7 +60,7 @@ export function SiteHeader() {
               type="button"
               className="relative rounded-full p-2 transition-colors hover:bg-primary-soft"
               aria-label={`السلة (${count} عناصر)`}
-              onClick={() => setOpen(true)}
+              onClick={openCart}
             >
               <ShoppingBag className="h-6 w-6 text-foreground" aria-hidden />
               {count > 0 && (

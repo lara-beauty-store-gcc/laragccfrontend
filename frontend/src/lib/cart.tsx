@@ -23,15 +23,23 @@ export type CartLine = {
   qty: number;
 };
 
+export type CartView = 'cart' | 'checkout' | 'crosssell';
+
 type CartContextValue = {
   items: CartLine[];
   addOffer: (product: ProductConfig, offer: ProductOffer, qty?: number) => void;
   remove: (productId: string, offerId: string) => void;
+  updateQty: (productId: string, offerId: string, qty: number) => void;
   clear: () => void;
   count: number;
   total: number;
   isOpen: boolean;
+  view: CartView;
+  openCart: () => void;
+  openCheckout: () => void;
+  setView: (view: CartView) => void;
   setOpen: (open: boolean) => void;
+  close: () => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -39,7 +47,8 @@ const STORAGE_KEY = 'lara-cart-v2';
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartLine[]>([]);
-  const [isOpen, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [view, setView] = useState<CartView>('cart');
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -56,6 +65,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (!hydrated) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items, hydrated]);
+
+  const openCart = useCallback(() => {
+    setView('cart');
+    setIsOpen(true);
+  }, []);
+
+  const openCheckout = useCallback(() => {
+    setView('checkout');
+    setIsOpen(true);
+  }, []);
+
+  const close = useCallback(() => {
+    setIsOpen(false);
+    setView('cart');
+  }, []);
+
+  const setOpen = useCallback((open: boolean) => {
+    if (open) {
+      setView('cart');
+      setIsOpen(true);
+      return;
+    }
+    close();
+  }, [close]);
 
   const addOffer = useCallback(
     (product: ProductConfig, offer: ProductOffer, qty = 1) => {
@@ -85,7 +118,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           },
         ];
       });
-      setOpen(true);
+      setView('cart');
+      setIsOpen(true);
     },
     [],
   );
@@ -93,6 +127,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const remove = useCallback((productId: string, offerId: string) => {
     setItems((prev) =>
       prev.filter((i) => !(i.productId === productId && i.offerId === offerId)),
+    );
+  }, []);
+
+  const updateQty = useCallback((productId: string, offerId: string, qty: number) => {
+    if (qty < 1) {
+      setItems((prev) =>
+        prev.filter((i) => !(i.productId === productId && i.offerId === offerId)),
+      );
+      return;
+    }
+
+    setItems((prev) =>
+      prev.map((i) =>
+        i.productId === productId && i.offerId === offerId ? { ...i, qty } : i,
+      ),
     );
   }, []);
 
@@ -109,13 +158,33 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       items,
       addOffer,
       remove,
+      updateQty,
       clear,
       count,
       total,
       isOpen,
+      view,
+      openCart,
+      openCheckout,
+      setView,
       setOpen,
+      close,
     }),
-    [items, addOffer, remove, clear, count, total, isOpen],
+    [
+      items,
+      addOffer,
+      remove,
+      updateQty,
+      clear,
+      count,
+      total,
+      isOpen,
+      view,
+      openCart,
+      openCheckout,
+      setOpen,
+      close,
+    ],
   );
 
   return (

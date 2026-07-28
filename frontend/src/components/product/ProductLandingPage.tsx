@@ -34,7 +34,7 @@ import { ProductStickyCTA } from './ProductStickyCTA';
 const { market } = businessConfig;
 
 export function ProductLandingPage({ product }: { product: ProductConfig }) {
-  const { addOffer, setOpen } = useCart();
+  const { addOffer } = useCart();
   const defaultOffer = useMemo(() => getDefaultOffer(product), [product]);
   const [selectedOffer, setSelectedOffer] = useState<ProductOffer>(defaultOffer);
   const [showSticky, setShowSticky] = useState(false);
@@ -70,8 +70,7 @@ export function ProductLandingPage({ product }: { product: ProductConfig }) {
       currency: market.currency,
       quantity: selectedOffer.quantity,
     });
-    setOpen(true);
-  }, [addOffer, product, selectedOffer, setOpen]);
+  }, [addOffer, product, selectedOffer]);
 
   return (
     <div className="pb-28">

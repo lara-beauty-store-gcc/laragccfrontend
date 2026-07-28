@@ -5,7 +5,7 @@ export async function GET() {
     market: 'UAE',
     countryCode: 'AE',
     currency: 'AED',
-    deployTag: 'uae-phone-fallback-v11-2026-07-28',
+    deployTag: 'premium-cart-drawer-v12-2026-07-28',
     repo: 'laragccfrontend',
     timestamp: new Date().toISOString(),
   });
