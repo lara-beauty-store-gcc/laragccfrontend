@@ -5,7 +5,7 @@ export async function GET() {
     market: 'UAE',
     countryCode: 'AE',
     currency: 'AED',
-    deployTag: 'gulf-dialect-copy-v17-2026-07-28',
+    deployTag: 'whatsapp-support-only-v18-2026-07-28',
     repo: 'laragccfrontend',
     timestamp: new Date().toISOString(),
   });

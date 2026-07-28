@@ -39,22 +39,19 @@ export function getLastOrder(): LastOrder | null {
   }
 }
 
-export function buildWhatsAppConfirmUrl(order: LastOrder, whatsappNumber: string): string {
+export function buildWhatsAppSupportUrl(order: LastOrder, whatsappNumber: string): string {
+  const orderRef = (order.orderIds?.length ? order.orderIds : [order.orderId]).join(' · ');
   const lines = [
     `مرحباً ${order.customerName} 👋`,
-    `أريد تأكيد طلبي رقم: ${(order.orderIds?.length ? order.orderIds : [order.orderId]).join(' · ')}`,
-    '',
-    '📦 الطلب:',
-    ...order.items.map((i) => `• ${i.name} × ${i.qty} — ${i.price * i.qty} ${order.currency}`),
-    '',
-    `💰 المجموع: ${order.total} ${order.currency}`,
-    order.area ? `📍 المنطقة: ${order.area}` : '',
-    `📱 الجوال: ${order.phone}`,
+    `عندي استفسار عن طلبي رقم: ${orderRef}`,
     '',
     'شكراً — لارا للجمال',
-  ].filter(Boolean);
+  ];
 
   const text = encodeURIComponent(lines.join('\n'));
   const digits = whatsappNumber.replace(/\D/g, '');
   return `https://wa.me/${digits}?text=${text}`;
 }
+
+/** @deprecated use buildWhatsAppSupportUrl */
+export const buildWhatsAppConfirmUrl = buildWhatsAppSupportUrl;

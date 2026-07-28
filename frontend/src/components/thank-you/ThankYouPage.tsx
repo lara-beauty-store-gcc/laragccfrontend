@@ -16,7 +16,7 @@ import {
   Truck,
 } from 'lucide-react';
 import { businessConfig } from '@/config/business';
-import { buildWhatsAppConfirmUrl, getLastOrder, type LastOrder } from '@/lib/order-session';
+import { buildWhatsAppSupportUrl, getLastOrder, type LastOrder } from '@/lib/order-session';
 import { formatPrice } from '@/lib/pricing';
 import { trackPurchase } from '@/lib/tracking';
 import { RoutineCrossSell } from '@/components/thank-you/RoutineCrossSell';
@@ -31,8 +31,8 @@ function OrderSummary({ order }: { order: LastOrder }) {
           <Package className="h-5 w-5 text-primary" aria-hidden />
           <p className="font-arabic text-sm font-extrabold text-foreground">ملخص طلبك</p>
         </div>
-        <span className="rounded-full bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-800">
-          بانتظار التأكيد
+        <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-800">
+          تم التسجيل
         </span>
       </div>
 
@@ -70,13 +70,13 @@ function OrderSummary({ order }: { order: LastOrder }) {
 function NextSteps() {
   const steps = [
     {
-      icon: MessageCircle,
-      title: 'تأكيد سريع عبر واتساب',
-      body: `أرسلي رسالة تأكيد الآن — أو انتظري اتصالنا ${cod.confirmationWindow}.`,
+      icon: Phone,
+      title: 'فريقنا يتصل فيك',
+      body: `${cod.confirmationPromise} ${cod.confirmationWindow}.`,
       highlight: true,
     },
     {
-      icon: Phone,
+      icon: BellRing,
       title: 'خلّي جوالك قريب',
       body: 'نحتاج نأكد العنوان والكمية. المكالمات الفائتة تؤخر الشحن.',
     },
@@ -95,7 +95,7 @@ function NextSteps() {
           <li key={step.title} className="flex gap-3">
             <span
               className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-                step.highlight ? 'bg-[#25D366] text-white' : 'bg-primary text-white'
+                step.highlight ? 'bg-primary text-white' : 'bg-primary/80 text-white'
               }`}
             >
               <step.icon className="h-4 w-4" aria-hidden />
@@ -161,7 +161,7 @@ function ThankYouInner() {
       : order?.orderId || orderIdParam;
   const whatsappUrl = useMemo(() => {
     if (!order) return null;
-    return buildWhatsAppConfirmUrl(order, support.whatsappNumber);
+    return buildWhatsAppSupportUrl(order, support.whatsappNumber);
   }, [order]);
 
   return (
@@ -177,7 +177,7 @@ function ThankYouInner() {
         <h1 className="font-arabic text-2xl font-extrabold text-primary sm:text-3xl">تم استلام طلبك!</h1>
         <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted">
           شكراً {order?.customerName ? `${order.customerName.split(' ')[0]} ` : ''}
-          — خطوة واحدة بسيطة وتأكدين طلبك مع {brand.nameLocal}.
+          — طلبك مسجّل، وفريقنا يتواصل معك قريباً لتأكيد العنوان والتوصيل.
         </p>
         {orderIdLabel ? (
           <p className="mt-4 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs text-muted shadow-sm">
@@ -193,7 +193,7 @@ function ThankYouInner() {
         <div>
           <p className="font-arabic text-sm font-bold text-amber-900">خلّي جوالك مفتوح</p>
           <p className="mt-1 text-xs leading-relaxed text-amber-800">
-            {cod.confirmationPromise}. الطلبات اللي ما تتأكد خلال 24 ساعة ممكن تُلغى تلقائياً.
+            {cod.confirmationPromise} {cod.confirmationWindow}. خلّي جوالك مفتوح عشان ما يتأخر الشحن.
           </p>
         </div>
       </div>
@@ -204,16 +204,15 @@ function ThankYouInner() {
         <TrustRow />
       </div>
 
-      {/* Primary CTA — WhatsApp confirmation first */}
       {whatsappUrl ? (
         <a
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] px-6 py-4 font-arabic text-sm font-bold text-white shadow-lg transition hover:bg-[#1ebe5d] active:scale-[0.99]"
+          className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-[#25D366] bg-white px-6 py-3.5 font-arabic text-sm font-bold text-[#128C7E] transition hover:bg-[#25D366]/5 active:scale-[0.99]"
         >
           <MessageCircle className="h-5 w-5" aria-hidden />
-          أكّدي طلبك عبر واتساب الآن
+          عندك سؤال؟ تواصلي عبر واتساب
         </a>
       ) : null}
 
