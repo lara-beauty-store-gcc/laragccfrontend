@@ -1,5 +1,6 @@
 import { businessConfig } from '@/config/business';
 import { normalizeSheetItems, type RawSheetItem, type SheetsOrderItem } from '@/lib/sheets-export';
+import { runtimeEnv, sheetsWebhookSecret, sheetsWebhookUrl } from '@/lib/runtime-env';
 
 export type { SheetsOrderItem };
 
@@ -21,20 +22,12 @@ export type SheetsForwardResult =
 
 const { market } = businessConfig;
 
-export function sheetsWebhookUrl() {
-  return (
-    process.env.GOOGLE_SHEETS_WEBHOOK_URL ||
-    process.env.ORDERS_SHEETS_WEBHOOK_URL ||
-    ''
-  );
-}
-
 export function sheetsWebhookConfigured() {
   return Boolean(sheetsWebhookUrl());
 }
 
 function siteBaseUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL || 'https://larabeauty.store').replace(/\/$/, '');
+  return runtimeEnv('NEXT_PUBLIC_SITE_URL', 'https://larabeauty.store').replace(/\/$/, '');
 }
 
 export function mapPayloadToSheetItems(payload: SheetsOrderPayload): SheetsOrderItem[] {
@@ -55,7 +48,7 @@ export async function forwardOrderToSheets(payload: SheetsOrderPayload): Promise
     return { ok: false, reason: 'sheets_empty_items', detail: 'No valid line items after normalization' };
   }
 
-  const webhookSecret = process.env.SHEETS_WEBHOOK_SECRET || '';
+  const webhookSecret = sheetsWebhookSecret();
 
   try {
     const res = await fetch(webhookUrl, {

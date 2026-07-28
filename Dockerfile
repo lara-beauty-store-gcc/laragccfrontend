@@ -1,5 +1,5 @@
 # Build store from frontend/ when EasyPanel source path is empty (repo root)
-ARG CACHEBUST=fix-orders-sheets-api-v28-2026-07-28
+ARG CACHEBUST=fix-sheets-definitive-v29-2026-07-28
 FROM node:20-alpine AS base
 RUN echo "BUILD ${CACHEBUST}"
 RUN apk add --no-cache libc6-compat curl

@@ -17,10 +17,23 @@ if [ ! -f "server.js" ] && [ ! -f "package.json" ]; then
   exit 1
 fi
 
-echo "[OK] Orders data dir: ${ORDERS_DATA_DIR:-/app/data}"
-echo "[OK] API URL: ${NEXT_PUBLIC_API_URL:-missing}"
-echo "[OK] Sheets webhook: $([ -n "${GOOGLE_SHEETS_WEBHOOK_URL:-}" ] && echo configured || echo missing)"
-mkdir -p "${ORDERS_DATA_DIR:-/app/data}"
+DATA_DIR="${ORDERS_DATA_DIR:-/app/data}"
+mkdir -p "$DATA_DIR"
+
+# Persist runtime env for Next.js standalone (avoids empty build-time inlining).
+cat > "$DATA_DIR/runtime.env.json" <<EOF
+{
+  "GOOGLE_SHEETS_WEBHOOK_URL": "${GOOGLE_SHEETS_WEBHOOK_URL:-}",
+  "ORDERS_SHEETS_WEBHOOK_URL": "${ORDERS_SHEETS_WEBHOOK_URL:-}",
+  "SHEETS_WEBHOOK_SECRET": "${SHEETS_WEBHOOK_SECRET:-}",
+  "NEXT_PUBLIC_API_URL": "${NEXT_PUBLIC_API_URL:-https://api.larabeauty.store}",
+  "NEXT_PUBLIC_SITE_URL": "${NEXT_PUBLIC_SITE_URL:-https://larabeauty.store}"
+}
+EOF
+
+echo "[OK] Orders data dir: $DATA_DIR"
+echo "[OK] API URL: ${NEXT_PUBLIC_API_URL:-https://api.larabeauty.store}"
+echo "[OK] Sheets webhook: $([ -n "${GOOGLE_SHEETS_WEBHOOK_URL:-}${ORDERS_SHEETS_WEBHOOK_URL:-}" ] && echo configured || echo fallback-url)"
 
 if [ -f "server.js" ]; then
   echo "[OK] Starting Next.js standalone on 0.0.0.0:${PORT:-3000}"

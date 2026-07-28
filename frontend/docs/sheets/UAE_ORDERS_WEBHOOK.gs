@@ -8,7 +8,9 @@
  * date | order id | country | name | phone | product | url | sku | quantite | totalprice | currency
  */
 
-const SCRIPT_SECRET = 'CHANGE_ME_SAME_AS_EASYPANEL';
+const SCRIPT_SECRET = 'lara-beauty-secret-2026';
+
+const SPREADSHEET_ID = '1n_vZl2t3X_KV0Rkpj6dR9TZRRm3OETv3IjIdzcH-diU';
 
 const SHEET_CANDIDATES = [
   'Tabellenblatt1',
@@ -225,7 +227,7 @@ function asString_(value) {
 }
 
 function resolveOrdersSheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
   for (var i = 0; i < SHEET_CANDIDATES.length; i++) {
     var candidate = ss.getSheetByName(SHEET_CANDIDATES[i]);
