@@ -3,14 +3,13 @@
 import {
   ArrowLeft,
   CircleCheckBig,
-  Flame,
   HeartHandshake,
   ShieldCheck,
-  Sparkles,
   Star,
   Truck,
 } from 'lucide-react';
 import type { ProductConfig } from '@/config/products';
+import { getLowestOfferPrice } from '@/config/products';
 import type { ProductOffer } from '@/config/types';
 import { businessConfig } from '@/config/business';
 import { formatPrice } from '@/lib/pricing';
@@ -51,106 +50,80 @@ export function ProductHero({
   ctaLabelText: string;
   ctaRef: React.Ref<HTMLDivElement>;
 }) {
-  const buyBox = (
-    <div className="space-y-4 rounded-3xl border border-primary/15 bg-white/90 p-4 shadow-card backdrop-blur-sm sm:p-5">
-      <ProductOfferSelector
-        product={product}
-        selectedId={selectedOffer.id}
-        onSelect={onSelectOffer}
-      />
-
-      <div ref={ctaRef}>
-        <button
-          type="button"
-          onClick={onAddToCart}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-sm font-bold text-white shadow-soft transition hover:bg-primary/90 active:scale-[0.99]"
-        >
-          {ctaLabelText}
-          <ArrowLeft className="h-5 w-5 shrink-0" aria-hidden />
-        </button>
-        <p className="mt-3 text-center text-[11px] font-medium text-muted">
-          {cod.paymentLabel} · {formatPrice(selectedOffer.price)}
-        </p>
-      </div>
-    </div>
-  );
+  const fromPrice = getLowestOfferPrice(product);
 
   return (
-    <section
-      id="add-to-cart-section"
-      className="overflow-x-clip bg-gradient-to-br from-background via-surface-rose to-primary-soft py-6 sm:py-12"
-    >
-      <div className="mx-auto max-w-container px-4 sm:px-6 lg:px-8">
-        <div className="grid items-start gap-5 sm:gap-8 lg:grid-cols-2 lg:gap-16">
-          <div className="relative mx-auto w-full max-w-lg justify-self-center lg:max-w-none lg:justify-self-auto">
-            <div className="absolute inset-0 scale-150 rounded-full bg-primary/10 blur-3xl" aria-hidden />
+    <section id="add-to-cart-section" className="overflow-x-clip bg-background">
+      <div className="mx-auto max-w-container px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
+        <div className="grid items-start gap-6 lg:grid-cols-2 lg:gap-12 xl:gap-16">
+          <div className="mx-auto w-full max-w-lg lg:sticky lg:top-20 lg:max-w-none lg:justify-self-center">
             <ProductImageCarousel product={product} />
           </div>
 
-          <div className="flex min-w-0 flex-col gap-5">
-            <div className="order-2 space-y-4 lg:order-1">
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {heroStats.map((s) => (
-                  <div
-                    key={s.label}
-                    className="rounded-xl border border-border bg-white/80 px-2 py-2.5 text-center backdrop-blur-sm"
-                  >
-                    <p className="text-[10px] font-medium text-muted">{s.label}</p>
-                    <p className="mt-0.5 text-[11px] font-extrabold text-primary sm:text-xs">{s.value}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5">
-                <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-                <span className="text-xs font-bold text-primary">
-                  {product.routineNameLocal} · {product.routineNameEnglish}
-                </span>
-              </div>
-
-              <h1 className="font-arabic text-2xl font-extrabold leading-[1.15] tracking-tight text-foreground sm:text-3xl lg:text-4xl">
-                {product.heroHeadline}
-              </h1>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <Stars rating={product.rating} count={product.reviewsCount} />
-                <span className="text-xs text-muted">· تقييم مؤكد</span>
-              </div>
-
-              <p className="font-arabic text-lg font-extrabold text-primary sm:text-xl">
-                {formatPrice(selectedOffer.price)}
-                {selectedOffer.quantity > 1 ? (
-                  <span className="mr-2 text-sm font-medium text-muted">
-                    · {formatPrice(Math.round(selectedOffer.price / selectedOffer.quantity))} / علبة
-                  </span>
-                ) : (
-                  <span className="mr-2 text-sm font-medium text-muted">/ علبة واحدة</span>
-                )}
-              </p>
-
-              {product.scarcityLine ? (
-                <div className="flex items-start gap-2 rounded-2xl border border-secondary/30 bg-secondary-soft px-4 py-3">
-                  <Flame className="mt-0.5 h-5 w-5 shrink-0 text-secondary" aria-hidden />
-                  <p className="text-xs font-bold leading-relaxed text-foreground sm:text-sm">
-                    {product.scarcityLine}
-                  </p>
+          <div className="flex min-w-0 flex-col gap-4 sm:gap-5">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {heroStats.map((s) => (
+                <div
+                  key={s.label}
+                  className="rounded-xl border border-border bg-white px-2 py-2.5 text-center shadow-sm"
+                >
+                  <p className="text-lg font-extrabold tabular-nums text-primary sm:text-xl">{s.value}</p>
+                  <p className="mt-0.5 text-[10px] font-medium leading-tight text-muted">{s.label}</p>
                 </div>
-              ) : null}
-
-              <p className="text-sm leading-relaxed text-muted">{product.heroSubheadline}</p>
+              ))}
             </div>
 
-            <div className="order-1 lg:order-2">{buyBox}</div>
+            <h1 className="font-arabic text-2xl font-extrabold leading-[1.15] tracking-tight text-foreground sm:text-3xl lg:text-[2rem]">
+              {product.heroHeadline}
+            </h1>
 
-            <div className="order-3 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:order-3">
+            <p className="text-sm leading-relaxed text-muted sm:text-base">{product.heroSubheadline}</p>
+
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+              <Stars rating={product.rating} count={product.reviewsCount} />
+              <span className="text-muted" aria-hidden>
+                ·
+              </span>
+              <span className="font-arabic font-extrabold text-primary">
+                من {formatPrice(fromPrice)} / علبة
+              </span>
+            </div>
+
+            {product.scarcityLine ? (
+              <p className="rounded-xl border border-secondary/25 bg-secondary-soft px-3 py-2.5 text-xs font-bold leading-relaxed text-foreground sm:text-sm">
+                {product.scarcityLine}
+              </p>
+            ) : null}
+
+            <ProductOfferSelector
+              product={product}
+              selectedId={selectedOffer.id}
+              onSelect={onSelectOffer}
+            />
+
+            <div ref={ctaRef} className="space-y-2">
+              <button
+                type="button"
+                onClick={onAddToCart}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-sm font-bold text-white shadow-soft transition hover:bg-primary/90 active:scale-[0.99]"
+              >
+                {ctaLabelText}
+                <ArrowLeft className="h-5 w-5 shrink-0" aria-hidden />
+              </button>
+              <p className="text-center text-[11px] font-medium text-muted">
+                {cod.paymentLabel} · بدون دفع أونلاين
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {miniTrust.map((item) => (
                 <div
                   key={item.title}
-                  className="rounded-xl border border-border bg-white/70 px-2 py-2.5 text-center"
+                  className="rounded-xl border border-border bg-white px-2 py-3 text-center"
                 >
                   <item.icon className="mx-auto h-4 w-4 text-primary" aria-hidden />
-                  <p className="mt-1 text-[10px] font-bold leading-tight text-foreground">{item.title}</p>
-                  <p className="text-[9px] leading-tight text-muted">{item.sub}</p>
+                  <p className="mt-1.5 text-[10px] font-bold leading-tight text-foreground">{item.title}</p>
+                  <p className="mt-0.5 text-[9px] leading-tight text-muted">{item.sub}</p>
                 </div>
               ))}
             </div>
@@ -158,16 +131,13 @@ export function ProductHero({
         </div>
       </div>
 
-      <div className="mt-6 overflow-x-clip border-y border-foreground/10 bg-foreground text-white sm:mt-10">
-        <div className="mx-auto flex max-w-container flex-col gap-4 px-4 py-6 sm:px-6 sm:py-8 lg:grid lg:grid-cols-4 lg:gap-5 lg:px-8">
+      <div className="border-y border-foreground/10 bg-foreground text-white">
+        <div className="mx-auto grid max-w-container grid-cols-1 gap-4 px-4 py-5 sm:px-6 sm:py-6 lg:grid-cols-4 lg:gap-5 lg:px-8">
           {product.badges.map((badge, i) => {
             const Icon = stripIcons[i % stripIcons.length];
             return (
-              <div
-                key={badge}
-                className="flex min-w-0 items-center gap-3 rounded-xl bg-white/5 px-2 py-1 sm:gap-4 sm:px-0 sm:py-0"
-              >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-secondary/15 ring-1 ring-secondary/40 sm:h-11 sm:w-11">
+              <div key={badge} className="flex min-w-0 items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-secondary/15 ring-1 ring-secondary/40">
                   <Icon className="h-5 w-5 text-secondary" aria-hidden />
                 </div>
                 <p className="min-w-0 flex-1 text-xs font-extrabold leading-snug sm:text-sm">{badge}</p>

@@ -19,10 +19,8 @@ import {
   GuaranteeSection,
   HowToUseSection,
   IngredientBreakdown,
-  MechanismSection,
-  OfferRecap,
+  InsightStatSection,
   ProblemAgitationSection,
-  ProblemInsightSection,
   ProductFAQ,
   ProductTestimonials,
   ProofStats,
@@ -83,18 +81,16 @@ export function ProductLandingPage({ product }: { product: ProductConfig }) {
         ctaLabelText={ctaLabel(product, selectedOffer)}
       />
 
-      <ProblemInsightSection product={product} />
+      <InsightStatSection product={product} />
       <ProblemAgitationSection product={product} />
-      <MechanismSection product={product} />
-      <ExclusionsSection product={product} />
       <IngredientBreakdown product={product} />
+      <ExclusionsSection product={product} />
       <AuthoritySection product={product} />
       <ProofStats product={product} />
       <ResultsTimeline product={product} />
       <ProductTestimonials product={product} />
       <FailureAlternativesSection product={product} />
       <ComparisonSection product={product} />
-      <OfferRecap product={product} offer={selectedOffer} onCta={handleAddToCart} />
       <GuaranteeSection />
       <HowToUseSection product={product} />
       <CODDeliverySection />
