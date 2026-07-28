@@ -24,7 +24,6 @@ import {
   isValidUaePhone,
   normalizeUaePhone,
   UAE_PHONE_DIGITS,
-  UAE_PHONE_EXAMPLE,
   uaePhoneErrorMessage,
 } from '@/lib/phone';
 import { orderCurrency, submitOrder } from '@/lib/submit-order';
