@@ -100,7 +100,7 @@ export function RoutineCrossSellPanel({
         setTimeout(() => onSkip(), 1500);
       }
     } catch {
-      setAddedMessage('ما قدرنا نضيف المنتجات — حاولي مرة ثانية');
+      setAddedMessage('ما نقدر نضيف المنتجات — جربي مرة ثانية');
     } finally {
       setSyncing(false);
     }
@@ -110,12 +110,12 @@ export function RoutineCrossSellPanel({
 
   const title =
     variant === 'checkout'
-      ? 'اقتراح: بغيتي تزيدي شي حاجة لنفس الطلب؟'
-      : 'بغيتي تكمّلي روتينك؟';
+      ? 'اقتراح: تبين تزيدين شي لنفس الطلب؟'
+      : 'تبين تكمّلين روتينك؟';
   const subtitle =
     variant === 'checkout'
-      ? 'اختياري تماماً — اختاري إذا حبيتي، وإلا كمّلي للتأكيد مباشرة.'
-      : 'اختاري منتجات تانية تزيديهم لنفس الطلب من هنا.';
+      ? 'اختياري تماماً — اختاري إذا تحبين، وإلا كمّلي للتأكيد مباشرة.'
+      : 'اختاري منتجات ثانية تضيفينها لنفس الطلب من هنا.';
 
   return (
     <div className={variant === 'checkout' ? '' : 'rounded-3xl border border-border bg-white p-5 shadow-card'}>

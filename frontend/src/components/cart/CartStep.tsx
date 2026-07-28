@@ -33,7 +33,7 @@ export function CartStep({
         <span className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-rose">
           <ShoppingBag className="h-7 w-7 text-primary/70" aria-hidden />
         </span>
-        <p className="mt-4 font-arabic text-lg font-extrabold text-foreground">سلتك فاضية</p>
+        <p className="mt-4 font-arabic text-lg font-extrabold text-foreground">سلتك فارغة</p>
         <p className="mt-2 max-w-xs text-sm leading-relaxed text-muted">
           اختاري عرضك المفضل من العلكات وارجعي هنا قبل ما تكمّلي الطلب.
         </p>

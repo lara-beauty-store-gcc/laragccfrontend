@@ -184,7 +184,7 @@ export async function POST(req: Request) {
 
     const items = Array.isArray(body.items) ? body.items : [];
     if (items.length === 0) {
-      return Response.json({ error: 'empty_cart', message: 'السلة فاضية' }, { status: 400 });
+      return Response.json({ error: 'empty_cart', message: 'السلة فارغة' }, { status: 400 });
     }
 
     const normalizedItems = normalizeItems(items);
@@ -230,7 +230,7 @@ export async function POST(req: Request) {
     });
   } catch {
     return Response.json(
-      { error: 'internal_error', message: 'صار خطأ — حاولي مرة ثانية' },
+      { error: 'internal_error', message: 'صار خطأ — جربي مرة ثانية' },
       { status: 500 },
     );
   }

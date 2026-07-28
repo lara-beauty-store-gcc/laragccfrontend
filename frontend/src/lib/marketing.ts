@@ -46,7 +46,7 @@ export function getWhyBrandCards() {
   return [
     {
       icon: 'shield' as const,
-      title: 'تركيبات واضحة، مو وعود فاضية',
+      title: 'تركيبات واضحة، مو وعود فارغة',
       body: 'كل مكوّن مكتوب على العلبة بجرعة واضحة. ما عندنا مكونات سرية ولا خلطات عشوائية.',
     },
     {

@@ -171,7 +171,7 @@ export function CheckoutModal() {
       } else if (message.includes('orders_not_configured') || message.includes('السيرفر')) {
         setError(message);
       } else {
-        setError('صار خطأ — حاولي مرة ثانية');
+        setError('صار خطأ — جربي مرة ثانية');
       }
     } finally {
       setLoading(false);
@@ -280,7 +280,7 @@ export function CheckoutModal() {
               onClose={close}
             />
           ) : items.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted">السلة فاضية</p>
+            <p className="py-8 text-center text-sm text-muted">السلة فارغة</p>
           ) : (
             <>
               <div className="space-y-2.5">

@@ -134,7 +134,7 @@ export function ExclusionsSection({ product }: { product: ProductConfig }) {
   if (!list.length) return null;
   return (
     <ProductPageSection variant="rose">
-      <ProductSectionHeader title="شنو ما راح تلقين داخل العلبة" />
+      <ProductSectionHeader title="وش ما راح تلقين داخل العلبة" />
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {list.map((item) => (
           <li
@@ -156,7 +156,7 @@ export function IngredientBreakdown({ product }: { product: ProductConfig }) {
     <ProductPageSection variant="white">
       <ProductSectionHeader
         eyebrow="التركيبة"
-        title="تركيبة سريرية، مو وعود فاضية"
+        title="تركيبة سريرية، مو وعود فارغة"
         subtitle="كل مكوّن بجرعة واضحة — بدون مكونات سرية."
       />
       {auth?.certifications?.length ? (
