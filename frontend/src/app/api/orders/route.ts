@@ -1,6 +1,6 @@
 import { businessConfig } from '@/config/business';
 import { markOrdersSynced, persistOrdersLocally } from '@/lib/order-store';
-import { normalizeUaePhone } from '@/lib/phone';
+import { normalizeUaePhone, uaePhoneErrorMessage } from '@/lib/phone';
 
 type IncomingItem = {
   sku?: string;
@@ -177,7 +177,7 @@ export async function POST(req: Request) {
 
     if (!phoneE164) {
       return Response.json(
-        { error: 'invalid_phone', message: 'رقم جوال إماراتي غير صحيح — مثال: 501234567' },
+        { error: 'invalid_phone', message: uaePhoneErrorMessage(String(body.phone || '')) },
         { status: 400 },
       );
     }

@@ -19,7 +19,14 @@ import { CartLineItem } from '@/components/cart/CartLineItem';
 import { useCart } from '@/lib/cart';
 import { saveLastOrder, type LastOrder } from '@/lib/order-session';
 import { formatPrice } from '@/lib/pricing';
-import { formatUaePhoneInput, isValidUaePhone, normalizeUaePhone } from '@/lib/phone';
+import {
+  formatUaePhoneInput,
+  isValidUaePhone,
+  normalizeUaePhone,
+  UAE_PHONE_DIGITS,
+  UAE_PHONE_EXAMPLE,
+  uaePhoneErrorMessage,
+} from '@/lib/phone';
 import { orderCurrency, submitOrder } from '@/lib/submit-order';
 import { trackEvent } from '@/lib/tracking';
 import { Stars } from '@/components/Stars';
@@ -89,7 +96,7 @@ export function CheckoutModal() {
       return;
     }
     if (!isValidUaePhone(phone)) {
-      setError('رقم جوال إماراتي غير صحيح — مثال: 501234567');
+      setError(uaePhoneErrorMessage(phone));
       return;
     }
     if (!name.trim()) {
@@ -107,7 +114,7 @@ export function CheckoutModal() {
     try {
       const phoneE164 = normalizeUaePhone(phone);
       if (!phoneE164) {
-        setError('رقم جوال إماراتي غير صحيح — مثال: 501234567');
+        setError(uaePhoneErrorMessage(phone));
         return;
       }
 
@@ -160,8 +167,8 @@ export function CheckoutModal() {
       router.push(`/thank-you?order=${orderId}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : '';
-      if (message.includes('invalid_phone') || message.includes('جوال إماراتي')) {
-        setError('رقم جوال إماراتي غير صحيح — مثال: 501234567');
+      if (message.includes('invalid_phone') || message.includes('جوال')) {
+        setError(uaePhoneErrorMessage(phone));
       } else if (message.includes('orders_not_configured') || message.includes('السيرفر')) {
         setError(message);
       } else {
@@ -323,9 +330,16 @@ export function CheckoutModal() {
                       placeholder={market.phoneExample}
                     />
                   </div>
-                  <p className="mt-1 text-[10px] text-muted">
-                    اكتبي 9 أرقام بعد +971 — مثال: 501234567
-                  </p>
+                  <div className="mt-1 flex items-center justify-between text-[10px] text-muted">
+                    <span>9 أرقام — مثال: {UAE_PHONE_EXAMPLE} أو 05{UAE_PHONE_EXAMPLE.slice(1)}</span>
+                    <span
+                      className={`font-mono tabular-nums ${
+                        phone.length === UAE_PHONE_DIGITS ? 'font-bold text-primary' : ''
+                      }`}
+                    >
+                      {phone.length}/{UAE_PHONE_DIGITS}
+                    </span>
+                  </div>
                 </div>
 
                 <div>
