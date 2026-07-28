@@ -4,8 +4,9 @@ import { Heart, Leaf, ShieldCheck, Truck } from 'lucide-react';
 import { businessInputs } from '@/config/business';
 import { products } from '@/config/products';
 import { getTrustBadges } from '@/lib/marketing';
+import { SocialLinks } from '@/components/social/SocialLinks';
 
-const { brand, market, social } = businessInputs;
+const { brand, market } = businessInputs;
 
 const footerIcons = [ShieldCheck, Leaf, Truck, Heart];
 
@@ -27,32 +28,7 @@ export function SiteFooter() {
               />
               <p className="font-arabic text-lg font-extrabold">{brand.nameLocal}</p>
               <p className="max-w-sm text-sm leading-relaxed text-white/70">{brand.description}</p>
-              <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-start">
-                <a
-                  href={social.tiktok}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-bold text-white/90 transition hover:bg-white/10"
-                >
-                  TikTok · {social.tiktokHandle}
-                </a>
-                <a
-                  href={social.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-bold text-white/90 transition hover:bg-white/10"
-                >
-                  Facebook
-                </a>
-                <a
-                  href={social.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-bold text-white/90 transition hover:bg-white/10"
-                >
-                  Instagram · {social.instagramHandle}
-                </a>
-              </div>
+              <SocialLinks variant="footer" />
             </div>
           </div>
 
