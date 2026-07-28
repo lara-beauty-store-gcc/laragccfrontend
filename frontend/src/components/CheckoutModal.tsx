@@ -16,7 +16,8 @@ import { businessConfig } from '@/config/business';
 import { useCart } from '@/lib/cart';
 import { saveLastOrder, type LastOrder } from '@/lib/order-session';
 import { formatPrice } from '@/lib/pricing';
-import { isValidUaePhone } from '@/lib/phone';
+import { isValidUaePhone, normalizeUaePhone } from '@/lib/phone';
+import { orderCurrency, submitOrder } from '@/lib/submit-order';
 import { trackEvent } from '@/lib/tracking';
 import { Stars } from '@/components/Stars';
 import { RoutineCrossSellPanel } from '@/components/cross-sell/RoutineCrossSellPanel';
@@ -86,51 +87,43 @@ export function CheckoutModal() {
 
     setLoading(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-      let orderId = `LARA-${Date.now()}`;
-
-      if (apiUrl) {
-        const res = await fetch(`${apiUrl}/api/v1/orders`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            customerName: name.trim(),
-            phone: phone.replace(/\D/g, ''),
-            area,
-            items: items.map((i) => ({
-              productId: i.productId,
-              sku: i.sku,
-              name: i.name,
-              bundleId: i.offerId,
-              unitPriceAed: i.price,
-              quantity: i.offerQuantity * i.qty,
-            })),
-            sourceUrl: typeof window !== 'undefined' ? window.location.href : '',
-            eventId: `purchase_${Date.now()}`,
-          }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          throw new Error(data.message || data.error || 'order_failed');
-        }
-        orderId = data.orderNumber || data.orderId || orderId;
+      const phoneE164 = normalizeUaePhone(phone);
+      if (!phoneE164) {
+        setError('رقم جوال إماراتي غير صحيح — مثال: 501234567');
+        return;
       }
+
+      const { orderId, orderIds } = await submitOrder({
+        customerName: name.trim(),
+        phone,
+        area,
+        sourceUrl: typeof window !== 'undefined' ? window.location.href : '',
+        items: items.map((i) => ({
+          sku: i.sku,
+          name: i.offerLabel,
+          slug: i.slug,
+          quantity: i.offerQuantity * i.qty,
+          lineTotal: i.price * i.qty,
+        })),
+      });
 
       const savedOrder: LastOrder = {
         orderId,
+        orderIds,
         customerName: name.trim(),
-        phone: `${market.phoneCountryCode}${phone.replace(/\D/g, '')}`,
+        phone: phoneE164,
         area,
         productSlug: items[0]?.slug,
         items: items.map((i) => ({
           sku: i.sku,
           name: i.offerLabel,
+          slug: i.slug,
           qty: i.qty,
           price: i.price,
           offerId: i.offerId,
         })),
         total,
-        currency: market.currency,
+        currency: orderCurrency,
         paymentMethod: 'COD',
       };
 
@@ -147,8 +140,13 @@ export function CheckoutModal() {
 
       setOpen(false);
       router.push(`/thank-you?order=${orderId}`);
-    } catch {
-      setError('صار خطأ — حاولي مرة ثانية');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '';
+      setError(
+        message === 'invalid_phone'
+          ? 'رقم جوال إماراتي غير صحيح — مثال: 501234567'
+          : 'صار خطأ — حاولي مرة ثانية',
+      );
     } finally {
       setLoading(false);
     }

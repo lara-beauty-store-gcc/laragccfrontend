@@ -26,6 +26,7 @@ export function appendProductsToOrder(order: LastOrder, products: ProductConfig[
   const newItems = products.map((p) => ({
     sku: p.sku,
     name: p.shortName,
+    slug: p.slug,
     qty: 1,
     price: crossSellPrice(p),
     offerId: 'one',

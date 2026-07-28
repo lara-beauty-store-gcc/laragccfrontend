@@ -1,6 +1,7 @@
 export type LastOrderItem = {
   sku: string;
   name: string;
+  slug?: string;
   qty: number;
   price: number;
   offerId?: string;
@@ -8,6 +9,7 @@ export type LastOrderItem = {
 
 export type LastOrder = {
   orderId: string;
+  orderIds?: string[];
   customerName: string;
   phone: string;
   area?: string;
@@ -40,7 +42,7 @@ export function getLastOrder(): LastOrder | null {
 export function buildWhatsAppConfirmUrl(order: LastOrder, whatsappNumber: string): string {
   const lines = [
     `مرحباً ${order.customerName} 👋`,
-    `أريد تأكيد طلبي رقم: ${order.orderId}`,
+    `أريد تأكيد طلبي رقم: ${(order.orderIds?.length ? order.orderIds : [order.orderId]).join(' · ')}`,
     '',
     '📦 الطلب:',
     ...order.items.map((i) => `• ${i.name} × ${i.qty} — ${i.price * i.qty} ${order.currency}`),

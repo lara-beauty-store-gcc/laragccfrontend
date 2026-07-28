@@ -36,7 +36,22 @@ NEXT_PUBLIC_SITE_URL=https://larabeauty.store
 NEXT_PUBLIC_API_URL=https://api.larabeauty.store
 NEXT_PUBLIC_WHATSAPP_NUMBER=971XXXXXXXXX
 NEXT_PUBLIC_SUPPORT_PHONE=+971 XX XXX XXXX
+NEXT_PUBLIC_SUPPORT_EMAIL=support@larabeauty.store
+
+# Server-only — Google Sheets (see frontend/docs/sheets/UAE_ORDERS_WEBHOOK.gs)
+GOOGLE_SHEETS_WEBHOOK_URL=
+SHEETS_WEBHOOK_SECRET=
 ```
+
+### Google Sheets — الطلبات
+
+1. ف Sheet **Sheet Orders Lara beauty** → Extensions → Apps Script
+2. لصق `frontend/docs/sheets/UAE_ORDERS_WEBHOOK.gs`
+3. بدّل `SCRIPT_SECRET` و `SHEETS_WEBHOOK_SECRET` بنفس القيمة
+4. Deploy → Web app → Anyone
+5. حط URL ف EasyPanel: `GOOGLE_SHEETS_WEBHOOK_URL`
+
+كل منتج = صف واحد + رقم طلب تسلسلي (`00001`, `00002`…). الجوال يتسجّل بصيغة `+971501234567`.
 
 ### Verify deploy (مهم!)
 

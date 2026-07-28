@@ -155,7 +155,10 @@ function ThankYouInner() {
     }
   }, []);
 
-  const orderId = order?.orderId || orderIdParam;
+  const orderIdLabel =
+    order?.orderIds && order.orderIds.length > 1
+      ? order.orderIds.join(' · ')
+      : order?.orderId || orderIdParam;
   const whatsappUrl = useMemo(() => {
     if (!order) return null;
     return buildWhatsAppConfirmUrl(order, support.whatsappNumber);
@@ -176,10 +179,10 @@ function ThankYouInner() {
           شكراً {order?.customerName ? `${order.customerName.split(' ')[0]} ` : ''}
           — خطوة واحدة بسيطة وتأكدين طلبك مع {brand.nameLocal}.
         </p>
-        {orderId ? (
-          <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs text-muted shadow-sm">
-            رقم الطلب:
-            <span className="font-mono font-bold text-primary">{orderId}</span>
+        {orderIdLabel ? (
+          <p className="mt-4 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs text-muted shadow-sm">
+            {order?.orderIds && order.orderIds.length > 1 ? 'أرقام الطلب:' : 'رقم الطلب:'}
+            <span className="font-mono font-bold text-primary">{orderIdLabel}</span>
           </p>
         ) : null}
       </div>

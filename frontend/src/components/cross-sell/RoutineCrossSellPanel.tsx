@@ -12,6 +12,7 @@ import {
 } from '@/lib/cross-sell';
 import { saveLastOrder, type LastOrder } from '@/lib/order-session';
 import { formatPrice } from '@/lib/pricing';
+import { submitOrder } from '@/lib/submit-order';
 import { trackEvent } from '@/lib/tracking';
 
 type RoutineCrossSellPanelProps = {
@@ -32,6 +33,7 @@ export function RoutineCrossSellPanel({
   const suggestions = useMemo(() => getCrossSellProducts(order), [order]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [addedMessage, setAddedMessage] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     if (suggestions.length) {
@@ -52,25 +54,55 @@ export function RoutineCrossSellPanel({
     });
   }
 
-  function addSelectedToOrder() {
-    if (selectedProducts.length === 0) return;
+  async function addSelectedToOrder() {
+    if (selectedProducts.length === 0 || syncing) return;
 
-    const updated = appendProductsToOrder(order, selectedProducts);
-    saveLastOrder(updated);
-    onOrderUpdate?.(updated);
+    setSyncing(true);
+    setAddedMessage(null);
 
-    trackEvent('CrossSellAccepted', {
-      placement: variant,
-      count: selectedProducts.length,
-      value: addTotal,
-      product_ids: selectedProducts.map((p) => p.id).join(','),
-    });
+    try {
+      const { orderIds: newOrderIds } = await submitOrder({
+        customerName: order.customerName,
+        phone: order.phone,
+        area: order.area,
+        items: selectedProducts.map((product) => ({
+          sku: product.sku,
+          name: product.shortName,
+          slug: product.slug,
+          quantity: 1,
+          lineTotal: crossSellPrice(product),
+        })),
+      });
 
-    setSelected(new Set());
-    setAddedMessage(`تمت الإضافة للطلب — المجموع الجديد: ${formatPrice(updated.total)}`);
+      const updated = appendProductsToOrder(order, selectedProducts);
+      const mergedOrderIds = [...(order.orderIds ?? [order.orderId]), ...newOrderIds];
 
-    if (getCrossSellProducts(updated).length === 0) {
-      setTimeout(() => onSkip(), 1500);
+      const saved = {
+        ...updated,
+        orderIds: mergedOrderIds,
+        orderId: mergedOrderIds[0] ?? updated.orderId,
+      };
+
+      saveLastOrder(saved);
+      onOrderUpdate?.(saved);
+
+      trackEvent('CrossSellAccepted', {
+        placement: variant,
+        count: selectedProducts.length,
+        value: addTotal,
+        product_ids: selectedProducts.map((p) => p.id).join(','),
+      });
+
+      setSelected(new Set());
+      setAddedMessage(`تمت الإضافة للطلب — المجموع الجديد: ${formatPrice(saved.total)}`);
+
+      if (getCrossSellProducts(saved).length === 0) {
+        setTimeout(() => onSkip(), 1500);
+      }
+    } catch {
+      setAddedMessage('ما قدرنا نضيف المنتجات — حاولي مرة ثانية');
+    } finally {
+      setSyncing(false);
     }
   }
 
@@ -116,13 +148,13 @@ export function RoutineCrossSellPanel({
       <div className="mt-4 space-y-2">
         <button
           type="button"
-          disabled={selectedProducts.length === 0}
+          disabled={selectedProducts.length === 0 || syncing}
           onClick={addSelectedToOrder}
           className="flex w-full flex-col items-center rounded-2xl bg-primary py-3.5 font-arabic text-sm font-bold text-white shadow-md transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <span className="inline-flex items-center gap-2">
             <Plus className="h-4 w-4" aria-hidden />
-            أضيفي المختار للطلب ({selectedProducts.length || 0})
+            {syncing ? 'جاري الإضافة...' : `أضيفي المختار للطلب (${selectedProducts.length || 0})`}
           </span>
           {selectedProducts.length > 0 ? (
             <span className="mt-0.5 text-xs font-medium text-white/85">
