@@ -20,6 +20,7 @@ export type SubmitOrderResult = {
   success: boolean;
   orderId: string;
   orderIds: string[];
+  sheetSynced?: boolean;
 };
 
 export async function submitOrder(payload: SubmitOrderPayload): Promise<SubmitOrderResult> {
@@ -33,6 +34,10 @@ export async function submitOrder(payload: SubmitOrderPayload): Promise<SubmitOr
 
   if (!res.ok) {
     throw new Error(data.message || data.error || 'order_failed');
+  }
+
+  if (data.sheetSynced === false) {
+    throw new Error(data.message || 'sheet_sync_failed');
   }
 
   const orderIds: string[] = Array.isArray(data.orderIds) ? data.orderIds : [];

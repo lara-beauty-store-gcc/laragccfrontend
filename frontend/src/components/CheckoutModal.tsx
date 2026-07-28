@@ -193,8 +193,8 @@ export function CheckoutModal() {
       const message = err instanceof Error ? err.message : '';
       if (message.includes('invalid_phone') || message.includes('جوال')) {
         setError(uaePhoneErrorMessage(phone));
-      } else if (message.includes('orders_not_configured') || message.includes('السيرفر')) {
-        setError(message);
+      } else if (message.includes('sheet_sync') || message.includes('الشيت')) {
+        setError('ما قدرنا نسجّل الطلب — تأكدي من رقم الجوال (يبدأ بـ 50/52/54/55/56/58) وجربي مرة ثانية');
       } else {
         setError('صار خطأ — جربي مرة ثانية');
       }

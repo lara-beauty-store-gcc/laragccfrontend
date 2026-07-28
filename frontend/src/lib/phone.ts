@@ -1,5 +1,5 @@
-/** UAE: 9 digits after +971. Also accepts 0... or 971... prefix. */
-const AE = /^(?:\+?971)?0?(\d{9})$/;
+/** UAE mobile: +971, 9 digits, must start with 50/52/54/55/56/58 (matches API). */
+const AE = /^(?:\+?971)?0?(5[024568]\d{7})$/;
 
 export const UAE_PHONE_DIGITS = 9;
 export const UAE_PHONE_EXAMPLE = '501234567';
@@ -37,7 +37,10 @@ export function uaePhoneErrorMessage(input: string): string {
   if (digits.length < UAE_PHONE_DIGITS) {
     return `رقم الجوال ناقص — لازم ${UAE_PHONE_DIGITS} أرقام`;
   }
-  return `رقم الجوال لازم يكون ${UAE_PHONE_DIGITS} أرقام`;
+  if (!/^5[024568]/.test(digits)) {
+    return 'رقم جوال إماراتي غير صحيح — لازم يبدأ بـ 50 أو 52 أو 54 أو 55 أو 56 أو 58';
+  }
+  return 'رقم جوال إماراتي غير صحيح — مثال: 501234567';
 }
 
 /** Always +971XXXXXXXXX for Google Sheets / exports. */
@@ -52,7 +55,7 @@ export function formatPhoneForSheet(input: string): string {
   if (digits.startsWith('0') && digits.length === 10) {
     return `+971${digits.slice(1)}`;
   }
-  if (digits.length === 9) {
+  if (digits.length === 9 && /^5[024568]/.test(digits)) {
     return `+971${digits}`;
   }
   if (input.trim().startsWith('+')) {
