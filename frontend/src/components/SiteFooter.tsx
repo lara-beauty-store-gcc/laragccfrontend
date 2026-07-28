@@ -44,6 +44,14 @@ export function SiteFooter() {
                 >
                   Facebook
                 </a>
+                <a
+                  href={social.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-bold text-white/90 transition hover:bg-white/10"
+                >
+                  Instagram · {social.instagramHandle}
+                </a>
               </div>
             </div>
           </div>
