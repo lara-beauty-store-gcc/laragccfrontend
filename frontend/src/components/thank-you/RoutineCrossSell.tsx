@@ -22,7 +22,7 @@ export function RoutineCrossSell({
       variant="thankyou"
       onOrderUpdate={onOrderUpdate}
       onSkip={() => setDismissed(true)}
-      skipLabel="لا شكراً — أكملي التأكيد"
+      skipLabel="لا شكراً — كمّلي للتأكيد"
     />
   );
 }

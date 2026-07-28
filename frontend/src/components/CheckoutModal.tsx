@@ -271,7 +271,7 @@ export function CheckoutModal() {
               variant="checkout"
               onOrderUpdate={(updated) => setPendingOrder(updated)}
               onSkip={finishToThankYou}
-              skipLabel="لا شكراً — كملي لصفحة التأكيد"
+              skipLabel="لا شكراً — كمّلي للتأكيد"
             />
           ) : view === 'cart' ? (
             <CartStep

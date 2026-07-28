@@ -28,7 +28,7 @@ export function RoutineCrossSellPanel({
   variant,
   onSkip,
   onOrderUpdate,
-  skipLabel = 'لا شكراً — كملي للتأكيد',
+  skipLabel = 'لا شكراً — كمّلي للتأكيد',
 }: RoutineCrossSellPanelProps) {
   const suggestions = useMemo(() => getCrossSellProducts(order), [order]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -109,11 +109,13 @@ export function RoutineCrossSellPanel({
   if (suggestions.length === 0) return null;
 
   const title =
-    variant === 'checkout' ? 'قبل التأكيد — كمّلي روتينك؟' : 'كمّلي روتينك';
+    variant === 'checkout'
+      ? 'اقتراح: بغيتي تزيدي شي حاجة لنفس الطلب؟'
+      : 'بغيتي تكمّلي روتينك؟';
   const subtitle =
     variant === 'checkout'
-      ? 'اختاري منتجات تانية تزيديهم لنفس الطلب — تبقين في الموقع.'
-      : 'اختاري منتجات تانية تزيديهم لنفس الطلب مباشرة هنا.';
+      ? 'اختياري تماماً — اختاري إذا حبيتي، وإلا كمّلي للتأكيد مباشرة.'
+      : 'اختاري منتجات تانية تزيديهم لنفس الطلب من هنا.';
 
   return (
     <div className={variant === 'checkout' ? '' : 'rounded-3xl border border-border bg-white p-5 shadow-card'}>
@@ -145,7 +147,15 @@ export function RoutineCrossSellPanel({
         ))}
       </div>
 
-      <div className="mt-4 space-y-2">
+      <div className="mt-4 space-y-3">
+        <button
+          type="button"
+          onClick={onSkip}
+          className="w-full rounded-2xl border-2 border-primary bg-white py-4 font-arabic text-base font-extrabold text-primary shadow-sm transition hover:bg-primary/5 active:scale-[0.99]"
+        >
+          {skipLabel}
+        </button>
+
         <button
           type="button"
           disabled={selectedProducts.length === 0 || syncing}
@@ -166,10 +176,6 @@ export function RoutineCrossSellPanel({
         {selectedProducts.length === 0 ? (
           <p className="text-center text-[11px] text-muted">اختاري منتج واحد على الأقل للإضافة</p>
         ) : null}
-
-        <button type="button" onClick={onSkip} className="w-full py-2.5 text-center text-xs font-medium text-muted">
-          {skipLabel}
-        </button>
       </div>
     </div>
   );
