@@ -23,36 +23,128 @@ function siteBaseUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL || 'https://larabeauty.store').replace(/\/$/, '');
 }
 
-async function forwardToLegacyApi(body: IncomingBody, phoneDigits: string) {
+function normalizeItems(items: IncomingItem[]) {
+  return items.map((item) => {
+    const slug = String(item.slug || '').trim();
+    const quantity = Math.max(1, Number(item.quantity) || 1);
+    const lineTotal = Number(item.lineTotal) || 0;
+
+    return {
+      product: String(item.name || '').trim(),
+      url: slug ? `${siteBaseUrl()}/products/${slug}` : siteBaseUrl(),
+      sku: String(item.sku || '').trim(),
+      quantity,
+      totalPrice: lineTotal,
+      slug,
+      unitPriceAed: lineTotal / quantity,
+    };
+  });
+}
+
+async function forwardToLegacyApi(body: IncomingBody, phoneE164: string, normalizedItems: ReturnType<typeof normalizeItems>) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!apiUrl) return null;
 
-  try {
-    const res = await fetch(`${apiUrl}/api/v1/orders`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        customerName: body.customerName,
-        phone: phoneDigits,
-        area: body.area,
-        country: market.countryCode,
-        currency: market.currency,
-        items: (body.items || []).map((item) => ({
-          sku: item.sku,
-          name: item.name,
-          productId: item.slug,
-          quantity: item.quantity,
-          unitPriceAed: item.lineTotal,
-        })),
-        sourceUrl: body.sourceUrl || siteBaseUrl(),
-        eventId: `purchase_${Date.now()}`,
-      }),
-    });
-    if (!res.ok) return null;
-    return res.json().catch(() => null);
-  } catch {
-    return null;
+  const phoneCandidates = [
+    phoneE164.replace(/\D/g, '').replace(/^971/, ''),
+    phoneE164.replace(/\D/g, ''),
+    phoneE164,
+  ].filter((value, index, all) => value && all.indexOf(value) === index);
+
+  for (const phone of phoneCandidates) {
+    try {
+      const res = await fetch(`${apiUrl}/api/v1/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: body.customerName,
+          phone,
+          area: body.area,
+          country: market.countryCode,
+          currency: market.currency,
+          items: normalizedItems.map((item) => ({
+            sku: item.sku,
+            name: item.product,
+            productId: item.slug,
+            slug: item.slug,
+            quantity: item.quantity,
+            unitPriceAed: item.unitPriceAed,
+            lineTotalAed: item.totalPrice,
+          })),
+          sourceUrl: body.sourceUrl || siteBaseUrl(),
+          eventId: `purchase_${Date.now()}`,
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) continue;
+
+      const orderIds = Array.isArray(data.orderIds)
+        ? data.orderIds.map(String)
+        : data.orderId || data.orderNumber
+          ? [String(data.orderId || data.orderNumber)]
+          : [];
+
+      if (orderIds.length === 0) continue;
+
+      return {
+        orderId: orderIds[0],
+        orderIds,
+      };
+    } catch {
+      // try next phone format
+    }
   }
+
+  return null;
+}
+
+async function forwardToSheets(
+  body: IncomingBody,
+  phoneE164: string,
+  normalizedItems: ReturnType<typeof normalizeItems>,
+) {
+  const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
+  const webhookSecret = process.env.SHEETS_WEBHOOK_SECRET || '';
+  if (!webhookUrl) return null;
+
+  const sheetsRes = await fetch(webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      secret: webhookSecret,
+      date: new Date().toISOString(),
+      customer_name: body.customerName,
+      phone: phoneE164,
+      country: market.countryCode,
+      currency: market.currency,
+      area: body.area || '',
+      items: normalizedItems.map(({ product, url, sku, quantity, totalPrice }) => ({
+        product,
+        url,
+        sku,
+        quantity,
+        totalPrice,
+      })),
+      source_url: body.sourceUrl || siteBaseUrl(),
+    }),
+  });
+
+  const sheetsData = await sheetsRes.json().catch(() => ({}));
+  if (!sheetsRes.ok || sheetsData.ok === false) return null;
+
+  const orderIds: string[] = Array.isArray(sheetsData.order_ids)
+    ? sheetsData.order_ids.map(String)
+    : sheetsData.order_id
+      ? [String(sheetsData.order_id)]
+      : [];
+
+  if (orderIds.length === 0) return null;
+
+  return {
+    orderId: orderIds[0],
+    orderIds,
+  };
 }
 
 export async function POST(req: Request) {
@@ -77,88 +169,26 @@ export async function POST(req: Request) {
       return Response.json({ error: 'empty_cart', message: 'السلة فاضية' }, { status: 400 });
     }
 
-    const normalizedItems = items.map((item) => {
-      const slug = String(item.slug || '').trim();
-      const quantity = Math.max(1, Number(item.quantity) || 1);
-      const lineTotal = Number(item.lineTotal) || 0;
+    const normalizedItems = normalizeItems(items);
 
-      return {
-        product: String(item.name || '').trim(),
-        url: slug ? `${siteBaseUrl()}/products/${slug}` : siteBaseUrl(),
-        sku: String(item.sku || '').trim(),
-        quantity,
-        totalPrice: lineTotal,
-      };
-    });
-
-    const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
-    const webhookSecret = process.env.SHEETS_WEBHOOK_SECRET || '';
-
-    if (!webhookUrl) {
-      const legacy = await forwardToLegacyApi(body, phoneE164.replace(/\D/g, ''));
-      if (legacy?.orderId || legacy?.orderNumber) {
-        const orderId = String(legacy.orderNumber || legacy.orderId);
-        return Response.json({ success: true, orderId, orderIds: [orderId] });
-      }
-
-      return Response.json(
-        {
-          error: 'orders_not_configured',
-          message: 'خدمة الطلبات غير مفعّلة — تواصل مع الدعم',
-        },
-        { status: 503 },
-      );
+    const legacy = await forwardToLegacyApi(body, phoneE164, normalizedItems);
+    if (legacy) {
+      return Response.json({ success: true, ...legacy, source: 'api' });
     }
 
-    const sheetsRes = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        secret: webhookSecret,
-        date: new Date().toISOString(),
-        customer_name: customerName,
-        phone: phoneE164,
-        country: market.countryCode,
-        currency: market.currency,
-        area: body.area || '',
-        items: normalizedItems,
-        source_url: body.sourceUrl || siteBaseUrl(),
-      }),
-    });
-
-    const sheetsData = await sheetsRes.json().catch(() => ({}));
-
-    if (!sheetsRes.ok || sheetsData.ok === false) {
-      return Response.json(
-        {
-          error: 'sheet_sync_failed',
-          message: 'صار خطأ في حفظ الطلب — حاولي مرة ثانية',
-        },
-        { status: 502 },
-      );
+    const sheets = await forwardToSheets(body, phoneE164, normalizedItems);
+    if (sheets) {
+      return Response.json({ success: true, ...sheets, source: 'sheets' });
     }
 
-    const orderIds: string[] = Array.isArray(sheetsData.order_ids)
-      ? sheetsData.order_ids.map(String)
-      : sheetsData.order_id
-        ? [String(sheetsData.order_id)]
-        : [];
-
-    if (orderIds.length === 0) {
-      return Response.json(
-        { error: 'sheet_sync_failed', message: 'صار خطأ في حفظ الطلب — حاولي مرة ثانية' },
-        { status: 502 },
-      );
-    }
-
-    // Best-effort CAPI relay — legacy API may still reject UAE phones.
-    void forwardToLegacyApi(body, phoneE164.replace(/\D/g, ''));
-
-    return Response.json({
-      success: true,
-      orderId: orderIds[0],
-      orderIds,
-    });
+    return Response.json(
+      {
+        error: 'orders_not_configured',
+        message:
+          'ما قدرنا نسجّل الطلب — السيرفر محتاج تحديث لأرقام الإمارات (+971). تواصلي مع الدعم: support@larabeauty.store',
+      },
+      { status: 503 },
+    );
   } catch {
     return Response.json(
       { error: 'internal_error', message: 'صار خطأ — حاولي مرة ثانية' },

@@ -16,7 +16,7 @@ import { businessConfig } from '@/config/business';
 import { useCart } from '@/lib/cart';
 import { saveLastOrder, type LastOrder } from '@/lib/order-session';
 import { formatPrice } from '@/lib/pricing';
-import { isValidUaePhone, normalizeUaePhone } from '@/lib/phone';
+import { formatUaePhoneInput, isValidUaePhone, normalizeUaePhone } from '@/lib/phone';
 import { orderCurrency, submitOrder } from '@/lib/submit-order';
 import { trackEvent } from '@/lib/tracking';
 import { Stars } from '@/components/Stars';
@@ -142,11 +142,13 @@ export function CheckoutModal() {
       router.push(`/thank-you?order=${orderId}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : '';
-      setError(
-        message === 'invalid_phone'
-          ? 'رقم جوال إماراتي غير صحيح — مثال: 501234567'
-          : 'صار خطأ — حاولي مرة ثانية',
-      );
+      if (message.includes('invalid_phone') || message.includes('جوال إماراتي')) {
+        setError('رقم جوال إماراتي غير صحيح — مثال: 501234567');
+      } else if (message.includes('orders_not_configured') || message.includes('السيرفر')) {
+        setError(message);
+      } else {
+        setError('صار خطأ — حاولي مرة ثانية');
+      }
     } finally {
       setLoading(false);
     }
@@ -278,14 +280,16 @@ export function CheckoutModal() {
                       autoFocus
                       type="tel"
                       inputMode="numeric"
-                      autoComplete="tel"
+                      autoComplete="tel-national"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => setPhone(formatUaePhoneInput(e.target.value))}
                       className="flex-1 rounded-xl border-2 border-border bg-white px-4 py-3.5 text-base text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
                       placeholder={market.phoneExample}
                     />
                   </div>
-                  <p className="mt-1 text-[10px] text-muted">نستخدمه للتأكيد والتوصيل فقط</p>
+                  <p className="mt-1 text-[10px] text-muted">
+                    اكتبي 9 أرقام بعد +971 — مثال: 501234567 (ماشي لازم 05)
+                  </p>
                 </div>
 
                 <div>
