@@ -3,24 +3,22 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { Check, MessageCircle, Sparkles } from 'lucide-react';
-import { businessConfig } from '@/config/business';
+import { Check, CircleCheckBig, Plus, Sparkles } from 'lucide-react';
 import type { ProductConfig } from '@/config/products';
 import {
-  buildWhatsAppMultiAddOnUrl,
+  appendProductsToOrder,
   crossSellPrice,
   getCrossSellProducts,
 } from '@/lib/cross-sell';
-import type { LastOrder } from '@/lib/order-session';
+import { saveLastOrder, type LastOrder } from '@/lib/order-session';
 import { formatPrice } from '@/lib/pricing';
 import { trackEvent } from '@/lib/tracking';
-
-const { support } = businessConfig;
 
 type RoutineCrossSellPanelProps = {
   order: LastOrder;
   variant: 'checkout' | 'thankyou';
   onSkip: () => void;
+  onOrderUpdate?: (order: LastOrder) => void;
   skipLabel?: string;
 };
 
@@ -28,10 +26,12 @@ export function RoutineCrossSellPanel({
   order,
   variant,
   onSkip,
+  onOrderUpdate,
   skipLabel = 'لا شكراً — كملي للتأكيد',
 }: RoutineCrossSellPanelProps) {
   const suggestions = useMemo(() => getCrossSellProducts(order), [order]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [addedMessage, setAddedMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (suggestions.length) {
@@ -40,12 +40,10 @@ export function RoutineCrossSellPanel({
   }, [suggestions.length, variant]);
 
   const selectedProducts = suggestions.filter((p) => selected.has(p.id));
-  const waUrl =
-    selectedProducts.length > 0
-      ? buildWhatsAppMultiAddOnUrl(order, selectedProducts, support.whatsappNumber)
-      : null;
+  const addTotal = selectedProducts.reduce((sum, p) => sum + crossSellPrice(p), 0);
 
   function toggle(productId: string) {
+    setAddedMessage(null);
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(productId)) next.delete(productId);
@@ -54,18 +52,40 @@ export function RoutineCrossSellPanel({
     });
   }
 
+  function addSelectedToOrder() {
+    if (selectedProducts.length === 0) return;
+
+    const updated = appendProductsToOrder(order, selectedProducts);
+    saveLastOrder(updated);
+    onOrderUpdate?.(updated);
+
+    trackEvent('CrossSellAccepted', {
+      placement: variant,
+      count: selectedProducts.length,
+      value: addTotal,
+      product_ids: selectedProducts.map((p) => p.id).join(','),
+    });
+
+    setSelected(new Set());
+    setAddedMessage(`تمت الإضافة للطلب — المجموع الجديد: ${formatPrice(updated.total)}`);
+
+    if (getCrossSellProducts(updated).length === 0) {
+      setTimeout(() => onSkip(), 1500);
+    }
+  }
+
   if (suggestions.length === 0) return null;
 
   const title =
     variant === 'checkout' ? 'قبل التأكيد — كمّلي روتينك؟' : 'كمّلي روتينك';
   const subtitle =
     variant === 'checkout'
-      ? 'اختاري منتجات تانية تزيديهم لنفس الطلب — أو تخطي وكملي للتأكيد.'
-      : 'اختاري منتجات تانية تزيديهم لنفس الطلب عبر واتساب.';
+      ? 'اختاري منتجات تانية تزيديهم لنفس الطلب — تبقين في الموقع.'
+      : 'اختاري منتجات تانية تزيديهم لنفس الطلب مباشرة هنا.';
 
   return (
     <div className={variant === 'checkout' ? '' : 'rounded-3xl border border-border bg-white p-5 shadow-card'}>
-      <div className={`flex items-start gap-3 ${variant === 'checkout' ? 'mb-4' : 'mb-4'}`}>
+      <div className="mb-4 flex items-start gap-3">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-secondary-soft">
           <Sparkles className="h-5 w-5 text-secondary" aria-hidden />
         </span>
@@ -75,11 +95,17 @@ export function RoutineCrossSellPanel({
         </div>
       </div>
 
+      {addedMessage ? (
+        <div className="mb-4 flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+          <CircleCheckBig className="h-5 w-5 shrink-0" aria-hidden />
+          {addedMessage}
+        </div>
+      ) : null}
+
       <div className="space-y-3">
         {suggestions.map((product) => (
           <CrossSellSelectableCard
             key={product.id}
-            order={order}
             product={product}
             checked={selected.has(product.id)}
             onToggle={() => toggle(product.id)}
@@ -88,26 +114,26 @@ export function RoutineCrossSellPanel({
       </div>
 
       <div className="mt-4 space-y-2">
-        {waUrl ? (
-          <a
-            href={waUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() =>
-              trackEvent('CrossSellClick', {
-                placement: variant,
-                count: selectedProducts.length,
-                product_ids: selectedProducts.map((p) => p.id).join(','),
-              })
-            }
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] py-3.5 font-arabic text-sm font-bold text-white shadow-md"
-          >
-            <MessageCircle className="h-4 w-4" aria-hidden />
-            أضيفي المختار عبر واتساب ({selectedProducts.length})
-          </a>
-        ) : (
+        <button
+          type="button"
+          disabled={selectedProducts.length === 0}
+          onClick={addSelectedToOrder}
+          className="flex w-full flex-col items-center rounded-2xl bg-primary py-3.5 font-arabic text-sm font-bold text-white shadow-md transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <span className="inline-flex items-center gap-2">
+            <Plus className="h-4 w-4" aria-hidden />
+            أضيفي المختار للطلب ({selectedProducts.length || 0})
+          </span>
+          {selectedProducts.length > 0 ? (
+            <span className="mt-0.5 text-xs font-medium text-white/85">
+              +{formatPrice(addTotal)} · المجموع يصير {formatPrice(order.total + addTotal)}
+            </span>
+          ) : null}
+        </button>
+
+        {selectedProducts.length === 0 ? (
           <p className="text-center text-[11px] text-muted">اختاري منتج واحد على الأقل للإضافة</p>
-        )}
+        ) : null}
 
         <button type="button" onClick={onSkip} className="w-full py-2.5 text-center text-xs font-medium text-muted">
           {skipLabel}
@@ -122,7 +148,6 @@ function CrossSellSelectableCard({
   checked,
   onToggle,
 }: {
-  order: LastOrder;
   product: ProductConfig;
   checked: boolean;
   onToggle: () => void;

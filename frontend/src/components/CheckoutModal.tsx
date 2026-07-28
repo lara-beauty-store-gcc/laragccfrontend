@@ -220,6 +220,7 @@ export function CheckoutModal() {
             <RoutineCrossSellPanel
               order={pendingOrder}
               variant="checkout"
+              onOrderUpdate={(updated) => setPendingOrder(updated)}
               onSkip={finishToThankYou}
               skipLabel="لا شكراً — كملي لصفحة التأكيد"
             />

@@ -215,7 +215,7 @@ function ThankYouInner() {
       ) : null}
 
       {/* Cross-sell: other gummies — after confirm, optional, no fake total */}
-      {order ? <div className="mt-6"><RoutineCrossSell order={order} /></div> : null}
+      {order ? <div className="mt-6"><RoutineCrossSell order={order} onOrderUpdate={setOrder} /></div> : null}
 
       <p className="mt-3 text-center text-[11px] text-muted">
         أو تواصلي معنا:{' '}

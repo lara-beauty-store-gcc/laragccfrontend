@@ -21,6 +21,23 @@ export function crossSellPrice(product: ProductConfig): number {
   return getLowestOfferPrice(product);
 }
 
+/** Add selected cross-sell products to the in-session order (on-site, no WhatsApp). */
+export function appendProductsToOrder(order: LastOrder, products: ProductConfig[]): LastOrder {
+  const newItems = products.map((p) => ({
+    sku: p.sku,
+    name: p.shortName,
+    qty: 1,
+    price: crossSellPrice(p),
+    offerId: 'one',
+  }));
+  const addedTotal = newItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+  return {
+    ...order,
+    items: [...order.items, ...newItems],
+    total: order.total + addedTotal,
+  };
+}
+
 export function buildWhatsAppAddOnUrl(
   order: LastOrder,
   product: ProductConfig,
