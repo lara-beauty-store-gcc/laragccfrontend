@@ -1,6 +1,6 @@
 # EasyPanel: branch frontend, empty source path, port 3000
 # CACHEBUST — change this line to force EasyPanel full rebuild
-ARG CACHEBUST=fix-easypanel-build-oom-v24-2026-07-28
+ARG CACHEBUST=fix-docker-chown-user-v25-2026-07-28
 FROM node:20-alpine AS base
 RUN echo "BUILD ${CACHEBUST}" && apk add --no-cache libc6-compat curl
 WORKDIR /app
@@ -25,7 +25,7 @@ ENV ORDERS_DATA_DIR=/app/data
 WORKDIR /app
 
 RUN addgroup -g 1001 -S nodejs && adduser -S -u 1001 -G nodejs nextjs \
-  && mkdir -p /app/data && chown nodejs:nodejs /app/data
+  && mkdir -p /app/data && chown nextjs:nodejs /app/data
 
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./

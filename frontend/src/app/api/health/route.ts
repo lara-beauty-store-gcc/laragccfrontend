@@ -10,7 +10,7 @@ export async function GET() {
     market: 'UAE',
     countryCode: 'AE',
     currency: 'AED',
-    deployTag: 'fix-easypanel-build-oom-v24-2026-07-28',
+    deployTag: 'fix-docker-chown-user-v25-2026-07-28',
     repo: 'laragccfrontend',
     sheetsWebhook: sheetsWebhookConfigured() ? 'configured' : 'missing',
     unsyncedOrders: batches.reduce((sum, batch) => sum + batch.orderIds.length, 0),

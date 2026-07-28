@@ -1,5 +1,5 @@
 # Build store from frontend/ when EasyPanel source path is empty (repo root)
-ARG CACHEBUST=fix-easypanel-build-oom-v24-2026-07-28
+ARG CACHEBUST=fix-docker-chown-user-v25-2026-07-28
 FROM node:20-alpine AS base
 RUN echo "BUILD ${CACHEBUST}"
 RUN apk add --no-cache libc6-compat curl
@@ -24,7 +24,7 @@ ENV ORDERS_DATA_DIR=/app/data
 WORKDIR /app
 
 RUN addgroup -g 1001 -S nodejs && adduser -S -u 1001 -G nodejs nextjs \
-  && mkdir -p /app/data && chown nodejs:nodejs /app/data
+  && mkdir -p /app/data && chown nextjs:nodejs /app/data
 
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
