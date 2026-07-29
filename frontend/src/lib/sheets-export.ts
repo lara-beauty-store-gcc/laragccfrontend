@@ -1,5 +1,4 @@
-import { businessConfig } from '@/config/business';
-import { getProductBySlug } from '@/config/products';
+import { getProductBySku, getProductBySlug, getSheetProductName, products } from '@/config/products';
 
 import { formatPhoneForSheet } from '@/lib/phone';
 
@@ -48,6 +47,10 @@ export type SheetOrderContext = {
   orderIds?: string[];
 };
 
+const OFFER_PACK_LABELS = new Set(
+  products.flatMap((product) => product.offers.map((offer) => offer.label.trim())).filter(Boolean),
+);
+
 export function formatSheetOrderDate(input?: string | Date): string {
   const parsed = input instanceof Date ? input : input ? new Date(input) : new Date();
   const date = Number.isNaN(parsed.getTime()) ? new Date() : parsed;
@@ -77,6 +80,43 @@ export function isGarbageSerializedValue(value: string): boolean {
   return false;
 }
 
+export function stripQuantitySuffix(value: string): string {
+  return value.trim().replace(/\sx\d+$/i, '').trim();
+}
+
+export function isOfferPackLabel(value: string): boolean {
+  const trimmed = stripQuantitySuffix(value);
+  if (!trimmed) return false;
+  return OFFER_PACK_LABELS.has(trimmed);
+}
+
+function slugFromProductUrl(url: string): string {
+  const match = url.trim().match(/\/products\/([^/?#]+)/i);
+  return match?.[1]?.trim() ?? '';
+}
+
+export function resolveCatalogProductName(raw: RawSheetItem): string {
+  const sku = String(raw.sku || '').trim();
+  if (sku) {
+    const bySku = getProductBySku(sku);
+    if (bySku) return getSheetProductName(bySku);
+  }
+
+  const slug = pickSlug(raw);
+  if (slug) {
+    const bySlug = getProductBySlug(slug);
+    if (bySlug) return getSheetProductName(bySlug);
+  }
+
+  const urlSlug = slugFromProductUrl(String(raw.url || raw.product_url || ''));
+  if (urlSlug) {
+    const byUrl = getProductBySlug(urlSlug);
+    if (byUrl) return getSheetProductName(byUrl);
+  }
+
+  return '';
+}
+
 export function serializeProductValue(value: unknown): string {
   if (value == null) return '';
 
@@ -93,15 +133,10 @@ export function serializeProductValue(value: unknown): string {
     const lines = value
       .map((entry) => {
         if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
-          const obj = entry as RawSheetItem;
-          const name = serializeProductValue(
-            obj.name ?? obj.productName ?? obj.product ?? obj.title ?? obj.label ?? obj.shortName,
-          );
-          if (!name) return '';
-          const qty = Math.max(1, Number(obj.quantity ?? obj.qty ?? obj.quantite) || 1);
-          return formatProductLabel(name, qty);
+          return pickProductName(entry as RawSheetItem);
         }
-        return serializeProductValue(entry);
+        const serialized = serializeProductValue(entry);
+        return isOfferPackLabel(serialized) ? '' : serialized;
       })
       .filter(Boolean);
 
@@ -109,13 +144,7 @@ export function serializeProductValue(value: unknown): string {
   }
 
   if (typeof value === 'object') {
-    const obj = value as RawSheetItem;
-    const name = serializeProductValue(
-      obj.name ?? obj.productName ?? obj.product ?? obj.title ?? obj.label ?? obj.shortName,
-    );
-    if (!name) return '';
-    const qty = Math.max(1, Number(obj.quantity ?? obj.qty ?? obj.quantite) || 1);
-    return formatProductLabel(name, qty);
+    return pickProductName(value as RawSheetItem);
   }
 
   const fallback = String(value).trim();
@@ -183,32 +212,21 @@ function roundMoney(amount: number): number {
 }
 
 export function pickProductName(raw: RawSheetItem): string {
-  const fromProduct = serializeProductValue(raw.product);
-  if (fromProduct) return fromProduct;
+  const fromCatalog = resolveCatalogProductName(raw);
+  if (fromCatalog) return fromCatalog;
 
-  const candidates = [raw.productName, raw.name, raw.title, raw.label, raw.shortName];
+  const candidates = [raw.product, raw.productName, raw.name, raw.title, raw.label, raw.shortName];
   for (const candidate of candidates) {
     const serialized = serializeProductValue(candidate);
-    if (serialized) return serialized;
-  }
-
-  const slug = pickSlug(raw);
-  if (slug) {
-    const product = getProductBySlug(slug);
-    if (product?.name) return product.name.trim();
+    if (!serialized || isOfferPackLabel(serialized)) continue;
+    return stripQuantitySuffix(serialized);
   }
 
   return '';
 }
 
 export function productLabelForSheet(raw: RawSheetItem): string {
-  const quantity = pickQuantity(raw);
-  const name = pickProductName(raw);
-
-  if (!name) return '';
-  if (name.includes('\n')) return name;
-
-  return formatProductLabel(name, quantity);
+  return pickProductName(raw);
 }
 
 export function flattenRawItems(items: unknown): RawSheetItem[] {

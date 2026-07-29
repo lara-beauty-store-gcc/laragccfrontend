@@ -8,7 +8,8 @@ import {
   useMemo,
   useState,
 } from 'react';
-import type { ProductConfig } from '@/config/products';
+import { getProductBySlug } from '@/config/products';
+import type { ProductConfig } from '@/config/types';
 import type { ProductOffer } from '@/config/types';
 
 export type CartLine = {
@@ -45,6 +46,21 @@ type CartContextValue = {
 const CartContext = createContext<CartContextValue | null>(null);
 const STORAGE_KEY = 'lara-cart-v2';
 
+function hydrateCartLine(line: Partial<CartLine> & Pick<CartLine, 'productId' | 'offerId'>): CartLine {
+  const product = line.slug ? getProductBySlug(line.slug) : undefined;
+  return {
+    productId: line.productId,
+    slug: line.slug ?? product?.slug ?? '',
+    sku: line.sku ?? product?.sku ?? '',
+    name: line.name?.trim() || product?.name || line.offerLabel || '',
+    offerId: line.offerId,
+    offerQuantity: line.offerQuantity ?? 1,
+    offerLabel: line.offerLabel ?? '',
+    price: line.price ?? 0,
+    qty: line.qty ?? 1,
+  };
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartLine[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -54,7 +70,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setItems(JSON.parse(raw));
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<CartLine>[];
+        if (Array.isArray(parsed)) {
+          setItems(parsed.map((line) => hydrateCartLine(line as Partial<CartLine> & Pick<CartLine, 'productId' | 'offerId'>)));
+        }
+      }
     } catch {
       /* ignore */
     }

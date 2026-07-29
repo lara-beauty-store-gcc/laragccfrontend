@@ -359,6 +359,21 @@ export function getProductBySlug(slug: string): ProductConfig | undefined {
   return products.find((p) => p.slug === slug);
 }
 
+export function getProductBySku(sku: string): ProductConfig | undefined {
+  const normalized = sku.trim().toUpperCase();
+  if (!normalized) return undefined;
+  return products.find((p) => p.sku.toUpperCase() === normalized);
+}
+
+/** English-style name for Google Sheets (matches URL slug). */
+export function getSheetProductName(product: ProductConfig): string {
+  return product.slug
+    .split('-')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
 export function getLowestOfferPrice(product: ProductConfig): number {
   return Math.min(...product.offers.map((o) => o.price));
 }
