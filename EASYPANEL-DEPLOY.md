@@ -6,7 +6,7 @@
 
 | Setting | عندك دابا | صح؇ |
 |---------|-----------|-----|
-| Repository | `lara-beauty-store-gcc/laragccbackend` | ✅ |
+| Repository | `lara-beauty-store-gcc/laragccfrontend` | ✅ |
 | Branch | `frontend` | ✅ |
 | Build Path | `/` | ✅ (خاوي = root) |
 | Build | Dockerfile | ✅ |

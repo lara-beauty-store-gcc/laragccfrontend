@@ -12,7 +12,7 @@ export async function GET() {
       market: 'UAE',
       countryCode: 'AE',
       currency: 'AED',
-      deployTag: 'sheet-product-catalog-v41-2026-07-29',
+      deployTag: 'easypanel-redeploy-v42-2026-07-30',
       repo: 'laragccfrontend',
       orderFlow: 'sheets-only-then-api-fallback',
       apiUrl: apiBaseUrl() ? 'configured' : 'missing',

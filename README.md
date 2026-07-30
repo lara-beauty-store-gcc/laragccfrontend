@@ -34,8 +34,9 @@ PORT=3000
 HOSTNAME=0.0.0.0
 NEXT_PUBLIC_SITE_URL=https://larabeauty.store
 NEXT_PUBLIC_API_URL=https://api.larabeauty.store
-NEXT_PUBLIC_WHATSAPP_NUMBER=971XXXXXXXXX
-NEXT_PUBLIC_SUPPORT_PHONE=+971 XX XXX XXXX
+NEXT_PUBLIC_WHATSAPP_NUMBER=12402107635
+NEXT_PUBLIC_WHATSAPP_DISPLAY=+1 (240) 210-7635
+NEXT_PUBLIC_SUPPORT_PHONE=+1 (240) 210-7635
 NEXT_PUBLIC_SUPPORT_EMAIL=support@larabeauty.store
 
 # Server-only — Google Sheets (see frontend/docs/sheets/UAE_ORDERS_WEBHOOK.gs)
@@ -63,12 +64,9 @@ Ba3d Deploy f EasyPanel, **khass yاخد 2–5 d9ayeq** (machi 2 seconds).
 curl https://larabeauty.store/api/health
 ```
 
-Khasso yraj3:
-```json
-"deployTag": "thank-you-cod-v6-2026-07-27"
-```
+Khasso yraj3 JSON m3a `"ok": true` w `"deployTag"` (version f `api/health`).
 
-Ila ba9a `uae-currency-aed-v4` → deploy ma dar rebuild. Dir **Redeploy** w chouf build logs.
+Ila `deployTag` ma tbdlch ba3d merge → **Redeploy** (w ila ma kaybniش: bump `CACHEBUST` f Dockerfile).
 
 ---
 
@@ -76,9 +74,8 @@ Ila ba9a `uae-currency-aed-v4` → deploy ma dar rebuild. Dir **Redeploy** w cho
 
 | المشكل | الحل |
 |--------|------|
-| `package.json missing` | Source path = **`frontend`** |
-| Service not reachable | Proxy port = **3000** (ماشي 80) |
-| branch not found | Branch = **`main`** (minuscules) |
+| `package.json missing` | Branch **`frontend`** → Source path **فارغ**. Branch **`main`** → Source path **`frontend`** |
+| branch not found | Branch **`frontend`** (Option A) ولا **`main`** (Option B) — حروف صغيرة |
 | Build timeout | Repo private → GitHub token f EasyPanel |
 
 ---
