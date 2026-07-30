@@ -264,7 +264,7 @@
             {
               "id": "final-message-audio",
               "name": "finalMessage",
-              "value": "={{ 'الزبون صيفط فويس: ' + ($json.transcript || 'ما قدرنا نفهم الفويس') }}",
+              "value": "={{ 'رسالة العميل (فويس مفرّغ): ' + ($json.transcript || $json.text || '').trim() || 'ما قدرنا نفهم الفويس، عافاك اكتب رسالة نصية.' }}",
               "type": "string"
             },
             {
