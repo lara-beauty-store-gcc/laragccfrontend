@@ -59,9 +59,10 @@ export const businessConfig = {
     termsNote: 'بالمتابعة أنتِ توافقين على الشروط والأحكام وسياسة الخصوصية',
   },
   support: {
-  /** رقم واتساب بدون + أو مسافات — مثال: 971501234567 */
-    whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '971501234567',
-    phoneDisplay: process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? '+971 50 123 4567',
+    /** رقم واتساب بدون + أو مسافات — wa.me */
+    whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '12402107635',
+    whatsappDisplay: process.env.NEXT_PUBLIC_WHATSAPP_DISPLAY ?? '+1 (240) 210-7635',
+    phoneDisplay: process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? '+1 (240) 210-7635',
     email: process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? 'support@larabeauty.store',
     hours: 'يومياً 9 ص — 10 م',
   },

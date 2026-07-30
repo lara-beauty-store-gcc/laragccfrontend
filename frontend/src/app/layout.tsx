@@ -4,6 +4,7 @@ import { CartProvider } from '@/lib/cart';
 import { CheckoutModal } from '@/components/CheckoutModal';
 import { AnnouncementBar } from '@/components/AnnouncementBar';
 import { SiteHeader } from '@/components/SiteHeader';
+import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
 import './globals.css';
 
 const { brand, market, design, support } = businessInputs;
@@ -36,6 +37,7 @@ export default function RootLayout({
           <SiteHeader />
           <main className="flex-1">{children}</main>
           <CheckoutModal />
+          <WhatsAppFloatingButton />
         </CartProvider>
       </body>
     </html>
