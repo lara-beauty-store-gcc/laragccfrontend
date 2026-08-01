@@ -1,6 +1,6 @@
-import { Mail, Phone } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { businessConfig } from '@/config/business';
-import { buildWhatsAppChatUrl } from '@/lib/whatsapp';
+import { buildWhatsAppDirectUrl, openWhatsAppChat } from '@/lib/whatsapp';
 
 const { support, market } = businessConfig;
 
@@ -24,9 +24,11 @@ export function SupportContact({ variant = 'footer', showTitle = true }: Support
       <ul className={`space-y-2 text-sm ${isFooter ? 'text-white/75' : 'text-muted'}`}>
         <li>
           <a
-            href={buildWhatsAppChatUrl()}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={buildWhatsAppDirectUrl()}
+            onClick={(e) => {
+              e.preventDefault();
+              openWhatsAppChat();
+            }}
             className={`inline-flex items-center gap-2 rounded-xl px-0 py-0.5 font-semibold transition ${
               isFooter
                 ? 'text-[#7dffb0] hover:text-[#25D366]'
@@ -54,15 +56,6 @@ export function SupportContact({ variant = 'footer', showTitle = true }: Support
           >
             <Mail className="h-4 w-4 shrink-0" aria-hidden />
             <span dir="ltr">{support.email}</span>
-          </a>
-        </li>
-        <li>
-          <a
-            href={`tel:${support.phoneDisplay.replace(/\s/g, '')}`}
-            className={`inline-flex items-center gap-2 transition ${isFooter ? 'hover:text-white' : 'hover:text-primary'}`}
-          >
-            <Phone className="h-4 w-4 shrink-0" aria-hidden />
-            <span dir="ltr">{support.phoneDisplay}</span>
           </a>
         </li>
         <li className={`text-xs ${isFooter ? 'text-white/55' : 'text-muted'}`}>

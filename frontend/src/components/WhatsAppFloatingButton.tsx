@@ -1,7 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { buildWhatsAppChatUrl } from '@/lib/whatsapp';
+import {
+  buildWhatsAppDirectUrl,
+  openWhatsAppChat,
+} from '@/lib/whatsapp';
 
 function WhatsAppGlyph({ className }: { className?: string }) {
   return (
@@ -11,8 +14,11 @@ function WhatsAppGlyph({ className }: { className?: string }) {
   );
 }
 
+const fabClassName =
+  'whatsapp-fab pointer-events-auto group relative flex h-[3.75rem] w-[3.75rem] items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_28px_rgba(37,211,102,0.45)] transition-transform duration-200 hover:scale-105 hover:shadow-[0_12px_36px_rgba(37,211,102,0.55)] active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25D366] sm:h-16 sm:w-16';
+
 export function WhatsAppFloatingButton() {
-  const href = buildWhatsAppChatUrl();
+  const href = buildWhatsAppDirectUrl();
   const [hintVisible, setHintVisible] = useState(false);
 
   useEffect(() => {
@@ -23,6 +29,11 @@ export function WhatsAppFloatingButton() {
       window.clearTimeout(hide);
     };
   }, []);
+
+  const handleOpen = (e: React.MouseEvent) => {
+    e.preventDefault();
+    openWhatsAppChat();
+  };
 
   return (
     <div
@@ -37,26 +48,29 @@ export function WhatsAppFloatingButton() {
         }`}
         aria-hidden={!hintVisible}
       >
-        <div className="relative max-w-[min(17rem,calc(100vw-5.5rem))] rounded-2xl border border-white/20 bg-[#0f1f18]/95 px-4 py-3 text-right shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-md">
+        <a
+          href={href}
+          onClick={handleOpen}
+          className="relative block max-w-[min(17rem,calc(100vw-5.5rem))] rounded-2xl border border-white/20 bg-[#0f1f18]/95 px-4 py-3 text-right shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-md transition hover:border-[#25D366]/40"
+        >
           <p className="font-arabic text-[13px] font-bold leading-snug text-white" dir="rtl">
             محتاجة مساعدة؟
           </p>
           <p className="mt-0.5 font-arabic text-[11px] leading-relaxed text-white/75" dir="rtl">
-            ردي على واتساب — فريق لارا يرد عليك بسرعة
+            اضغطي — محادثة واتساب مباشرة مع لارا
           </p>
           <span
             className="absolute -bottom-1.5 end-6 h-3 w-3 rotate-45 border-b border-e border-white/20 bg-[#0f1f18]/95"
             aria-hidden
           />
-        </div>
+        </a>
       </div>
 
       <a
         href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="whatsapp-fab pointer-events-auto group relative flex h-[3.75rem] w-[3.75rem] items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_28px_rgba(37,211,102,0.45)] transition-transform duration-200 hover:scale-105 hover:shadow-[0_12px_36px_rgba(37,211,102,0.55)] active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25D366] sm:h-16 sm:w-16"
-        aria-label="تواصل معنا عبر واتساب"
+        onClick={handleOpen}
+        className={fabClassName}
+        aria-label="فتح واتساب — +1 (240) 210-7635"
       >
         <span className="whatsapp-fab-ping absolute inset-0 rounded-full bg-[#25D366]" aria-hidden />
         <span
