@@ -1,0 +1,11 @@
+{
+  "name": "lara-beauty-store",
+  "build": {
+    "type": "dockerfile",
+    "dockerfile": "Dockerfile"
+  },
+  "deploy": {
+    "port": 3000,
+    "healthcheck": "/api/health"
+  }
+}
