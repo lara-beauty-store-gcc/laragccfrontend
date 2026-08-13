@@ -5,6 +5,7 @@ import { CheckoutModal } from '@/components/CheckoutModal';
 import { AnnouncementBar } from '@/components/AnnouncementBar';
 import { SiteHeader } from '@/components/SiteHeader';
 import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
+import { MarketingPixels } from '@/components/marketing/MarketingPixels';
 import './globals.css';
 
 const { brand, market, design, support } = businessInputs;
@@ -32,6 +33,7 @@ export default function RootLayout({
   return (
     <html lang={market.language} dir={market.direction}>
       <body className="flex min-h-screen flex-col">
+        <MarketingPixels />
         <CartProvider>
           <AnnouncementBar />
           <SiteHeader />

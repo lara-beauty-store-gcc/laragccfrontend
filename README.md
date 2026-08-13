@@ -42,6 +42,12 @@ NEXT_PUBLIC_SUPPORT_EMAIL=support@larabeauty.store
 # Server-only — Google Sheets (see frontend/docs/sheets/UAE_ORDERS_WEBHOOK.gs)
 GOOGLE_SHEETS_WEBHOOK_URL=
 SHEETS_WEBHOOK_SECRET=
+
+# Marketing pixels (client-side — baked in at build time)
+NEXT_PUBLIC_ENABLE_PIXELS=true
+NEXT_PUBLIC_TIKTOK_PIXEL_ID=
+NEXT_PUBLIC_META_PIXEL_ID=
+NEXT_PUBLIC_SNAP_PIXEL_ID=
 ```
 
 ### Google Sheets — الطلبات

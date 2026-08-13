@@ -1,15 +1,43 @@
 type TrackPayload = Record<string, string | number | boolean | undefined>;
 
+type TrackerWindow = Window & {
+  fbq?: (...args: unknown[]) => void;
+  ttq?: { track: (...args: unknown[]) => void };
+};
+
+function firstContentId(payload?: TrackPayload) {
+  const raw = payload?.content_ids ?? payload?.content_id;
+  if (typeof raw === 'string' && raw.includes(',')) return raw.split(',')[0]?.trim();
+  return typeof raw === 'string' || typeof raw === 'number' ? String(raw) : undefined;
+}
+
+function tiktokPayload(payload?: TrackPayload) {
+  if (!payload) return undefined;
+
+  const contentId = firstContentId(payload);
+  const mapped: TrackPayload = {
+    content_type: payload.content_type ?? 'product',
+    value: payload.value,
+    currency: payload.currency,
+    quantity: payload.quantity ?? payload.num_items,
+    content_name: payload.content_name,
+    order_id: payload.order_id,
+  };
+
+  if (contentId) mapped.content_id = contentId;
+  return mapped;
+}
+
 export function trackEvent(name: string, payload?: TrackPayload) {
   if (typeof window === 'undefined') return;
-  const w = window as Window & { fbq?: (...a: unknown[]) => void; ttq?: { track: (...a: unknown[]) => void } };
+  const w = window as TrackerWindow;
   try {
     w.fbq?.('track', name, payload);
   } catch {
     /* optional */
   }
   try {
-    w.ttq?.track(name, payload);
+    w.ttq?.track(name, tiktokPayload(payload));
   } catch {
     /* optional */
   }
