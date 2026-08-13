@@ -1,6 +1,6 @@
 # EasyPanel: branch frontend, empty source path, port 3000
 # CACHEBUST — change this line to force EasyPanel full rebuild
-ARG CACHEBUST=whatsapp-direct-wa-me-v44-2026-08-01
+ARG CACHEBUST=deploy-fix-supportcontact-tiktok-v45-2026-08-13
 FROM node:20-alpine AS base
 RUN echo "BUILD ${CACHEBUST}" && apk add --no-cache libc6-compat curl
 WORKDIR /app
