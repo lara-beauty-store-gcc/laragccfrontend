@@ -10,6 +10,7 @@ import {
   type RawSheetItem,
 } from '@/lib/sheets-export';
 import { forwardOrderToSheetsWithRetry } from '@/lib/sheets-webhook';
+import { sendTiktokEvent } from '@/lib/tiktok-capi';
 import { normalizeCustomerName, normalizeUaePhone, formatPhoneForSheet, uaePhoneErrorMessage } from '@/lib/phone';
 
 export const dynamic = 'force-dynamic';
@@ -28,6 +29,12 @@ const { market } = businessConfig;
 
 function siteBaseUrl() {
   return runtimeEnv('NEXT_PUBLIC_SITE_URL', 'https://larabeauty.store').replace(/\/$/, '');
+}
+
+function clientIp(req: Request) {
+  const forwarded = req.headers.get('x-forwarded-for');
+  if (forwarded) return forwarded.split(',')[0]?.trim() ?? '';
+  return req.headers.get('x-real-ip') ?? '';
 }
 
 function normalizeOrderItems(items: RawSheetItem[]) {
@@ -230,6 +237,26 @@ export async function POST(req: Request) {
     const local = await persistOrdersLocally(payload, expandOrderIds(orderIds, payload.items.length));
     await markOrdersSynced(local.orderIds);
 
+    const orderTotal = normalizedItems.reduce((sum, item) => sum + item.totalPrice, 0);
+    const eventId = `purchase_${orderIds[0]}`;
+
+    void sendTiktokEvent(
+      'Purchase',
+      {
+        orderId: orderIds[0],
+        value: orderTotal,
+        currency: market.currency,
+        phone: phoneE164,
+        sourceUrl: payload.sourceUrl,
+        contentIds: normalizedItems.map((item) => item.sku).filter(Boolean),
+        eventId,
+      },
+      {
+        ip: clientIp(req),
+        userAgent: req.headers.get('user-agent') ?? '',
+      },
+    );
+
     return Response.json({
       success: true,
       orderId: orderIds[0],
@@ -238,6 +265,7 @@ export async function POST(req: Request) {
       sheetSynced: true,
       sheetLatencyMs,
       totalMs: Date.now() - started,
+      eventId,
     });
   } catch {
     return Response.json(
