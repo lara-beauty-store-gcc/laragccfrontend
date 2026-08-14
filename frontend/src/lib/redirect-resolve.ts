@@ -45,7 +45,7 @@ export async function resolveCanonicalSourceUrl(rawSourceUrl: string) {
     return base;
   }
 
-  const match = url.pathname.match(/^\/r\/([^/]+)/i);
+  const match = url.pathname.match(/^\/(?:r|ads)\/([^/]+)/i);
   if (!match) return url.toString();
 
   const rule = await getRedirect(match[1]);

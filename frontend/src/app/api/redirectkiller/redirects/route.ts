@@ -1,3 +1,4 @@
+import { adsRedirectUrl } from '@/lib/redirect-prefix';
 import { isRedirectkillerAuthorized } from '@/lib/redirectkiller-auth';
 import { createRedirect, listRedirects } from '@/lib/redirect-store';
 import { siteBaseUrl } from '@/lib/redirect-resolve';
@@ -15,11 +16,11 @@ export async function GET(req: Request) {
 
   return Response.json({
     baseUrl,
-    redirectPrefix: `${baseUrl}/r/`,
+    redirectPrefix: `${baseUrl}/ads/`,
     destinations: getSiteDestinations(),
     redirects: redirects.map((item) => ({
       ...item,
-      shortUrl: `${baseUrl}/r/${item.slug}`,
+      shortUrl: adsRedirectUrl(baseUrl, item.slug),
     })),
   });
 }
@@ -47,7 +48,7 @@ export async function POST(req: Request) {
     const baseUrl = siteBaseUrl();
     return Response.json({
       ok: true,
-      redirect: { ...rule, shortUrl: `${baseUrl}/r/${rule.slug}` },
+      redirect: { ...rule, shortUrl: adsRedirectUrl(baseUrl, rule.slug) },
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'create_failed';

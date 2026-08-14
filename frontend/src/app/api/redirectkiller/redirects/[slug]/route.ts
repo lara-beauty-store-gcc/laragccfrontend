@@ -1,3 +1,4 @@
+import { adsRedirectUrl } from '@/lib/redirect-prefix';
 import { isRedirectkillerAuthorized } from '@/lib/redirectkiller-auth';
 import { deleteRedirect, updateRedirect } from '@/lib/redirect-store';
 import { siteBaseUrl } from '@/lib/redirect-resolve';
@@ -21,7 +22,7 @@ export async function PATCH(req: Request, { params }: { params: { slug: string }
 
     return Response.json({
       ok: true,
-      redirect: { ...rule, shortUrl: `${baseUrl}/r/${rule.slug}` },
+      redirect: { ...rule, shortUrl: adsRedirectUrl(baseUrl, rule.slug) },
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'update_failed';

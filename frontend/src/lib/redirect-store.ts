@@ -35,6 +35,7 @@ function normalizeSlug(raw: string) {
   return raw
     .trim()
     .toLowerCase()
+    .replace(/^\/ads\//, '')
     .replace(/^\/r\//, '')
     .replace(/^\//, '')
     .replace(/[^a-z0-9-]/g, '-')
