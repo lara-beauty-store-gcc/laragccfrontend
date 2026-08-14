@@ -9,7 +9,6 @@ export type SnapCapiPayload = {
   sourceUrl?: string;
   contentIds?: string[];
   eventId?: string;
-  items?: Array<{ sku: string; qty: number; price: number }>;
 };
 
 export type SnapCapiContext = {
@@ -41,45 +40,39 @@ export async function sendSnapEvent(
 ) {
   const accessToken = runtimeEnv('SNAP_ACCESS_TOKEN');
   const pixelId = runtimeEnv('SNAP_PIXEL_ID', '998e0cce-14e8-4cfb-b55e-e7eea8fe5f25');
+  const testEventCode = runtimeEnv('SNAP_TEST_EVENT_CODE');
 
   if (!accessToken) {
     return { ok: false as const, skipped: true as const, reason: 'missing_token' };
   }
 
+  const eventName = mapEventName(event);
   const eventId = payload.eventId || `purchase_${payload.orderId}`;
+  const contentIds = (payload.contentIds ?? []).filter(Boolean);
+
   const userData: Record<string, string | string[]> = {};
 
   if (payload.phone) {
     const hashedPhone = hashPhone(payload.phone);
     if (hashedPhone) userData.ph = [hashedPhone];
   }
+  if (payload.orderId) userData.external_id = [sha256(payload.orderId)];
   if (ctx.ip) userData.client_ip_address = ctx.ip;
   if (ctx.userAgent) userData.client_user_agent = ctx.userAgent;
-
-  const contents =
-    payload.items?.map((item) => ({
-      id: item.sku,
-      quantity: String(item.qty),
-      item_price: String(item.price),
-    })) ??
-    (payload.contentIds ?? []).filter(Boolean).map((id) => ({
-      id,
-      quantity: '1',
-    }));
 
   const customData: Record<string, unknown> = {
     currency: payload.currency,
     value: payload.value,
-    order_id: payload.orderId,
-    content_category: 'product',
+    content_type: 'product',
   };
 
-  if (contents.length) customData.contents = contents;
+  if (contentIds.length) customData.content_ids = contentIds;
+  if (eventName === 'PURCHASE') customData.order_id = payload.orderId;
 
-  const body = {
+  const body: Record<string, unknown> = {
     data: [
       {
-        event_name: mapEventName(event),
+        event_name: eventName,
         event_time: Math.floor(Date.now() / 1000),
         event_id: eventId,
         action_source: 'WEB',
@@ -89,6 +82,8 @@ export async function sendSnapEvent(
       },
     ],
   };
+
+  if (testEventCode) body.test_event_code = testEventCode;
 
   const url = `https://tr.snapchat.com/v3/${encodeURIComponent(pixelId)}/events?access_token=${encodeURIComponent(accessToken)}`;
 

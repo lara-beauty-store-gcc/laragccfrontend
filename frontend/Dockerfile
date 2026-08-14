@@ -1,6 +1,6 @@
 # EasyPanel: branch frontend, empty source path, port 3000
 # CACHEBUST — change this line to force EasyPanel full rebuild
-ARG CACHEBUST=snap-capi-v48-2026-08-14
+ARG CACHEBUST=snap-capi-format-v49-2026-08-14
 FROM node:20-alpine AS base
 RUN echo "BUILD ${CACHEBUST}" && apk add --no-cache libc6-compat curl
 WORKDIR /app
@@ -45,6 +45,7 @@ ARG TIKTOK_ACCESS_TOKEN
 ARG TIKTOK_PIXEL_ID
 ARG SNAP_ACCESS_TOKEN
 ARG SNAP_PIXEL_ID
+ARG SNAP_TEST_EVENT_CODE
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
@@ -57,6 +58,7 @@ ENV TIKTOK_ACCESS_TOKEN=$TIKTOK_ACCESS_TOKEN
 ENV TIKTOK_PIXEL_ID=${TIKTOK_PIXEL_ID:-D9V4EIJC77U9RA6QKBL0}
 ENV SNAP_ACCESS_TOKEN=$SNAP_ACCESS_TOKEN
 ENV SNAP_PIXEL_ID=${SNAP_PIXEL_ID:-998e0cce-14e8-4cfb-b55e-e7eea8fe5f25}
+ENV SNAP_TEST_EVENT_CODE=$SNAP_TEST_EVENT_CODE
 WORKDIR /app
 
 RUN addgroup -g 1001 -S nodejs && adduser -S -u 1001 -G nodejs nextjs \

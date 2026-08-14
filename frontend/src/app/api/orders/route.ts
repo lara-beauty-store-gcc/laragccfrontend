@@ -268,11 +268,6 @@ export async function POST(req: Request) {
         sourceUrl: payload.sourceUrl,
         contentIds: normalizedItems.map((item) => item.sku).filter(Boolean),
         eventId,
-        items: normalizedItems.map((item) => ({
-          sku: item.sku,
-          qty: item.quantity,
-          price: item.unitPriceAed,
-        })),
       },
       {
         ip: clientIp(req),
