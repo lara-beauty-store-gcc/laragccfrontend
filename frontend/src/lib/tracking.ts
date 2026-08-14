@@ -44,20 +44,28 @@ function snapEventName(name: string) {
   }
 }
 
+function snapItemIds(payload?: TrackPayload): string[] | undefined {
+  const raw = payload?.content_ids ?? payload?.content_id;
+  if (raw === undefined || raw === '') return undefined;
+  if (typeof raw === 'string' && raw.includes(',')) {
+    return raw.split(',').map((id) => id.trim()).filter(Boolean);
+  }
+  return [String(raw)];
+}
+
 function snapPayload(payload?: TrackPayload): Record<string, unknown> | undefined {
   if (!payload) return undefined;
 
-  const itemId = firstContentId(payload);
+  const itemIds = snapItemIds(payload);
   const mapped: Record<string, unknown> = {
     currency: payload.currency,
     price: payload.value,
     transaction_id: payload.order_id,
     number_items: payload.quantity ?? payload.num_items,
+    item_category: payload.content_type ?? 'product',
   };
 
-  if (itemId) {
-    mapped.item_ids = itemId.includes(',') ? itemId.split(',').map((id) => id.trim()) : [itemId];
-  }
+  if (itemIds?.length) mapped.item_ids = itemIds;
 
   return mapped;
 }
