@@ -53,7 +53,7 @@ function snapItemIds(payload?: TrackPayload): string[] | undefined {
   return [String(raw)];
 }
 
-function snapPayload(payload?: TrackPayload): Record<string, unknown> | undefined {
+function snapPayload(payload?: TrackPayload, snapEvent?: string): Record<string, unknown> | undefined {
   if (!payload) return undefined;
 
   const itemIds = snapItemIds(payload);
@@ -66,6 +66,12 @@ function snapPayload(payload?: TrackPayload): Record<string, unknown> | undefine
   };
 
   if (itemIds?.length) mapped.item_ids = itemIds;
+
+  if (snapEvent === 'PURCHASE' && payload.order_id) {
+    const dedupId = String(payload.event_id || `purchase_${payload.order_id}`);
+    mapped.client_dedup_id = dedupId;
+    mapped.transaction_id = payload.order_id;
+  }
 
   return mapped;
 }
@@ -84,7 +90,8 @@ export function trackEvent(name: string, payload?: TrackPayload) {
     /* optional */
   }
   try {
-    w.snaptr?.('track', snapEventName(name), snapPayload(payload));
+    const snapEvent = snapEventName(name);
+    w.snaptr?.('track', snapEvent, snapPayload(payload, snapEvent));
   } catch {
     /* optional */
   }
@@ -125,5 +132,6 @@ export function trackPurchase(payload: {
     value: payload.value,
     currency: payload.currency,
     order_id: payload.orderId,
+    event_id: `purchase_${payload.orderId}`,
   });
 }

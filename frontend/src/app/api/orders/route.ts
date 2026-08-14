@@ -10,6 +10,7 @@ import {
   type RawSheetItem,
 } from '@/lib/sheets-export';
 import { forwardOrderToSheetsWithRetry } from '@/lib/sheets-webhook';
+import { sendSnapEvent } from '@/lib/snap-capi';
 import { sendTiktokEvent } from '@/lib/tiktok-capi';
 import { normalizeCustomerName, normalizeUaePhone, formatPhoneForSheet, uaePhoneErrorMessage } from '@/lib/phone';
 
@@ -250,6 +251,28 @@ export async function POST(req: Request) {
         sourceUrl: payload.sourceUrl,
         contentIds: normalizedItems.map((item) => item.sku).filter(Boolean),
         eventId,
+      },
+      {
+        ip: clientIp(req),
+        userAgent: req.headers.get('user-agent') ?? '',
+      },
+    );
+
+    void sendSnapEvent(
+      'Purchase',
+      {
+        orderId: orderIds[0],
+        value: orderTotal,
+        currency: market.currency,
+        phone: phoneE164,
+        sourceUrl: payload.sourceUrl,
+        contentIds: normalizedItems.map((item) => item.sku).filter(Boolean),
+        eventId,
+        items: normalizedItems.map((item) => ({
+          sku: item.sku,
+          qty: item.quantity,
+          price: item.unitPriceAed,
+        })),
       },
       {
         ip: clientIp(req),
