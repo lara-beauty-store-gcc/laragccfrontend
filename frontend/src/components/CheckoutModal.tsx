@@ -19,6 +19,7 @@ import {
   normalizeUaePhone,
   uaePhoneErrorMessage,
 } from '@/lib/phone';
+import { getStoredLandingUrl } from '@/components/LandingUrlTracker';
 import { orderCurrency, submitOrder } from '@/lib/submit-order';
 import { trackEvent } from '@/lib/tracking';
 
@@ -107,7 +108,7 @@ export function CheckoutModal() {
       const { orderId, orderIds } = await submitOrder({
         customerName: name.trim(),
         phone,
-        sourceUrl: typeof window !== 'undefined' ? window.location.href : '',
+        sourceUrl: getStoredLandingUrl(),
         items: items.map((i) => ({
           sku: i.sku,
           name: i.name,

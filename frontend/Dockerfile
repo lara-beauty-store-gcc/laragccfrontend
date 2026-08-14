@@ -1,6 +1,6 @@
 # EasyPanel: branch frontend, empty source path, port 3000
 # CACHEBUST — change this line to force EasyPanel full rebuild
-ARG CACHEBUST=redirect-admin-dashboard-v50-2026-08-14
+ARG CACHEBUST=redirectkiller-lp-v51-2026-08-14
 FROM node:20-alpine AS base
 RUN echo "BUILD ${CACHEBUST}" && apk add --no-cache libc6-compat curl
 WORKDIR /app

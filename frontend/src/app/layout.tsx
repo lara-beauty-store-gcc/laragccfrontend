@@ -1,10 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { businessInputs } from '@/config/business';
 import { CartProvider } from '@/lib/cart';
-import { CheckoutModal } from '@/components/CheckoutModal';
-import { AnnouncementBar } from '@/components/AnnouncementBar';
-import { SiteHeader } from '@/components/SiteHeader';
-import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
+import { StoreShell } from '@/components/StoreShell';
 import { MarketingPixels } from '@/components/marketing/MarketingPixels';
 import { SnapPixel } from '@/components/marketing/SnapPixel';
 import { TikTokPixel } from '@/components/marketing/TikTokPixel';
@@ -41,11 +38,7 @@ export default function RootLayout({
       </head>
       <body className="flex min-h-screen flex-col">
         <CartProvider>
-          <AnnouncementBar />
-          <SiteHeader />
-          <main className="flex-1">{children}</main>
-          <CheckoutModal />
-          <WhatsAppFloatingButton />
+          <StoreShell>{children}</StoreShell>
         </CartProvider>
       </body>
     </html>

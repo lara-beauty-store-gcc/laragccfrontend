@@ -9,6 +9,7 @@ import {
   pickQuantity,
   type RawSheetItem,
 } from '@/lib/sheets-export';
+import { resolveCanonicalSourceUrl } from '@/lib/redirect-resolve';
 import { forwardOrderToSheetsWithRetry } from '@/lib/sheets-webhook';
 import { sendSnapEvent } from '@/lib/snap-capi';
 import { sendTiktokEvent } from '@/lib/tiktok-capi';
@@ -163,6 +164,7 @@ export async function POST(req: Request) {
 
     const normalizedItems = normalizeOrderItems(items);
     const localOrderIds = generateLaraOrderIds(normalizedItems.length);
+    const canonicalSourceUrl = await resolveCanonicalSourceUrl(String(body.sourceUrl || siteBaseUrl()));
 
     const payload = {
       customerName,
@@ -170,7 +172,7 @@ export async function POST(req: Request) {
       country: market.countryCode,
       currency: market.currency,
       area: String(body.area || ''),
-      sourceUrl: body.sourceUrl || siteBaseUrl(),
+      sourceUrl: canonicalSourceUrl,
       items: normalizedItems.map(({ product, url, sku, quantity, totalPrice }) => ({
         product,
         url,
