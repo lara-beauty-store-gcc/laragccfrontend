@@ -3,6 +3,7 @@ type TrackPayload = Record<string, string | number | boolean | undefined>;
 type TrackerWindow = Window & {
   fbq?: (...args: unknown[]) => void;
   ttq?: { track: (...args: unknown[]) => void };
+  snaptr?: (...args: unknown[]) => void;
 };
 
 function firstContentId(payload?: TrackPayload) {
@@ -28,6 +29,39 @@ function tiktokPayload(payload?: TrackPayload) {
   return mapped;
 }
 
+function snapEventName(name: string) {
+  switch (name) {
+    case 'ViewContent':
+      return 'VIEW_CONTENT';
+    case 'AddToCart':
+      return 'ADD_CART';
+    case 'Lead':
+      return 'START_CHECKOUT';
+    case 'Purchase':
+      return 'PURCHASE';
+    default:
+      return name;
+  }
+}
+
+function snapPayload(payload?: TrackPayload): Record<string, unknown> | undefined {
+  if (!payload) return undefined;
+
+  const itemId = firstContentId(payload);
+  const mapped: Record<string, unknown> = {
+    currency: payload.currency,
+    price: payload.value,
+    transaction_id: payload.order_id,
+    number_items: payload.quantity ?? payload.num_items,
+  };
+
+  if (itemId) {
+    mapped.item_ids = itemId.includes(',') ? itemId.split(',').map((id) => id.trim()) : [itemId];
+  }
+
+  return mapped;
+}
+
 export function trackEvent(name: string, payload?: TrackPayload) {
   if (typeof window === 'undefined') return;
   const w = window as TrackerWindow;
@@ -38,6 +72,11 @@ export function trackEvent(name: string, payload?: TrackPayload) {
   }
   try {
     w.ttq?.track(name, tiktokPayload(payload));
+  } catch {
+    /* optional */
+  }
+  try {
+    w.snaptr?.('track', snapEventName(name), snapPayload(payload));
   } catch {
     /* optional */
   }

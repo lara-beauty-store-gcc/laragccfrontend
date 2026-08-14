@@ -6,6 +6,7 @@ import { AnnouncementBar } from '@/components/AnnouncementBar';
 import { SiteHeader } from '@/components/SiteHeader';
 import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
 import { MarketingPixels } from '@/components/marketing/MarketingPixels';
+import { SnapPixel } from '@/components/marketing/SnapPixel';
 import { TikTokPixel } from '@/components/marketing/TikTokPixel';
 import './globals.css';
 
@@ -35,6 +36,7 @@ export default function RootLayout({
     <html lang={market.language} dir={market.direction}>
       <head>
         <TikTokPixel />
+        <SnapPixel />
         <MarketingPixels />
       </head>
       <body className="flex min-h-screen flex-col">
