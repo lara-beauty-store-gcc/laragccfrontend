@@ -35,6 +35,16 @@ export function resolveDestination(raw: string, req: Request) {
   return resolveDestinationPath(raw, `${incoming.pathname}${incoming.search}`);
 }
 
+export function extractRedirectSlugFromUrl(rawSourceUrl: string) {
+  try {
+    const url = new URL(rawSourceUrl.trim(), siteBaseUrl());
+    const match = url.pathname.match(/^\/(?:r|ads)\/([^/]+)/i);
+    return match?.[1]?.toLowerCase() ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function resolveCanonicalSourceUrl(rawSourceUrl: string) {
   const base = siteBaseUrl();
   let url: URL;

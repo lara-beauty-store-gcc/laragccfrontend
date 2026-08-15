@@ -1,6 +1,8 @@
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import path from 'path';
 import { generateLaraOrderIds } from '@/lib/order-ids';
+import { extractRedirectSlugFromUrl } from '@/lib/redirect-resolve';
+import type { GeoLookupResult } from '@/lib/geoip';
 
 export type StoredOrderRow = {
   orderId: string;
@@ -17,6 +19,13 @@ export type StoredOrderRow = {
   totalPrice: number;
   sourceUrl: string;
   sheetSynced: boolean;
+  clientIp?: string;
+  geoCountry?: string | null;
+  isVpn?: boolean;
+  isValidGeo?: boolean;
+  geoReason?: string;
+  redirectSlug?: string | null;
+  userAgent?: string;
 };
 
 type OrderStore = {
@@ -58,6 +67,10 @@ export type PersistOrderInput = {
   currency: string;
   area: string;
   sourceUrl: string;
+  redirectSlug?: string | null;
+  clientIp?: string;
+  geo?: GeoLookupResult;
+  userAgent?: string;
   items: Array<{
     product: string;
     url: string;
@@ -75,6 +88,7 @@ export async function persistOrdersLocally(input: PersistOrderInput, presetOrder
       ? presetOrderIds.map(String)
       : generateLaraOrderIds(input.items.length);
   const rows: StoredOrderRow[] = [];
+  const redirectSlug = input.redirectSlug ?? extractRedirectSlugFromUrl(input.sourceUrl);
 
   for (let index = 0; index < input.items.length; index += 1) {
     const item = input.items[index];
@@ -95,6 +109,13 @@ export async function persistOrdersLocally(input: PersistOrderInput, presetOrder
       totalPrice: item.totalPrice,
       sourceUrl: input.sourceUrl,
       sheetSynced: false,
+      clientIp: input.clientIp,
+      geoCountry: input.geo?.country ?? null,
+      isVpn: input.geo?.isVpn,
+      isValidGeo: input.geo?.isValid,
+      geoReason: input.geo?.reason,
+      redirectSlug,
+      userAgent: input.userAgent,
     });
   }
 
@@ -182,4 +203,119 @@ export async function listUnsyncedOrderBatches(): Promise<UnsyncedOrderBatch[]> 
   }
 
   return Array.from(batches.values());
+}
+
+function inDateRange(createdAt: string, from?: string, to?: string) {
+  const ts = Date.parse(createdAt);
+  if (from && ts < Date.parse(from)) return false;
+  if (to && ts > Date.parse(`${to}T23:59:59.999Z`)) return false;
+  return true;
+}
+
+export async function listOrders(filters?: {
+  from?: string;
+  to?: string;
+  slug?: string;
+  limit?: number;
+}) {
+  const store = await readStore();
+  const slug = filters?.slug?.trim().toLowerCase();
+  const limit = filters?.limit ?? 500;
+
+  return store.orders
+    .filter((row) => {
+      if (!inDateRange(row.createdAt, filters?.from, filters?.to)) return false;
+      if (slug && row.redirectSlug !== slug) return false;
+      return true;
+    })
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, limit);
+}
+
+export type OrderBatch = {
+  batchKey: string;
+  createdAt: string;
+  customerName: string;
+  phone: string;
+  country: string;
+  currency: string;
+  area: string;
+  sourceUrl: string;
+  redirectSlug: string | null;
+  clientIp?: string;
+  geoCountry?: string | null;
+  isVpn?: boolean;
+  isValidGeo?: boolean;
+  geoReason?: string;
+  sheetSynced: boolean;
+  orderIds: string[];
+  items: Array<{
+    orderId: string;
+    product: string;
+    url: string;
+    sku: string;
+    quantity: number;
+    totalPrice: number;
+  }>;
+  totalPrice: number;
+  itemCount: number;
+};
+
+export async function listOrderBatches(filters?: { from?: string; to?: string; slug?: string; limit?: number }) {
+  const rows = await listOrders(filters);
+  const batches = new Map<string, OrderBatch>();
+
+  for (const row of rows) {
+    const key = batchKey(row);
+    const existing = batches.get(key);
+    const item = {
+      orderId: row.orderId,
+      product: row.product,
+      url: row.url,
+      sku: row.sku,
+      quantity: row.quantity,
+      totalPrice: row.totalPrice,
+    };
+
+    if (existing) {
+      existing.orderIds.push(row.orderId);
+      existing.items.push(item);
+      existing.totalPrice += row.totalPrice;
+      existing.itemCount += row.quantity;
+      existing.sheetSynced = existing.sheetSynced && row.sheetSynced;
+      continue;
+    }
+
+    batches.set(key, {
+      batchKey: key,
+      createdAt: row.createdAt,
+      customerName: row.customerName,
+      phone: row.phone,
+      country: row.country,
+      currency: row.currency,
+      area: row.area,
+      sourceUrl: row.sourceUrl,
+      redirectSlug: row.redirectSlug ?? null,
+      clientIp: row.clientIp,
+      geoCountry: row.geoCountry,
+      isVpn: row.isVpn,
+      isValidGeo: row.isValidGeo,
+      geoReason: row.geoReason,
+      sheetSynced: row.sheetSynced,
+      orderIds: [row.orderId],
+      items: [item],
+      totalPrice: row.totalPrice,
+      itemCount: row.quantity,
+    });
+  }
+
+  const limit = filters?.limit ?? 200;
+  return Array.from(batches.values())
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, limit);
+}
+
+export async function getOrderBatchByKey(batchKeyValue: string) {
+  const batches = await listOrderBatches({ limit: 1000 });
+  return batches.find((batch) => batch.batchKey === batchKeyValue || batch.orderIds.includes(batchKeyValue)) ?? null;
 }

@@ -8,7 +8,7 @@ import { SiteHeader } from '@/components/SiteHeader';
 import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
 import { LandingUrlTracker } from '@/components/LandingUrlTracker';
 
-const MINIMAL_CHROME_PREFIXES = ['/lp', '/redirectkiller'];
+const MINIMAL_CHROME_PREFIXES = ['/lp', '/redirectkiller', '/admin/cod'];
 
 function isMinimalRoute(pathname: string | null) {
   if (!pathname) return false;

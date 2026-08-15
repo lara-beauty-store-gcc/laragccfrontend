@@ -1,6 +1,8 @@
 import { businessConfig } from '@/config/business';
 import { expandOrderIds, generateLaraOrderIds } from '@/lib/order-ids';
 import { markOrdersSynced, persistOrdersLocally } from '@/lib/order-store';
+import { clientIp } from '@/lib/client-ip';
+import { lookupGeo } from '@/lib/geoip';
 import { apiBaseUrl, runtimeEnv } from '@/lib/runtime-env';
 import {
   flattenRawItems,
@@ -9,7 +11,7 @@ import {
   pickQuantity,
   type RawSheetItem,
 } from '@/lib/sheets-export';
-import { resolveCanonicalSourceUrl } from '@/lib/redirect-resolve';
+import { resolveCanonicalSourceUrl, extractRedirectSlugFromUrl } from '@/lib/redirect-resolve';
 import { forwardOrderToSheetsWithRetry } from '@/lib/sheets-webhook';
 import { sendSnapEvent } from '@/lib/snap-capi';
 import { sendTiktokEvent } from '@/lib/tiktok-capi';
@@ -31,12 +33,6 @@ const { market } = businessConfig;
 
 function siteBaseUrl() {
   return runtimeEnv('NEXT_PUBLIC_SITE_URL', 'https://larabeauty.store').replace(/\/$/, '');
-}
-
-function clientIp(req: Request) {
-  const forwarded = req.headers.get('x-forwarded-for');
-  if (forwarded) return forwarded.split(',')[0]?.trim() ?? '';
-  return req.headers.get('x-real-ip') ?? '';
 }
 
 function normalizeOrderItems(items: RawSheetItem[]) {
@@ -164,7 +160,11 @@ export async function POST(req: Request) {
 
     const normalizedItems = normalizeOrderItems(items);
     const localOrderIds = generateLaraOrderIds(normalizedItems.length);
-    const canonicalSourceUrl = await resolveCanonicalSourceUrl(String(body.sourceUrl || siteBaseUrl()));
+    const rawSourceUrl = String(body.sourceUrl || siteBaseUrl());
+    const redirectSlug = extractRedirectSlugFromUrl(rawSourceUrl);
+    const canonicalSourceUrl = await resolveCanonicalSourceUrl(rawSourceUrl);
+    const ip = clientIp(req);
+    const geo = await lookupGeo(ip);
 
     const payload = {
       customerName,
@@ -237,7 +237,16 @@ export async function POST(req: Request) {
       );
     }
 
-    const local = await persistOrdersLocally(payload, expandOrderIds(orderIds, payload.items.length));
+    const local = await persistOrdersLocally(
+      {
+        ...payload,
+        redirectSlug,
+        clientIp: ip,
+        geo,
+        userAgent: req.headers.get('user-agent') || '',
+      },
+      expandOrderIds(orderIds, payload.items.length),
+    );
     await markOrdersSynced(local.orderIds);
 
     const orderTotal = normalizedItems.reduce((sum, item) => sum + item.totalPrice, 0);
