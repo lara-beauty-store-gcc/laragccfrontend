@@ -12,6 +12,14 @@ const { brand, market, design, support } = businessInputs;
 export const metadata: Metadata = {
   title: `${brand.nameLocal} | علكات يومية — ${market.countryName}`,
   description: brand.description,
+  icons: {
+    icon: [
+      { url: '/images/logo-icon.webp', type: 'image/webp' },
+      { url: '/favicon.png', type: 'image/png', sizes: '32x32' },
+    ],
+    shortcut: '/images/logo-icon.webp',
+    apple: '/images/logo-icon.webp',
+  },
   other: {
     'contact:email': support.email,
   },
