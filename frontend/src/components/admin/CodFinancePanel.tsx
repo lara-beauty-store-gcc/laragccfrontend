@@ -84,6 +84,7 @@ export function CodFinancePanel({
         body: JSON.stringify({
           confirmationRate: next.confirmationRate,
           deliveryRate: next.deliveryRate,
+          costPerLeadUsd: next.costPerLeadUsd,
         }),
       });
       const data = await res.json();
@@ -105,7 +106,7 @@ export function CodFinancePanel({
   const leadsUsed = projection.totalLeads;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6">
       {error ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
       ) : null}
@@ -123,7 +124,7 @@ export function CodFinancePanel({
           </div>
         </div>
 
-        <div className="mb-8 grid gap-4 sm:grid-cols-2">
+        <div className="mb-8 grid gap-4 sm:grid-cols-3">
           <RateField
             label="Confirmation"
             value={draft.confirmationRate}
@@ -135,9 +136,17 @@ export function CodFinancePanel({
             value={draft.deliveryRate}
             onChange={(v) => setDraft({ ...draft, deliveryRate: v })}
           />
+          <UsdField
+            label="Ads cost"
+            suffix="USD / lead"
+            hint={`${leadsUsed} leads → ${moneyUsd(projection.costs.adSpendUsd)} ad spend`}
+            value={draft.costPerLeadUsd}
+            onChange={(v) => setDraft({ ...draft, costPerLeadUsd: v })}
+          />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <ResultCard label="Ad spend" value={moneyUsd(projection.costs.adSpendUsd)} />
           <ResultCard label="Total cost" value={moneyUsd(projection.costs.totalChargeUsd)} />
           <ResultCard
             label="Net profit"
@@ -159,10 +168,43 @@ export function CodFinancePanel({
           className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#134E3A] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-60"
         >
           <Save className="h-4 w-4" aria-hidden />
-          {saving ? 'Saving...' : 'Save rates'}
+          {saving ? 'Saving...' : 'Save settings'}
         </button>
       </section>
     </div>
+  );
+}
+
+function UsdField({
+  label,
+  suffix,
+  hint,
+  value,
+  onChange,
+}: {
+  label: string;
+  suffix?: string;
+  hint?: string;
+  value: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <label className="block rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4">
+      <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-gray-500">{label}</span>
+      {hint ? <span className="mb-2 block text-[11px] text-gray-400">{hint}</span> : null}
+      <div className="flex items-center gap-2">
+        <span className="text-lg font-bold text-gray-400">$</span>
+        <input
+          type="number"
+          min={0}
+          step="0.01"
+          value={Number.isFinite(value) ? value : 0}
+          onChange={(e) => onChange(Math.max(0, Number(e.target.value)))}
+          className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-2xl font-extrabold text-gray-900 outline-none focus:border-[#134E3A] focus:ring-2 focus:ring-[#134E3A]/10"
+        />
+        {suffix ? <span className="shrink-0 text-[11px] font-bold text-gray-400">{suffix}</span> : null}
+      </div>
+    </label>
   );
 }
 
