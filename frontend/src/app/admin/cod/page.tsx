@@ -25,6 +25,17 @@ type MetricsResponse = {
     avgOrderValue: number;
     lineItems: number;
   };
+  finance: {
+    aedToUsd: number;
+    confirmationRate: number;
+    deliveryRate: number;
+    revenueUsd: number;
+    avgOrderValueUsd: number;
+    totalCostUsd: number;
+    netProfitUsd: number;
+    totalProfitUsd: number;
+    codCollectedUsd: number;
+  };
   byDay: Array<{ date: string; clicks: number; orders: number; revenue: number }>;
   topSlugs: Array<{ slug: string; clicks: number; orders: number; conversionRate: number }>;
 };
@@ -81,8 +92,13 @@ function todayDate() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function formatMoney(value: number, currency = 'AED') {
-  return `${value.toLocaleString('en-US', { maximumFractionDigits: 0 })} ${currency}`;
+function formatUsd(value: number) {
+  const sign = value < 0 ? '-' : '';
+  return `${sign}$${Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+}
+
+function formatPct(decimal: number) {
+  return `${Math.round(decimal * 1000) / 10}%`;
 }
 
 function formatDateTime(value: string) {
@@ -217,6 +233,7 @@ export default function CodAdminDashboardPage() {
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#134E3A]">Lara Beauty</p>
             <h1 className="text-2xl font-bold text-gray-900">COD Admin Dashboard</h1>
+            <p className="text-xs text-gray-500">All financial metrics shown in USD</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
@@ -300,14 +317,32 @@ export default function CodAdminDashboardPage() {
             <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
               <MetricCard icon={TrendingUp} label="Valid clicks" value={String(metrics.totals.validClicks)} />
               <MetricCard icon={ShoppingBag} label="Orders" value={String(metrics.totals.orders)} />
-              <MetricCard icon={Package} label="Revenue" value={formatMoney(metrics.totals.revenue)} />
+              <MetricCard icon={Package} label="Revenue" value={formatUsd(metrics.finance.revenueUsd)} />
               <MetricCard icon={BarChart3} label="Conversion" value={`${metrics.totals.conversionRate}%`} />
-              <MetricCard icon={Calendar} label="AOV" value={formatMoney(metrics.totals.avgOrderValue)} />
+              <MetricCard icon={Calendar} label="AOV" value={formatUsd(metrics.finance.avgOrderValueUsd)} />
+            </div>
+
+            <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+              <MetricCard icon={BarChart3} label="Confirmation" value={formatPct(metrics.finance.confirmationRate)} />
+              <MetricCard icon={BarChart3} label="Delivery" value={formatPct(metrics.finance.deliveryRate)} />
+              <MetricCard icon={Package} label="Total cost" value={formatUsd(metrics.finance.totalCostUsd)} />
+              <MetricCard
+                icon={TrendingUp}
+                label="Net profit"
+                value={formatUsd(metrics.finance.netProfitUsd)}
+                accent={metrics.finance.netProfitUsd >= 0 ? 'positive' : 'negative'}
+              />
+              <MetricCard
+                icon={TrendingUp}
+                label="Total profit"
+                value={formatUsd(metrics.finance.totalProfitUsd)}
+                accent={metrics.finance.totalProfitUsd >= 0 ? 'positive' : 'negative'}
+              />
             </div>
 
             <div className="mb-6 grid gap-4 lg:grid-cols-2">
               <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-                <div className="border-b border-gray-100 px-5 py-4 font-semibold">Daily performance</div>
+                <div className="border-b border-gray-100 px-5 py-4 font-semibold">Daily performance (USD)</div>
                 <div className="overflow-x-auto">
                   <table className="min-w-full text-sm">
                     <thead className="bg-gray-50 text-left text-xs uppercase text-gray-500">
@@ -324,7 +359,9 @@ export default function CodAdminDashboardPage() {
                           <td className="px-5 py-3">{row.date}</td>
                           <td className="px-5 py-3">{row.clicks}</td>
                           <td className="px-5 py-3">{row.orders}</td>
-                          <td className="px-5 py-3">{formatMoney(row.revenue)}</td>
+                          <td className="px-5 py-3">
+                            {formatUsd(row.revenue * metrics.finance.aedToUsd)}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -383,7 +420,7 @@ export default function CodAdminDashboardPage() {
                       <td className="px-5 py-4 whitespace-nowrap">{formatDateTime(order.createdAt)}</td>
                       <td className="px-5 py-4 font-semibold">{order.customerName}</td>
                       <td className="px-5 py-4 font-mono text-xs">{order.phone}</td>
-                      <td className="px-5 py-4 font-bold">{formatMoney(order.totalPrice, order.currency)}</td>
+                      <td className="px-5 py-4 font-bold">{formatUsd(order.totalPrice * (metrics?.finance.aedToUsd ?? 0.2725))}</td>
                       <td className="px-5 py-4 font-mono text-xs">{order.redirectSlug || 'direct'}</td>
                       <td className="px-5 py-4">
                         <GeoBadge country={order.geoCountry} isVpn={order.isVpn} isValid={order.isValidGeo} />
@@ -474,7 +511,7 @@ export default function CodAdminDashboardPage() {
               <Info label="Phone" value={preview.phone} mono />
               <Info label="Area" value={preview.area || '—'} />
               <Info label="Country" value={preview.country} />
-              <Info label="Total" value={formatMoney(preview.totalPrice, preview.currency)} />
+              <Info label="Total" value={formatUsd(preview.totalPrice * (metrics?.finance.aedToUsd ?? 0.2725))} />
               <Info label="Landing URL" value={preview.sourceUrl} mono />
               <Info label="Campaign slug" value={preview.redirectSlug || 'direct'} mono />
               <Info label="Client IP" value={preview.clientIp || '—'} mono />
@@ -495,7 +532,7 @@ export default function CodAdminDashboardPage() {
                         <p className="mt-1 font-mono text-xs text-gray-500">{item.sku}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold">{formatMoney(item.totalPrice, preview.currency)}</p>
+                        <p className="font-bold">{formatUsd(item.totalPrice * (metrics?.finance.aedToUsd ?? 0.2725))}</p>
                         <p className="text-xs text-gray-500">Qty {item.quantity}</p>
                       </div>
                     </div>
@@ -524,18 +561,23 @@ function MetricCard({
   icon: Icon,
   label,
   value,
+  accent,
 }: {
   icon: typeof TrendingUp;
   label: string;
   value: string;
+  accent?: 'positive' | 'negative';
 }) {
+  const valueColor =
+    accent === 'positive' ? 'text-emerald-700' : accent === 'negative' ? 'text-red-600' : 'text-gray-900';
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
       <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-[#134E3A]/10">
         <Icon className="h-5 w-5 text-[#134E3A]" aria-hidden />
       </div>
       <p className="text-xs font-bold uppercase tracking-wide text-gray-500">{label}</p>
-      <p className="mt-1 text-2xl font-extrabold text-gray-900">{value}</p>
+      <p className={`mt-1 text-2xl font-extrabold ${valueColor}`}>{value}</p>
     </div>
   );
 }
