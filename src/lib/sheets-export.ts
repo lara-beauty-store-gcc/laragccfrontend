@@ -1,0 +1,312 @@
+import { getProductBySku, getProductBySlug, getSheetProductName, products } from '@/config/products';
+
+import { formatPhoneForSheet } from '@/lib/phone';
+
+export type SheetsOrderItem = {
+  product: string;
+  url: string;
+  sku: string;
+  quantity: number;
+  totalPrice: number;
+};
+const JAVA_ARRAY_REF = /^\[L[\w.$]+;@[0-9a-f]+$/i;
+
+export type RawSheetItem = {
+  product?: unknown;
+  name?: unknown;
+  productName?: unknown;
+  title?: unknown;
+  label?: unknown;
+  shortName?: unknown;
+  url?: unknown;
+  product_url?: unknown;
+  slug?: unknown;
+  productId?: unknown;
+  sku?: unknown;
+  quantity?: unknown;
+  qty?: unknown;
+  quantite?: unknown;
+  totalPrice?: unknown;
+  totalprice?: unknown;
+  lineTotal?: unknown;
+  lineTotalAed?: unknown;
+  lineTotalKwd?: unknown;
+  price?: unknown;
+  unitPriceAed?: unknown;
+  unitPriceKwd?: unknown;
+};
+
+export type SheetOrderContext = {
+  siteBaseUrl: string;
+  sourceUrl?: string;
+  customerName?: string;
+  phone?: string;
+  country?: string;
+  currency?: string;
+  date?: string;
+  orderIds?: string[];
+};
+
+const OFFER_PACK_LABELS = new Set(
+  products.flatMap((product) => product.offers.map((offer) => offer.label.trim())).filter(Boolean),
+);
+
+export function formatSheetOrderDate(input?: string | Date): string {
+  const parsed = input instanceof Date ? input : input ? new Date(input) : new Date();
+  const date = Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Dubai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(date);
+
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? '00';
+
+  return `${get('year')}-${get('month')}-${get('day')} ${get('hour')}:${get('minute')}`;
+}
+
+export function isGarbageSerializedValue(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) return true;
+  if (JAVA_ARRAY_REF.test(trimmed)) return true;
+  if (trimmed === '[object Object]') return true;
+  if (trimmed === 'undefined' || trimmed === 'null') return true;
+  return false;
+}
+
+export function stripQuantitySuffix(value: string): string {
+  return value.trim().replace(/\sx\d+$/i, '').trim();
+}
+
+export function isOfferPackLabel(value: string): boolean {
+  const trimmed = stripQuantitySuffix(value);
+  if (!trimmed) return false;
+  return OFFER_PACK_LABELS.has(trimmed);
+}
+
+function slugFromProductUrl(url: string): string {
+  const match = url.trim().match(/\/products\/([^/?#]+)/i);
+  return match?.[1]?.trim() ?? '';
+}
+
+export function resolveCatalogProductName(raw: RawSheetItem): string {
+  const sku = String(raw.sku || '').trim();
+  if (sku) {
+    const bySku = getProductBySku(sku);
+    if (bySku) return getSheetProductName(bySku);
+  }
+
+  const slug = pickSlug(raw);
+  if (slug) {
+    const bySlug = getProductBySlug(slug);
+    if (bySlug) return getSheetProductName(bySlug);
+  }
+
+  const urlSlug = slugFromProductUrl(String(raw.url || raw.product_url || ''));
+  if (urlSlug) {
+    const byUrl = getProductBySlug(urlSlug);
+    if (byUrl) return getSheetProductName(byUrl);
+  }
+
+  return '';
+}
+
+export function serializeProductValue(value: unknown): string {
+  if (value == null) return '';
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return isGarbageSerializedValue(trimmed) ? '' : trimmed;
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    const lines = value
+      .map((entry) => {
+        if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+          return pickProductName(entry as RawSheetItem);
+        }
+        const serialized = serializeProductValue(entry);
+        return isOfferPackLabel(serialized) ? '' : serialized;
+      })
+      .filter(Boolean);
+
+    return joinProductLabels(lines);
+  }
+
+  if (typeof value === 'object') {
+    return pickProductName(value as RawSheetItem);
+  }
+
+  const fallback = String(value).trim();
+  return isGarbageSerializedValue(fallback) ? '' : fallback;
+}
+
+export function formatProductLabel(name: string, quantity: number): string {
+  const cleanName = name.trim();
+  if (!cleanName) return '';
+  const qty = Math.max(1, Math.floor(quantity));
+  return qty > 1 ? `${cleanName} x${qty}` : cleanName;
+}
+
+export function joinProductLabels(lines: string[]): string {
+  return lines.map((line) => line.trim()).filter(Boolean).join('\n');
+}
+
+function pickSlug(raw: RawSheetItem): string {
+  const slug = String(raw.slug || raw.productId || '').trim();
+  return slug.replace(/^\/+|\/+$/g, '');
+}
+
+function pickUrl(raw: RawSheetItem, ctx: Pick<SheetOrderContext, 'siteBaseUrl' | 'sourceUrl'>): string {
+  const direct = String(raw.url || raw.product_url || '').trim();
+  if (direct) return direct;
+
+  const slug = pickSlug(raw);
+  if (slug) return `${ctx.siteBaseUrl.replace(/\/$/, '')}/products/${slug}`;
+
+  return (ctx.sourceUrl || ctx.siteBaseUrl).replace(/\/$/, '');
+}
+
+function pickQuantity(raw: RawSheetItem): number {
+  return Math.max(1, Number(raw.quantity ?? raw.qty ?? raw.quantite) || 1);
+}
+
+export { pickQuantity };
+
+function pickTotalPrice(raw: RawSheetItem, quantity: number): number {
+  const candidates = [
+    raw.totalPrice,
+    raw.totalprice,
+    raw.lineTotal,
+    raw.lineTotalAed,
+    raw.lineTotalKwd,
+    raw.price,
+  ];
+
+  for (const candidate of candidates) {
+    const n = Number(candidate);
+    if (Number.isFinite(n) && n > 0) return roundMoney(n);
+  }
+
+  const unitAed = Number(raw.unitPriceAed);
+  if (Number.isFinite(unitAed) && unitAed > 0) return roundMoney(unitAed * quantity);
+
+  const unitKwd = Number(raw.unitPriceKwd);
+  if (Number.isFinite(unitKwd) && unitKwd > 0) return roundMoney(unitKwd * quantity);
+
+  return 0;
+}
+
+function roundMoney(amount: number): number {
+  return Math.round(amount * 100) / 100;
+}
+
+export function pickProductName(raw: RawSheetItem): string {
+  const fromCatalog = resolveCatalogProductName(raw);
+  if (fromCatalog) return fromCatalog;
+
+  const candidates = [raw.product, raw.productName, raw.name, raw.title, raw.label, raw.shortName];
+  for (const candidate of candidates) {
+    const serialized = serializeProductValue(candidate);
+    if (!serialized || isOfferPackLabel(serialized)) continue;
+    return stripQuantitySuffix(serialized);
+  }
+
+  return '';
+}
+
+export function productLabelForSheet(raw: RawSheetItem): string {
+  return pickProductName(raw);
+}
+
+export function flattenRawItems(items: unknown): RawSheetItem[] {
+  if (!items) return [];
+
+  if (Array.isArray(items)) {
+    return items.flatMap((entry) => {
+      if (Array.isArray(entry)) return flattenRawItems(entry);
+      if (entry && typeof entry === 'object') return [entry as RawSheetItem];
+      return [];
+    });
+  }
+
+  if (typeof items === 'object') return [items as RawSheetItem];
+  return [];
+}
+
+export function normalizeSheetItem(
+  raw: RawSheetItem,
+  ctx: Pick<SheetOrderContext, 'siteBaseUrl' | 'sourceUrl'>,
+): SheetsOrderItem {
+  const quantity = pickQuantity(raw);
+
+  return {
+    product: productLabelForSheet(raw),
+    url: pickUrl(raw, ctx),
+    sku: String(raw.sku || '').trim(),
+    quantity,
+    totalPrice: pickTotalPrice(raw, quantity),
+  };
+}
+
+export function normalizeSheetItems(
+  items: unknown,
+  ctx: Pick<SheetOrderContext, 'siteBaseUrl' | 'sourceUrl'>,
+): SheetsOrderItem[] {
+  return flattenRawItems(items)
+    .map((item) => normalizeSheetItem(item, ctx))
+    .filter((item) => item.product || item.sku);
+}
+
+export function buildSheetRows(
+  ctx: SheetOrderContext & { items: unknown },
+): Array<{
+  date: string;
+  orderId: string;
+  country: string;
+  name: string;
+  phone: string;
+  product: string;
+  url: string;
+  sku: string;
+  quantity: number;
+  totalPrice: number;
+  currency: string;
+}> {
+  const siteBaseUrl = ctx.siteBaseUrl.replace(/\/$/, '');
+  const items = normalizeSheetItems(ctx.items, {
+    siteBaseUrl,
+    sourceUrl: ctx.sourceUrl,
+  });
+
+  const date = ctx.date ? formatSheetOrderDate(ctx.date) : formatSheetOrderDate();
+  const country = String(ctx.country || 'AE').trim() || 'AE';
+  const name = String(ctx.customerName || '').trim();
+  const phone = formatPhoneForSheet(String(ctx.phone || ''));
+  const currency = String(ctx.currency || 'AED').trim() || 'AED';
+  const presetIds = Array.isArray(ctx.orderIds) ? ctx.orderIds.map(String) : [];
+
+  return items.map((item, index) => ({
+    date,
+    orderId: presetIds[index] || '',
+    country,
+    name,
+    phone,
+    product: item.product,
+    url: item.url,
+    sku: item.sku,
+    quantity: item.quantity,
+    totalPrice: item.totalPrice,
+    currency,
+  }));
+}
