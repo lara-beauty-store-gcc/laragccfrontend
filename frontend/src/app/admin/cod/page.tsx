@@ -288,7 +288,7 @@ export default function CodAdminDashboardPage() {
               }`}
             >
               {item === 'finance' ? <Calculator className="h-4 w-4" aria-hidden /> : null}
-              {item === 'finance' ? 'Finance / UAE' : item}
+              {item === 'finance' ? 'Fees' : item}
             </button>
           ))}
         </div>

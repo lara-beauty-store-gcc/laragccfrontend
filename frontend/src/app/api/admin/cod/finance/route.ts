@@ -1,35 +1,32 @@
 import { isCodAdminAuthorized, unauthorizedResponse, codAdminConfigured } from '@/lib/cod-admin-auth';
-import { buildCodMetrics } from '@/lib/cod-metrics';
 import {
   DEFAULT_UAE_FINANCE_CONFIG,
   readFinanceConfig,
   writeFinanceConfig,
   type CodFinanceConfig,
 } from '@/lib/cod-finance-config';
-import { buildCodFinanceModel } from '@/lib/cod-financial-model';
 
 export const dynamic = 'force-dynamic';
+
+function pickFees(config: CodFinanceConfig) {
+  return {
+    leadEntryFeeUsd: config.leadEntryFeeUsd,
+    confirmationFeeUsd: config.confirmationFeeUsd,
+    deliveredWarehouseFeeUsd: config.deliveredWarehouseFeeUsd,
+    shippingFeePerConfirmedUsd: config.shippingFeePerConfirmedUsd,
+    deliveredFeeUsd: config.deliveredFeeUsd,
+    codFeePercent: config.codFeePercent,
+    productCostPerUnitUsd: config.productCostPerUnitUsd,
+    costPerLeadUsd: config.costPerLeadUsd,
+  };
+}
 
 export async function GET(req: Request) {
   if (!codAdminConfigured()) return Response.json({ error: 'admin_not_configured' }, { status: 503 });
   if (!isCodAdminAuthorized(req)) return unauthorizedResponse();
 
-  const url = new URL(req.url);
   const config = await readFinanceConfig();
-  const metrics = await buildCodMetrics({
-    from: url.searchParams.get('from'),
-    to: url.searchParams.get('to'),
-    slug: url.searchParams.get('slug'),
-  });
-
-  const model = buildCodFinanceModel(config, {
-    validClicks: metrics.totals.validClicks,
-    orders: metrics.totals.orders,
-    revenueAed: metrics.totals.revenue,
-    avgOrderValueAed: metrics.totals.avgOrderValue,
-  });
-
-  return Response.json({ model, metrics: metrics.totals });
+  return Response.json({ fees: pickFees(config) });
 }
 
 export async function PATCH(req: Request) {
@@ -47,7 +44,7 @@ export async function PATCH(req: Request) {
       currency: 'AED',
     };
     await writeFinanceConfig(next);
-    return Response.json({ ok: true, config: next });
+    return Response.json({ ok: true, fees: pickFees(next) });
   } catch {
     return Response.json({ error: 'save_failed' }, { status: 400 });
   }
