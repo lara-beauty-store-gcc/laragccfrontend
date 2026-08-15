@@ -58,6 +58,8 @@ function project(config: CodFinanceConfig, totalLeads: number): CodFinanceProjec
 
   const codCollectedUsd = delivered * config.priceAovUsd;
 
+  const unitsDelivered = delivered * config.pcsPerOrder;
+
   const leadEntryUsd = config.leadEntryFeeUsd * totalLeads;
   const confirmationUsd = config.confirmationFeeUsd * confirmed;
   const deliveredWarehouseUsd = config.deliveredWarehouseFeeUsd * delivered;
@@ -67,13 +69,13 @@ function project(config: CodFinanceConfig, totalLeads: number): CodFinanceProjec
   const serviceCodTotalUsd =
     leadEntryUsd + confirmationUsd + deliveredWarehouseUsd + shippingUsd + deliveredFeesUsd + codNetworkFeesUsd;
 
-  const productCostUsd = config.productCostPerUnitUsd * delivered;
+  const productCostUsd = config.productCostPerUnitUsd * unitsDelivered;
   const adSpendUsd = config.costPerLeadUsd * totalLeads;
   const totalChargeUsd = productCostUsd + adSpendUsd + serviceCodTotalUsd;
   const netProfitUsd = codCollectedUsd - totalChargeUsd;
   const invoiceCodNetworkUsd = codCollectedUsd - serviceCodTotalUsd;
 
-  const remainingStockPcs = Math.max(0, config.totalStockPcs - delivered);
+  const remainingStockPcs = Math.max(0, config.totalStockPcs - unitsDelivered);
   const remainingStockValueUsd = remainingStockPcs * config.productCostPerUnitUsd;
   const profitWithoutStockUsd = netProfitUsd + remainingStockValueUsd;
 
@@ -126,7 +128,7 @@ function netProfitForRates(
     config.shippingFeePerConfirmedUsd * confirmed +
     config.deliveredFeeUsd * delivered +
     codCollectedUsd * config.codFeePercent;
-  const productCostUsd = config.productCostPerUnitUsd * delivered;
+  const productCostUsd = config.productCostPerUnitUsd * delivered * config.pcsPerOrder;
   const adSpendUsd = costPerLeadUsd * totalLeads;
   return codCollectedUsd - productCostUsd - adSpendUsd - serviceCodTotalUsd;
 }
@@ -209,7 +211,7 @@ export function buildCodFinanceModel(config: CodFinanceConfig, live?: Partial<Co
     summary: {
       aovAed: round2(config.priceAovUsd / config.aedToUsd),
       aovUsd: config.priceAovUsd,
-      avgPiecesPerOrder: 1,
+      avgPiecesPerOrder: config.pcsPerOrder,
       netPerDeliveredExAdsUsd,
     },
   };

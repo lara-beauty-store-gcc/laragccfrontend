@@ -85,6 +85,7 @@ export function CodFinancePanel({
           confirmationRate: next.confirmationRate,
           deliveryRate: next.deliveryRate,
           costPerLeadUsd: next.costPerLeadUsd,
+          pcsPerOrder: next.pcsPerOrder,
         }),
       });
       const data = await res.json();
@@ -104,9 +105,10 @@ export function CodFinancePanel({
   if (!draft || !projection) return null;
 
   const leadsUsed = projection.totalLeads;
+  const unitsUsed = projection.delivered * draft.pcsPerOrder;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       {error ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
       ) : null}
@@ -124,7 +126,7 @@ export function CodFinancePanel({
           </div>
         </div>
 
-        <div className="mb-8 grid gap-4 sm:grid-cols-3">
+        <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <RateField
             label="Confirmation"
             value={draft.confirmationRate}
@@ -142,6 +144,12 @@ export function CodFinancePanel({
             hint={`${leadsUsed} leads → ${moneyUsd(projection.costs.adSpendUsd)} ad spend`}
             value={draft.costPerLeadUsd}
             onChange={(v) => setDraft({ ...draft, costPerLeadUsd: v })}
+          />
+          <PcsField
+            label="Pcs / order"
+            hint={`${projection.delivered} delivered × ${draft.pcsPerOrder} pcs = ${unitsUsed} units`}
+            value={draft.pcsPerOrder}
+            onChange={(v) => setDraft({ ...draft, pcsPerOrder: v })}
           />
         </div>
 
@@ -172,6 +180,36 @@ export function CodFinancePanel({
         </button>
       </section>
     </div>
+  );
+}
+
+function PcsField({
+  label,
+  hint,
+  value,
+  onChange,
+}: {
+  label: string;
+  hint?: string;
+  value: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <label className="block rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4">
+      <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-gray-500">{label}</span>
+      {hint ? <span className="mb-2 block text-[11px] text-gray-400">{hint}</span> : null}
+      <div className="flex items-center gap-2">
+        <input
+          type="number"
+          min={1}
+          step="1"
+          value={Number.isFinite(value) ? value : 1}
+          onChange={(e) => onChange(Math.max(1, Math.round(Number(e.target.value))))}
+          className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-2xl font-extrabold text-gray-900 outline-none focus:border-[#134E3A] focus:ring-2 focus:ring-[#134E3A]/10"
+        />
+        <span className="text-lg font-bold text-gray-400">pcs</span>
+      </div>
+    </label>
   );
 }
 

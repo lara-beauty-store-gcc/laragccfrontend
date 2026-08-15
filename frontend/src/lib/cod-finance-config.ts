@@ -17,6 +17,7 @@ export type CodFinanceConfig = {
   shippingFeePerConfirmedUsd: number;
   deliveredFeeUsd: number;
   codFeePercent: number;
+  pcsPerOrder: number;
   totalStockPcs: number;
   leadsAtScale: number;
 };
@@ -39,6 +40,7 @@ export const DEFAULT_UAE_FINANCE_CONFIG: CodFinanceConfig = {
   shippingFeePerConfirmedUsd: Number(runtimeEnv('COD_SHIPPING_FEE_USD', '4.99')) || 4.99,
   deliveredFeeUsd: Number(runtimeEnv('COD_DELIVERED_FEE_USD', '1.00')) || 1,
   codFeePercent: Number(runtimeEnv('COD_NETWORK_FEE_PERCENT', '0.05')) || 0.05,
+  pcsPerOrder: Number(runtimeEnv('COD_PCS_PER_ORDER', '1')) || 1,
   totalStockPcs: Number(runtimeEnv('COD_TOTAL_STOCK_PCS', '100')) || 100,
   leadsAtScale: Number(runtimeEnv('COD_LEADS_AT_SCALE', '150')) || 150,
 };
