@@ -1,11 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Calculator, Save } from 'lucide-react';
-import type { CodFinanceConfig } from '@/lib/cod-finance-config';
+import { ArrowRight, Calculator, Save } from 'lucide-react';
+import { applyFixedFinanceRules, type CodFinanceConfig } from '@/lib/cod-finance-config';
 import type { CodFinanceProductId } from '@/lib/cod-finance-fixed';
-import { productCostUsd } from '@/lib/cod-finance-fixed';
-import { buildCodFinanceModel } from '@/lib/cod-financial-model';
+import { buildCodFinanceModel, type CodFinanceProjection } from '@/lib/cod-financial-model';
 
 type LiveStats = {
   validClicks: number;
@@ -43,6 +42,10 @@ function clampRate(value: number) {
   return Math.min(1, Math.max(0, value));
 }
 
+function patchDraft(current: CodFinanceConfig, patch: Partial<CodFinanceConfig>) {
+  return applyFixedFinanceRules({ ...current, ...patch });
+}
+
 export function CodFinancePanel({
   authHeaders,
   query,
@@ -65,7 +68,7 @@ export function CodFinancePanel({
       const res = await fetch(`/api/admin/cod/finance?${query}`, { headers: authHeaders });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'finance_failed');
-      setDraft(data.config);
+      setDraft(applyFixedFinanceRules(data.config));
       setLive(data.live);
       setProducts(Array.isArray(data.products) ? data.products : []);
       setFixedFees(Array.isArray(data.fixedFees) ? data.fixedFees : []);
@@ -80,16 +83,18 @@ export function CodFinancePanel({
     void loadFinance();
   }, [query, authHeaders.Authorization]);
 
+  const config = draft ? applyFixedFinanceRules(draft) : null;
+
   const model = useMemo(() => {
-    if (!draft) return null;
-    const leads = live && live.validClicks > 0 ? live.validClicks : draft.leadsAtScale;
+    if (!config) return null;
+    const leads = live && live.validClicks > 0 ? live.validClicks : config.leadsAtScale;
     return buildCodFinanceModel(
-      { ...draft, leadsAtScale: leads },
+      { ...config, leadsAtScale: leads },
       live && live.validClicks > 0
         ? live
         : { validClicks: 0, orders: 0, revenueAed: 0, avgOrderValueAed: 0 },
     );
-  }, [draft, live]);
+  }, [config, live]);
 
   const projection = model?.liveProjection;
 
@@ -97,21 +102,22 @@ export function CodFinancePanel({
     setSaving(true);
     setError('');
     try {
+      const normalized = applyFixedFinanceRules(next);
       const res = await fetch('/api/admin/cod/finance', {
         method: 'PATCH',
         headers: { ...authHeaders, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          confirmationRate: next.confirmationRate,
-          deliveryRate: next.deliveryRate,
-          costPerLeadUsd: next.costPerLeadUsd,
-          pcsPerOrder: next.pcsPerOrder,
-          priceAovUsd: next.priceAovUsd,
-          activeProductId: next.activeProductId,
+          confirmationRate: normalized.confirmationRate,
+          deliveryRate: normalized.deliveryRate,
+          costPerLeadUsd: normalized.costPerLeadUsd,
+          pcsPerOrder: normalized.pcsPerOrder,
+          priceAovUsd: normalized.priceAovUsd,
+          activeProductId: normalized.activeProductId,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'save_failed');
-      setDraft(data.config);
+      setDraft(applyFixedFinanceRules(data.config));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'save_failed');
     } finally {
@@ -119,18 +125,16 @@ export function CodFinancePanel({
     }
   }
 
-  if (loading && !draft) {
+  if (loading && !config) {
     return <div className="rounded-2xl bg-white p-10 text-center text-gray-400">Loading...</div>;
   }
 
-  if (!draft || !projection) return null;
+  if (!config || !projection) return null;
 
-  const leadsUsed = projection.totalLeads;
-  const unitsUsed = projection.delivered * draft.pcsPerOrder;
-  const activeProduct = products.find((p) => p.id === draft.activeProductId);
+  const activeProduct = products.find((p) => p.id === config.activeProductId);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div dir="ltr" className="mx-auto max-w-5xl space-y-6 text-left">
       {error ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
       ) : null}
@@ -142,66 +146,56 @@ export function CodFinancePanel({
           </div>
           <div>
             <h2 className="text-lg font-bold text-gray-900">Finance</h2>
-            <p className="text-sm text-gray-500">
-              {leadsUsed} valid clicks · all amounts USD · service charges fixed below
-            </p>
+            <p className="text-sm text-gray-500">All amounts USD · fixed service fees applied automatically</p>
           </div>
         </div>
+
+        <FunnelBar projection={projection} confirmationRate={config.confirmationRate} deliveryRate={config.deliveryRate} />
 
         <div className="mb-4 grid gap-4 sm:grid-cols-2">
           <ProductField
             label="Product"
-            value={draft.activeProductId}
+            value={config.activeProductId}
             products={products}
-            onChange={(id) =>
-              setDraft({
-                ...draft,
-                activeProductId: id,
-                productCostPerUnitUsd: productCostUsd(id),
-              })
-            }
+            onChange={(id) => setDraft((d) => (d ? patchDraft(d, { activeProductId: id }) : d))}
           />
           <UsdField
             label="AOV"
             suffix="USD / order"
-            hint={
-              live?.avgOrderValueAed
-                ? `Live store: ${live.avgOrderValueAed.toFixed(0)} AED (~${moneyUsd(model?.live.liveAovUsd ?? draft.priceAovUsd)})`
-                : `${projection.delivered} delivered × ${moneyUsd(draft.priceAovUsd)} = ${moneyUsd(projection.codCollectedUsd)} COD`
-            }
-            value={draft.priceAovUsd}
-            onChange={(v) => setDraft({ ...draft, priceAovUsd: v })}
+            hint={`COD collected: ${projection.delivered} x ${moneyUsd(config.priceAovUsd)} = ${moneyUsd(projection.codCollectedUsd)}`}
+            value={config.priceAovUsd}
+            onChange={(v) => setDraft((d) => (d ? patchDraft(d, { priceAovUsd: v }) : d))}
           />
         </div>
 
-        <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <RateField
             label="Confirmation"
-            value={draft.confirmationRate}
+            value={config.confirmationRate}
             liveHint={live?.confirmationRateLive ? `Live: ${pctDisplay(live.confirmationRateLive)}` : null}
-            onChange={(v) => setDraft({ ...draft, confirmationRate: v })}
+            onChange={(v) => setDraft((d) => (d ? patchDraft(d, { confirmationRate: v }) : d))}
           />
           <RateField
             label="Delivery"
-            value={draft.deliveryRate}
-            onChange={(v) => setDraft({ ...draft, deliveryRate: v })}
+            value={config.deliveryRate}
+            onChange={(v) => setDraft((d) => (d ? patchDraft(d, { deliveryRate: v }) : d))}
           />
           <UsdField
             label="Ads cost"
             suffix="USD / lead"
-            hint={`${leadsUsed} leads → ${moneyUsd(projection.costs.adSpendUsd)} ad spend`}
-            value={draft.costPerLeadUsd}
-            onChange={(v) => setDraft({ ...draft, costPerLeadUsd: v })}
+            hint={`${projection.totalLeads} leads x ${moneyUsd(config.costPerLeadUsd)} = ${moneyUsd(projection.costs.adSpendUsd)}`}
+            value={config.costPerLeadUsd}
+            onChange={(v) => setDraft((d) => (d ? patchDraft(d, { costPerLeadUsd: v }) : d))}
           />
           <PcsField
             label="Pcs / order"
-            hint={`${projection.delivered} delivered × ${draft.pcsPerOrder} pcs = ${unitsUsed} units · ${moneyUsd(draft.productCostPerUnitUsd)}/pc ${activeProduct?.label ?? ''}`}
-            value={draft.pcsPerOrder}
-            onChange={(v) => setDraft({ ...draft, pcsPerOrder: v })}
+            hint={`${unitsLabel(projection, config)} x ${moneyUsd(config.productCostPerUnitUsd)} (${activeProduct?.label ?? 'product'})`}
+            value={config.pcsPerOrder}
+            onChange={(v) => setDraft((d) => (d ? patchDraft(d, { pcsPerOrder: v }) : d))}
           />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <ResultCard label="Ad spend" value={moneyUsd(projection.costs.adSpendUsd)} />
           <ResultCard label="Total cost" value={moneyUsd(projection.costs.totalChargeUsd)} />
           <ResultCard
@@ -213,13 +207,15 @@ export function CodFinancePanel({
             label="Total profit"
             value={moneyUsd(projection.profitWithoutStockUsd)}
             highlight={projection.profitWithoutStockUsd >= 0 ? 'positive' : 'negative'}
-            hint="Net profit + remaining stock value"
+            hint={`Net + stock (${projection.remainingStockPcs} pcs)`}
           />
         </div>
 
+        <CostBreakdown config={config} projection={projection} />
+
         <button
           type="button"
-          onClick={() => void saveSettings(draft)}
+          onClick={() => void saveSettings(config)}
           disabled={saving}
           className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#134E3A] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-60"
         >
@@ -229,26 +225,98 @@ export function CodFinancePanel({
       </section>
 
       <section className="rounded-2xl border border-[#134E3A]/15 bg-[#fcf8f2] p-5">
-        <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-gray-500">Fixed service charges (always applied)</h3>
+        <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-gray-500">Fixed service charges</h3>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {fixedFees.map((fee) => (
             <div key={fee.label} className="flex items-center justify-between gap-3 rounded-xl border border-white bg-white px-4 py-3 text-sm">
               <span className="text-gray-600">{fee.label}</span>
               <span className="font-bold text-gray-900">
-                {fee.isPercent ? pctDisplay(fee.amountUsd) : moneyUsd(fee.amountUsd)} <span className="text-[10px] font-normal text-gray-400">{fee.unit}</span>
+                {fee.isPercent ? pctDisplay(fee.amountUsd) : moneyUsd(fee.amountUsd)}{' '}
+                <span className="text-[10px] font-normal text-gray-400">{fee.unit}</span>
               </span>
             </div>
           ))}
         </div>
-        <div className="mt-3 grid gap-2 sm:grid-cols-3">
-          {products.map((product) => (
-            <div key={product.id} className="rounded-xl border border-white bg-white px-4 py-3 text-sm">
-              <span className="text-gray-600">{product.label} cost</span>
-              <span className="mt-1 block font-bold text-gray-900">{moneyUsd(product.costUsd)} / unit</span>
-            </div>
-          ))}
-        </div>
       </section>
+    </div>
+  );
+}
+
+function unitsLabel(projection: CodFinanceProjection, config: CodFinanceConfig) {
+  const units = projection.delivered * config.pcsPerOrder;
+  return `${projection.delivered} delivered x ${config.pcsPerOrder} pcs = ${units} units`;
+}
+
+function FunnelBar({
+  projection,
+  confirmationRate,
+  deliveryRate,
+}: {
+  projection: CodFinanceProjection;
+  confirmationRate: number;
+  deliveryRate: number;
+}) {
+  return (
+    <div className="mb-6 flex flex-wrap items-center gap-2 rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm">
+      <FunnelChip label="Leads" value={String(projection.totalLeads)} />
+      <ArrowRight className="h-4 w-4 text-gray-300" aria-hidden />
+      <FunnelChip label={`Confirmed (${pctDisplay(confirmationRate)})`} value={String(projection.confirmed)} />
+      <ArrowRight className="h-4 w-4 text-gray-300" aria-hidden />
+      <FunnelChip label={`Delivered (${pctDisplay(deliveryRate)})`} value={String(projection.delivered)} accent />
+    </div>
+  );
+}
+
+function FunnelChip({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className={`rounded-xl px-4 py-2 ${accent ? 'bg-[#134E3A]/10' : 'bg-white'}`}>
+      <p className="text-[10px] font-bold uppercase text-gray-500">{label}</p>
+      <p className="text-lg font-extrabold text-gray-900">{value}</p>
+    </div>
+  );
+}
+
+function CostBreakdown({ config, projection }: { config: CodFinanceConfig; projection: CodFinanceProjection }) {
+  const p = projection;
+  const c = p.costs;
+  const units = p.delivered * config.pcsPerOrder;
+
+  const lines = [
+    { label: 'COD collected', formula: `${p.delivered} x ${moneyUsd(config.priceAovUsd)}`, value: p.codCollectedUsd, positive: true },
+    { label: 'Ad spend', formula: `${p.totalLeads} x ${moneyUsd(config.costPerLeadUsd)}`, value: -c.adSpendUsd },
+    { label: 'Product cost', formula: `${units} units x ${moneyUsd(config.productCostPerUnitUsd)}`, value: -c.productCostUsd },
+    { label: 'Lead entry', formula: `${p.totalLeads} x ${moneyUsd(config.leadEntryFeeUsd)}`, value: -c.leadEntryUsd },
+    { label: 'Confirmation', formula: `${p.confirmed} x ${moneyUsd(config.confirmationFeeUsd)}`, value: -c.confirmationUsd },
+    { label: 'Warehouse', formula: `${p.delivered} x ${moneyUsd(config.deliveredWarehouseFeeUsd)}`, value: -c.deliveredWarehouseUsd },
+    { label: 'Shipping', formula: `${p.confirmed} x ${moneyUsd(config.shippingFeePerConfirmedUsd)}`, value: -c.shippingUsd },
+    { label: 'Delivery fee', formula: `${p.delivered} x ${moneyUsd(config.deliveredFeeUsd)}`, value: -c.deliveredFeesUsd },
+    { label: 'COD network (5%)', formula: `${moneyUsd(p.codCollectedUsd)} x 5%`, value: -c.codNetworkFeesUsd },
+  ];
+
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+      <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-gray-500">Calculation breakdown</h3>
+      <div className="space-y-2 text-sm">
+        {lines.map((line) => (
+          <div key={line.label} className="flex items-start justify-between gap-4 border-b border-gray-100 pb-2 last:border-0">
+            <div>
+              <p className="font-medium text-gray-800">{line.label}</p>
+              <p className="text-[11px] text-gray-400">{line.formula}</p>
+            </div>
+            <span className={`shrink-0 font-bold ${line.positive ? 'text-emerald-700' : 'text-gray-900'}`}>
+              {line.positive ? moneyUsd(line.value) : moneyUsd(line.value)}
+            </span>
+          </div>
+        ))}
+        <div className="flex items-center justify-between border-t border-gray-200 pt-2 font-bold">
+          <span>Total cost</span>
+          <span>{moneyUsd(-c.totalChargeUsd)}</span>
+        </div>
+        <div className="flex items-center justify-between rounded-xl bg-emerald-50 px-3 py-2 font-bold text-emerald-800">
+          <span>Net profit</span>
+          <span>{moneyUsd(p.netProfitUsd)}</span>
+        </div>
+      </div>
     </div>
   );
 }

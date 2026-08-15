@@ -69,8 +69,28 @@ export const DEFAULT_UAE_FINANCE_CONFIG: CodFinanceConfig = applyFixedFinanceRul
 
 export type CodFinanceVariablePatch = Pick<
   CodFinanceConfig,
-  'confirmationRate' | 'deliveryRate' | 'costPerLeadUsd' | 'pcsPerOrder' | 'priceAovUsd' | 'activeProductId'
+  | 'confirmationRate'
+  | 'deliveryRate'
+  | 'costPerLeadUsd'
+  | 'pcsPerOrder'
+  | 'priceAovUsd'
+  | 'activeProductId'
+  | 'totalStockPcs'
+  | 'leadsAtScale'
 >;
+
+export function pickFinanceVariables(config: CodFinanceConfig): CodFinanceVariablePatch {
+  return {
+    confirmationRate: config.confirmationRate,
+    deliveryRate: config.deliveryRate,
+    costPerLeadUsd: config.costPerLeadUsd,
+    pcsPerOrder: config.pcsPerOrder,
+    priceAovUsd: config.priceAovUsd,
+    activeProductId: config.activeProductId,
+    totalStockPcs: config.totalStockPcs,
+    leadsAtScale: config.leadsAtScale,
+  };
+}
 
 export function mergeFinanceVariablePatch(
   current: CodFinanceConfig,
@@ -97,7 +117,7 @@ export async function readFinanceConfig(): Promise<CodFinanceConfig> {
 export async function writeFinanceConfig(config: CodFinanceConfig) {
   await mkdir(DATA_DIR, { recursive: true });
   const next = applyFixedFinanceRules(config);
-  await writeFile(CONFIG_FILE, JSON.stringify(next, null, 2), 'utf8');
+  await writeFile(CONFIG_FILE, JSON.stringify(pickFinanceVariables(next), null, 2), 'utf8');
 }
 
 export function aedFromUsd(usd: number, aedToUsd: number) {
