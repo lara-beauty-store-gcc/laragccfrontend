@@ -155,6 +155,10 @@ function solveBreakevenConfirmationRate(config: CodFinanceConfig, totalLeads: nu
   return round2(best);
 }
 
+export function calculateCodProjection(config: CodFinanceConfig, totalLeads: number): CodFinanceProjection {
+  return project(config, totalLeads);
+}
+
 export function buildCodFinanceModel(config: CodFinanceConfig, live?: Partial<CodFinanceLive>) {
   const liveLeads = live?.validClicks && live.validClicks > 0 ? live.validClicks : config.leadsAtScale;
   const liveProjection = project(config, liveLeads);
