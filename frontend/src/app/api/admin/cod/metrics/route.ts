@@ -35,9 +35,11 @@ export async function GET(req: Request) {
       deliveryRate: config.deliveryRate,
       revenueUsd: Math.round(metrics.totals.revenue * config.aedToUsd * 100) / 100,
       avgOrderValueUsd: Math.round(metrics.totals.avgOrderValue * config.aedToUsd * 100) / 100,
+      delivered: projection.delivered,
       totalCostUsd: projection.costs.totalChargeUsd,
       netProfitUsd: projection.netProfitUsd,
       totalProfitUsd: projection.profitWithoutStockUsd,
+      profitPerBottleUsd: projection.profitPerBottleUsd,
       codCollectedUsd: projection.codCollectedUsd,
     },
   });

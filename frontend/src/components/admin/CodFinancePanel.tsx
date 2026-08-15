@@ -87,16 +87,11 @@ export function CodFinancePanel({
 
   const model = useMemo(() => {
     if (!config) return null;
-    const leads = live && live.validClicks > 0 ? live.validClicks : config.leadsAtScale;
-    return buildCodFinanceModel(
-      { ...config, leadsAtScale: leads },
-      live && live.validClicks > 0
-        ? live
-        : { validClicks: 0, orders: 0, revenueAed: 0, avgOrderValueAed: 0 },
-    );
+    return buildCodFinanceModel(config, live ?? { validClicks: 0, orders: 0, revenueAed: 0, avgOrderValueAed: 0 });
   }, [config, live]);
 
   const projection = model?.liveProjection;
+  const hasLiveVolume = (live?.validClicks ?? 0) > 0;
 
   async function saveSettings(next: CodFinanceConfig) {
     setSaving(true);
@@ -146,7 +141,11 @@ export function CodFinancePanel({
           </div>
           <div>
             <h2 className="text-lg font-bold text-gray-900">Finance</h2>
-            <p className="text-sm text-gray-500">All amounts USD · fixed service fees applied automatically</p>
+            <p className="text-sm text-gray-500">
+              {hasLiveVolume
+                ? `${projection.totalLeads} valid clicks in selected dates · live results only`
+                : 'No valid clicks in this date range · results stay $0 until you have traffic'}
+            </p>
           </div>
         </div>
 
@@ -188,14 +187,18 @@ export function CodFinancePanel({
             onChange={(v) => setDraft((d) => (d ? patchDraft(d, { costPerLeadUsd: v }) : d))}
           />
           <PcsField
-            label="Pcs / order"
-            hint={`${unitsLabel(projection, config)} x ${moneyUsd(config.productCostPerUnitUsd)} (${activeProduct?.label ?? 'product'})`}
+            label="Bottles / order"
+            hint={
+              projection.delivered > 0
+                ? `${projection.delivered} orders x ${config.pcsPerOrder} bottle(s) = ${projection.delivered * config.pcsPerOrder} units · cost ${moneyUsd(config.productCostPerUnitUsd)}/bottle (${activeProduct?.label ?? 'product'})`
+                : `Product cost ${moneyUsd(config.productCostPerUnitUsd)}/bottle (${activeProduct?.label ?? 'product'})`
+            }
             value={config.pcsPerOrder}
             onChange={(v) => setDraft((d) => (d ? patchDraft(d, { pcsPerOrder: v }) : d))}
           />
         </div>
 
-        <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <ResultCard label="Ad spend" value={moneyUsd(projection.costs.adSpendUsd)} />
           <ResultCard label="Total cost" value={moneyUsd(projection.costs.totalChargeUsd)} />
           <ResultCard
@@ -204,10 +207,15 @@ export function CodFinancePanel({
             highlight={projection.netProfitUsd >= 0 ? 'positive' : 'negative'}
           />
           <ResultCard
+            label="Profit / bottle"
+            value={projection.delivered > 0 ? moneyUsd(projection.profitPerBottleUsd) : '$0.00'}
+            highlight={projection.profitPerBottleUsd >= 0 ? 'positive' : 'negative'}
+          />
+          <ResultCard
             label="Total profit"
             value={moneyUsd(projection.profitWithoutStockUsd)}
             highlight={projection.profitWithoutStockUsd >= 0 ? 'positive' : 'negative'}
-            hint={`Net + stock (${projection.remainingStockPcs} pcs)`}
+            hint={`Net + stock (${projection.remainingStockPcs} bottles)`}
           />
         </div>
 
@@ -240,11 +248,6 @@ export function CodFinancePanel({
       </section>
     </div>
   );
-}
-
-function unitsLabel(projection: CodFinanceProjection, config: CodFinanceConfig) {
-  const units = projection.delivered * config.pcsPerOrder;
-  return `${projection.delivered} delivered x ${config.pcsPerOrder} pcs = ${units} units`;
 }
 
 function FunnelBar({

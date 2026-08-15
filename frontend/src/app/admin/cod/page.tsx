@@ -31,9 +31,11 @@ type MetricsResponse = {
     deliveryRate: number;
     revenueUsd: number;
     avgOrderValueUsd: number;
+    delivered: number;
     totalCostUsd: number;
     netProfitUsd: number;
     totalProfitUsd: number;
+    profitPerBottleUsd: number;
     codCollectedUsd: number;
   };
   byDay: Array<{ date: string; clicks: number; orders: number; revenue: number }>;
@@ -330,13 +332,23 @@ export default function CodAdminDashboardPage() {
                 icon={TrendingUp}
                 label="Net profit"
                 value={formatUsd(metrics.finance.netProfitUsd)}
-                accent={metrics.finance.netProfitUsd >= 0 ? 'positive' : 'negative'}
+                accent={metrics.totals.validClicks > 0 && metrics.finance.netProfitUsd >= 0 ? 'positive' : metrics.finance.netProfitUsd < 0 ? 'negative' : undefined}
               />
               <MetricCard
                 icon={TrendingUp}
-                label="Total profit"
-                value={formatUsd(metrics.finance.totalProfitUsd)}
-                accent={metrics.finance.totalProfitUsd >= 0 ? 'positive' : 'negative'}
+                label="Profit / bottle"
+                value={
+                  metrics.totals.validClicks > 0 && metrics.finance.delivered > 0
+                    ? formatUsd(metrics.finance.profitPerBottleUsd)
+                    : '$0'
+                }
+                accent={
+                  metrics.totals.validClicks > 0 && metrics.finance.profitPerBottleUsd >= 0
+                    ? 'positive'
+                    : metrics.finance.profitPerBottleUsd < 0
+                      ? 'negative'
+                      : undefined
+                }
               />
             </div>
 

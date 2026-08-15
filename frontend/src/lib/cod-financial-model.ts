@@ -37,6 +37,7 @@ export type CodFinanceProjection = {
   remainingStockPcs: number;
   remainingStockValueUsd: number;
   profitWithoutStockUsd: number;
+  profitPerBottleUsd: number;
 };
 
 export type CodFinanceBreakeven = {
@@ -108,6 +109,7 @@ function project(config: CodFinanceConfig, totalLeads: number): CodFinanceProjec
     remainingStockPcs,
     remainingStockValueUsd: round2(remainingStockValueUsd),
     profitWithoutStockUsd: round2(profitWithoutStockUsd),
+    profitPerBottleUsd: unitsDelivered > 0 ? round2(netProfitUsd / unitsDelivered) : 0,
   };
 }
 
@@ -162,7 +164,7 @@ export function calculateCodProjection(config: CodFinanceConfig, totalLeads: num
 }
 
 export function buildCodFinanceModel(config: CodFinanceConfig, live?: Partial<CodFinanceLive>) {
-  const liveLeads = live?.validClicks && live.validClicks > 0 ? live.validClicks : config.leadsAtScale;
+  const liveLeads = live !== undefined ? (live.validClicks ?? 0) : config.leadsAtScale;
   const liveProjection = project(config, liveLeads);
   const scaleProjection = project(config, config.leadsAtScale);
 
