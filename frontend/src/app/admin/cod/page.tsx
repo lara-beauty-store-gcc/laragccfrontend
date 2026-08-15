@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   BarChart3,
+  Calculator,
   Calendar,
   Eye,
   Lock,
@@ -13,6 +14,7 @@ import {
   TrendingUp,
   X,
 } from 'lucide-react';
+import { CodFinancePanel } from '@/components/admin/CodFinancePanel';
 
 type MetricsResponse = {
   totals: {
@@ -95,7 +97,7 @@ export default function CodAdminDashboardPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [auth, setAuth] = useState('');
-  const [tab, setTab] = useState<'overview' | 'orders' | 'clicks'>('overview');
+  const [tab, setTab] = useState<'overview' | 'finance' | 'orders' | 'clicks'>('overview');
   const [from, setFrom] = useState(defaultFromDate());
   const [to, setTo] = useState(todayDate());
   const [slugFilter, setSlugFilter] = useState('');
@@ -276,19 +278,22 @@ export default function CodAdminDashboardPage() {
         ) : null}
 
         <div className="mb-6 flex flex-wrap gap-2">
-          {(['overview', 'orders', 'clicks'] as const).map((item) => (
+          {(['overview', 'finance', 'orders', 'clicks'] as const).map((item) => (
             <button
               key={item}
               type="button"
               onClick={() => setTab(item)}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold capitalize ${
+              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold capitalize ${
                 tab === item ? 'bg-[#134E3A] text-white' : 'bg-white text-gray-700 border border-gray-200'
               }`}
             >
-              {item}
+              {item === 'finance' ? <Calculator className="h-4 w-4" aria-hidden /> : null}
+              {item === 'finance' ? 'Finance / UAE' : item}
             </button>
           ))}
         </div>
+
+        {tab === 'finance' ? <CodFinancePanel authHeaders={authHeaders} query={query} /> : null}
 
         {tab === 'overview' && metrics ? (
           <>
