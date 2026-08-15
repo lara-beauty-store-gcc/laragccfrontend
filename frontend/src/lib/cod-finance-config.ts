@@ -1,50 +1,20 @@
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { runtimeEnv } from '@/lib/runtime-env';
+import { FIXED_UAE_SERVICE_FEES, productCostUsd } from '@/lib/cod-finance-fixed';
 import {
-  FIXED_UAE_SERVICE_FEES,
-  productCostUsd,
-  COD_PRODUCT_COSTS_USD,
-  type CodFinanceProductId,
-} from '@/lib/cod-finance-fixed';
+  applyFixedFinanceRules,
+  pickFinanceVariables,
+  mergeFinanceVariablePatch,
+  type CodFinanceConfig,
+  type CodFinanceVariablePatch,
+} from '@/lib/cod-finance-shared';
 
-export type CodFinanceConfig = {
-  country: 'UAE';
-  currency: 'AED';
-  aedToUsd: number;
-  costPerLeadUsd: number;
-  confirmationRate: number;
-  deliveryRate: number;
-  priceAovUsd: number;
-  activeProductId: CodFinanceProductId;
-  productCostPerUnitUsd: number;
-  leadEntryFeeUsd: number;
-  confirmationFeeUsd: number;
-  deliveredWarehouseFeeUsd: number;
-  shippingFeePerConfirmedUsd: number;
-  deliveredFeeUsd: number;
-  codFeePercent: number;
-  pcsPerOrder: number;
-  totalStockPcs: number;
-  leadsAtScale: number;
-};
+export type { CodFinanceConfig, CodFinanceVariablePatch } from '@/lib/cod-finance-shared';
+export { applyFixedFinanceRules, mergeFinanceVariablePatch, aedFromUsd, usdFromAed } from '@/lib/cod-finance-shared';
 
 const DATA_DIR = process.env.ORDERS_DATA_DIR || path.join(process.cwd(), 'data');
 const CONFIG_FILE = path.join(DATA_DIR, 'cod-finance-config.json');
-
-export function applyFixedFinanceRules(config: CodFinanceConfig): CodFinanceConfig {
-  const fallback: CodFinanceProductId = 'magnesium-sleep';
-  const activeProductId =
-    config.activeProductId && config.activeProductId in COD_PRODUCT_COSTS_USD
-      ? config.activeProductId
-      : fallback;
-  return {
-    ...config,
-    activeProductId,
-    ...FIXED_UAE_SERVICE_FEES,
-    productCostPerUnitUsd: productCostUsd(activeProductId),
-  };
-}
 
 export const DEFAULT_UAE_FINANCE_CONFIG: CodFinanceConfig = applyFixedFinanceRules({
   country: 'UAE',
@@ -67,43 +37,6 @@ export const DEFAULT_UAE_FINANCE_CONFIG: CodFinanceConfig = applyFixedFinanceRul
   leadsAtScale: Number(runtimeEnv('COD_LEADS_AT_SCALE', '150')) || 150,
 });
 
-export type CodFinanceVariablePatch = Pick<
-  CodFinanceConfig,
-  | 'confirmationRate'
-  | 'deliveryRate'
-  | 'costPerLeadUsd'
-  | 'pcsPerOrder'
-  | 'priceAovUsd'
-  | 'activeProductId'
-  | 'totalStockPcs'
-  | 'leadsAtScale'
->;
-
-export function pickFinanceVariables(config: CodFinanceConfig): CodFinanceVariablePatch {
-  return {
-    confirmationRate: config.confirmationRate,
-    deliveryRate: config.deliveryRate,
-    costPerLeadUsd: config.costPerLeadUsd,
-    pcsPerOrder: config.pcsPerOrder,
-    priceAovUsd: config.priceAovUsd,
-    activeProductId: config.activeProductId,
-    totalStockPcs: config.totalStockPcs,
-    leadsAtScale: config.leadsAtScale,
-  };
-}
-
-export function mergeFinanceVariablePatch(
-  current: CodFinanceConfig,
-  patch: Partial<CodFinanceVariablePatch>,
-): CodFinanceConfig {
-  return applyFixedFinanceRules({
-    ...current,
-    ...patch,
-    country: 'UAE',
-    currency: 'AED',
-  });
-}
-
 export async function readFinanceConfig(): Promise<CodFinanceConfig> {
   try {
     const raw = await readFile(CONFIG_FILE, 'utf8');
@@ -118,13 +51,4 @@ export async function writeFinanceConfig(config: CodFinanceConfig) {
   await mkdir(DATA_DIR, { recursive: true });
   const next = applyFixedFinanceRules(config);
   await writeFile(CONFIG_FILE, JSON.stringify(pickFinanceVariables(next), null, 2), 'utf8');
-}
-
-export function aedFromUsd(usd: number, aedToUsd: number) {
-  if (!aedToUsd) return 0;
-  return usd / aedToUsd;
-}
-
-export function usdFromAed(aed: number, aedToUsd: number) {
-  return aed * aedToUsd;
 }

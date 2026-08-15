@@ -1,4 +1,4 @@
-import type { CodFinanceConfig } from '@/lib/cod-finance-config';
+import type { CodFinanceConfig } from '@/lib/cod-finance-shared';
 
 export type CodFinanceLive = {
   validClicks: number;

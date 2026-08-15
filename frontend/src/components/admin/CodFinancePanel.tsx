@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Calculator, Save } from 'lucide-react';
-import { applyFixedFinanceRules, type CodFinanceConfig } from '@/lib/cod-finance-config';
+import { applyFixedFinanceRules, type CodFinanceConfig } from '@/lib/cod-finance-shared';
 import type { CodFinanceProductId } from '@/lib/cod-finance-fixed';
 import { buildCodFinanceModel, type CodFinanceProjection } from '@/lib/cod-financial-model';
 
