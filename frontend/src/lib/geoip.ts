@@ -18,7 +18,7 @@ const CACHE = new Map<string, { expires: number; value: GeoLookupResult }>();
 const CACHE_MS = 15 * 60 * 1000;
 
 function allowedCountries() {
-  const raw = runtimeEnv('COD_GEO_ALLOWED_COUNTRIES', 'SA,AE');
+  const raw = runtimeEnv('COD_GEO_ALLOWED_COUNTRIES', 'AE');
   return raw
     .split(',')
     .map((item) => item.trim().toUpperCase())

@@ -18,10 +18,10 @@ COD_ADMIN_USERNAME=admin
 COD_ADMIN_PASSWORD=change-me-strong-password
 
 # Allowed countries for valid clicks (ISO codes, comma-separated)
-# KSA only: SA
 # UAE only: AE
-# Both: SA,AE
-COD_GEO_ALLOWED_COUNTRIES=SA,AE
+# KSA only: SA
+# Both: AE,SA
+COD_GEO_ALLOWED_COUNTRIES=AE
 
 # Strict geo mode (true = unknown IP/country counts as invalid)
 COD_GEO_STRICT=true
@@ -51,7 +51,7 @@ If you mirror data into Postgres on the backend, use the same geo/admin env vars
 ```env
 COD_ADMIN_USERNAME=admin
 COD_ADMIN_PASSWORD=change-me-strong-password
-COD_GEO_ALLOWED_COUNTRIES=SA,AE
+COD_GEO_ALLOWED_COUNTRIES=AE
 COD_GEO_STRICT=true
 MAXMIND_ACCOUNT_ID=123456
 MAXMIND_LICENSE_KEY=your_maxmind_license_key
