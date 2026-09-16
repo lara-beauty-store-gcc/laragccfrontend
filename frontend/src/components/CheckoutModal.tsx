@@ -3,13 +3,13 @@
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ShoppingBag, X } from 'lucide-react';
+import { ArrowRight, ShoppingBag, X } from 'lucide-react';
 import { CheckoutCTA } from '@/components/checkout/CheckoutCTA';
 import { CheckoutError } from '@/components/checkout/CheckoutError';
-import { CheckoutProductSummary } from '@/components/checkout/CheckoutProductSummary';
+import { CheckoutFormFields } from '@/components/checkout/CheckoutFormFields';
+import { CheckoutTrustFooter } from '@/components/checkout/CheckoutTrustFooter';
 import { OrderSummary } from '@/components/checkout/OrderSummary';
 import { PaymentMethodSelector } from '@/components/checkout/PaymentMethodSelector';
-import { PaymentTrustNote } from '@/components/checkout/PaymentTrustNote';
 import { RoutineCrossSellPanel } from '@/components/cross-sell/RoutineCrossSellPanel';
 import { businessConfig } from '@/config/business';
 import { getCrossSellProducts } from '@/lib/cross-sell';
@@ -38,7 +38,7 @@ const cardPaymentEnabled = isCardPaymentEnabled();
 
 export function CheckoutModal() {
   const router = useRouter();
-  const { items, isOpen, view, setView, close, clear, total, remove, updateQty, close: closeCart } = useCart();
+  const { items, isOpen, view, setView, close, clear, total, close: closeCart } = useCart();
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [area, setArea] = useState('');
@@ -116,6 +116,12 @@ export function CheckoutModal() {
     if (!name.trim()) return 'الاسم الكامل مطلوب';
     if (!phone.trim()) return 'رقم الهاتف مطلوب';
     if (!isValidUaePhone(phone)) return uaePhoneErrorMessage(phone);
+
+    if (effectivePaymentMethod === 'card') {
+      if (!area.trim()) return 'المنطقة / الإمارة مطلوبة للتوصيل';
+      if (!address.trim()) return 'العنوان / تفاصيل التوصيل مطلوبة';
+    }
+
     return null;
   }
 
@@ -153,7 +159,7 @@ export function CheckoutModal() {
       orderIds,
       customerName: name.trim(),
       phone: phoneDisplay,
-      area: buildAreaNotes(),
+      area: buildAreaNotes() || undefined,
       productSlug: items[0]?.slug,
       items: items.map((i) => ({
         sku: i.sku,
@@ -274,15 +280,28 @@ export function CheckoutModal() {
         aria-modal="true"
         aria-labelledby="checkout-title"
       >
-        <div className="shrink-0 px-5 pt-4">
-          <div className="flex items-center justify-between gap-3">
-            <h2 id="checkout-title" className="font-arabic text-lg font-extrabold text-primary">
-              {isCrosssell ? 'كمّلي روتينك' : 'إتمام الطلب'}
-            </h2>
+        <div className="shrink-0 border-b border-border/50 bg-white px-5 py-4">
+          <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => (isCrosssell ? finishToThankYou() : close())}
-              className="rounded-full p-2 text-muted transition hover:bg-white hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="rounded-full p-2 text-muted transition hover:bg-surface hover:text-foreground"
+              aria-label="رجوع"
+            >
+              <ArrowRight className="h-5 w-5" aria-hidden />
+            </button>
+            <div className="min-w-0 flex-1 text-center">
+              <h2 id="checkout-title" className="font-arabic text-lg font-extrabold text-foreground">
+                {isCrosssell ? 'كمّلي روتينك' : 'إتمام الطلب'}
+              </h2>
+              {!isCrosssell && !isEmpty ? (
+                <p className="mt-0.5 text-xs text-muted">{checkout.pageSubtitle}</p>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              onClick={() => (isCrosssell ? finishToThankYou() : close())}
+              className="rounded-full p-2 text-muted transition hover:bg-surface hover:text-foreground"
               aria-label="إغلاق"
             >
               <X className="h-5 w-5" aria-hidden />
@@ -290,7 +309,7 @@ export function CheckoutModal() {
           </div>
         </div>
 
-        <div className="checkout-modal-scroll min-h-0 flex-1 overflow-y-auto overflow-x-clip px-5 pb-4">
+        <div className="checkout-modal-scroll min-h-0 flex-1 overflow-y-auto overflow-x-clip px-5 py-4">
           {isCrosssell ? (
             <RoutineCrossSellPanel
               order={pendingOrder}
@@ -314,15 +333,7 @@ export function CheckoutModal() {
               </Link>
             </div>
           ) : (
-            <div className="space-y-5">
-              <CheckoutProductSummary
-                items={items}
-                onUpdateQty={updateQty}
-                onRemove={remove}
-              />
-
-              <OrderSummary items={items} totals={totals} />
-
+            <div className="space-y-4">
               {cardPaymentEnabled ? (
                 <PaymentMethodSelector
                   value={paymentMethod}
@@ -331,78 +342,25 @@ export function CheckoutModal() {
                 />
               ) : null}
 
+              <OrderSummary items={items} totals={totals} />
+
               <form id={FORM_ID} onSubmit={submit} className="space-y-4">
-                <div>
-                  <label htmlFor="checkout-name" className="mb-2 block text-sm font-bold text-foreground">
-                    {checkout.nameLabel}
-                  </label>
-                  <input
-                    id="checkout-name"
-                    required
-                    autoComplete="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-xl border border-border bg-white px-4 py-3.5 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                    placeholder={checkout.namePlaceholder}
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="checkout-phone" className="mb-2 block text-sm font-bold text-foreground">
-                    {checkout.phoneLabel}
-                  </label>
-                  <input
-                    id="checkout-phone"
-                    required
-                    type="tel"
-                    inputMode="numeric"
-                    autoComplete="tel-national"
-                    dir="ltr"
-                    value={phone}
-                    onChange={(e) => setPhone(formatUaePhoneInput(e.target.value))}
-                    className="w-full rounded-xl border border-border bg-white px-4 py-3.5 text-base text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                    placeholder={checkout.phonePlaceholder}
-                  />
-                  <p className="mt-2 text-[11px] leading-relaxed text-muted">{checkout.phoneHint}</p>
-                </div>
-
-                <div>
-                  <label htmlFor="checkout-area" className="mb-2 block text-sm font-bold text-foreground">
-                    {checkout.areaLabel}
-                  </label>
-                  <select
-                    id="checkout-area"
-                    value={area}
-                    onChange={(e) => setArea(e.target.value)}
-                    className="w-full rounded-xl border border-border bg-white px-4 py-3.5 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                  >
-                    <option value="">{checkout.areaPlaceholder}</option>
-                    {businessConfig.market.emirates.map((emirate) => (
-                      <option key={emirate} value={emirate}>
-                        {emirate}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="checkout-address" className="mb-2 block text-sm font-bold text-foreground">
-                    {checkout.addressLabel}
-                  </label>
-                  <textarea
-                    id="checkout-address"
-                    rows={2}
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    className="w-full resize-none rounded-xl border border-border bg-white px-4 py-3.5 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                    placeholder={checkout.addressPlaceholder}
-                  />
-                </div>
+                <CheckoutFormFields
+                  method={effectivePaymentMethod}
+                  name={name}
+                  phone={phone}
+                  area={area}
+                  address={address}
+                  onNameChange={setName}
+                  onPhoneChange={setPhone}
+                  onAreaChange={setArea}
+                  onAddressChange={setAddress}
+                />
 
                 {error ? <CheckoutError message={error} /> : null}
               </form>
 
-              <PaymentTrustNote method={effectivePaymentMethod} />
+              <CheckoutTrustFooter />
 
               <p className="text-center text-[10px] leading-relaxed text-muted">{checkout.termsNote}</p>
             </div>
@@ -410,7 +368,7 @@ export function CheckoutModal() {
         </div>
 
         {!isEmpty && !isCrosssell ? (
-          <div className="shrink-0 border-t border-border/60 bg-[#FAFAF8] px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="shrink-0 border-t border-border/60 bg-white px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
             <CheckoutCTA
               method={effectivePaymentMethod}
               total={totals.total}

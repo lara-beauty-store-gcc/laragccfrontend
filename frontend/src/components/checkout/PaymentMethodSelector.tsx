@@ -1,6 +1,6 @@
 'use client';
 
-import { CreditCard, HandCoins } from 'lucide-react';
+import { CreditCard, HandCoins, Package, ShieldCheck } from 'lucide-react';
 import { businessConfig } from '@/config/business';
 import type { PaymentMethod } from '@/lib/checkout-pricing';
 
@@ -12,79 +12,114 @@ type PaymentMethodSelectorProps = {
   disabled?: boolean;
 };
 
-const options: Array<{
-  id: PaymentMethod;
-  icon: typeof CreditCard;
-  title: string;
-  subtitle: string;
-  hint: string;
-}> = [
-  {
-    id: 'card',
-    icon: CreditCard,
-    title: payment.cardTitle,
-    subtitle: payment.cardSubtitle,
-    hint: payment.cardHint,
-  },
-  {
-    id: 'cod',
-    icon: HandCoins,
-    title: payment.codTitle,
-    subtitle: payment.codSubtitle,
-    hint: payment.codHint,
-  },
-];
-
 export function PaymentMethodSelector({ value, onChange, disabled }: PaymentMethodSelectorProps) {
+  const cardSelected = value === 'card';
+  const codSelected = value === 'cod';
+
   return (
     <fieldset className="space-y-3" disabled={disabled}>
-      <legend className="mb-1 font-arabic text-sm font-extrabold text-foreground">
-        {payment.selectorTitle}
-      </legend>
+      <legend className="sr-only">{payment.selectorTitle}</legend>
 
-      <div className="space-y-2.5" role="radiogroup" aria-label={payment.selectorTitle}>
-        {options.map((option) => {
-          const selected = value === option.id;
-          const Icon = option.icon;
+      <div className="space-y-3" role="radiogroup" aria-label={payment.selectorTitle}>
+        <label
+          className={`relative block cursor-pointer rounded-2xl border-2 p-4 transition-all duration-200 ${
+            cardSelected
+              ? 'border-[#E8B4B8] bg-[#FFF5F5] shadow-soft'
+              : 'border-border bg-white hover:border-primary/20'
+          } ${disabled ? 'pointer-events-none opacity-60' : ''}`}
+        >
+          <input
+            type="radio"
+            name="payment-method"
+            value="card"
+            checked={cardSelected}
+            onChange={() => onChange('card')}
+            className="sr-only"
+          />
 
-          return (
-            <label
-              key={option.id}
-              className={`flex min-h-[4.75rem] cursor-pointer items-start gap-3 rounded-2xl border-2 p-4 transition-all duration-200 ${
-                selected
-                  ? 'border-primary bg-primary/5 shadow-soft'
-                  : 'border-border bg-white hover:border-primary/25'
-              } ${disabled ? 'pointer-events-none opacity-60' : ''}`}
+          <span className="absolute left-3 top-3 rounded-full bg-secondary px-2.5 py-1 text-[10px] font-bold text-primary-dark">
+            {payment.cardPopularBadge}
+          </span>
+
+          <div className="flex items-start gap-3 pt-6">
+            <span
+              className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
+                cardSelected ? 'border-primary bg-primary' : 'border-border bg-white'
+              }`}
+              aria-hidden
             >
-              <input
-                type="radio"
-                name="payment-method"
-                value={option.id}
-                checked={selected}
-                onChange={() => onChange(option.id)}
-                className="sr-only"
-              />
+              {cardSelected ? <span className="h-2 w-2 rounded-full bg-white" /> : null}
+            </span>
 
-              <span
-                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                  selected ? 'border-primary bg-primary' : 'border-border bg-white'
-                }`}
-                aria-hidden
-              >
-                {selected ? <span className="h-2 w-2 rounded-full bg-white" /> : null}
-              </span>
-
-              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
                 <span className="flex items-center gap-2">
-                  <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-                  <span className="font-arabic text-sm font-extrabold text-foreground">{option.title}</span>
+                  <CreditCard className="h-5 w-5 text-primary" aria-hidden />
+                  <span className="font-arabic text-base font-extrabold text-foreground">{payment.cardTitle}</span>
                 </span>
-                <span className="text-xs font-semibold text-primary">{option.subtitle}</span>
-                <span className="text-[11px] leading-relaxed text-muted">{option.hint}</span>
+                <span className="flex items-center gap-1 text-[10px] font-bold text-muted" dir="ltr">
+                  <span className="rounded border border-border bg-white px-1.5 py-0.5">VISA</span>
+                  <span className="rounded border border-border bg-white px-1.5 py-0.5">MC</span>
+                </span>
+              </div>
+
+              <p className="mt-1.5 text-sm font-bold text-emerald-700">{payment.cardSubtitle}</p>
+              <p className="text-xs text-muted">{payment.cardHint}</p>
+
+              <div className="mt-3 flex items-start gap-2 rounded-xl bg-white/80 px-3 py-2">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+                <p className="text-[11px] leading-relaxed text-muted">
+                  {payment.secureStripe} — {payment.noCardStorage}
+                </p>
+              </div>
+            </div>
+          </div>
+        </label>
+
+        <label
+          className={`block cursor-pointer rounded-2xl border-2 p-4 transition-all duration-200 ${
+            codSelected
+              ? 'border-primary bg-primary/5 shadow-soft'
+              : 'border-border bg-white hover:border-primary/20'
+          } ${disabled ? 'pointer-events-none opacity-60' : ''}`}
+        >
+          <input
+            type="radio"
+            name="payment-method"
+            value="cod"
+            checked={codSelected}
+            onChange={() => onChange('cod')}
+            className="sr-only"
+          />
+
+          <div className="flex items-start gap-3">
+            <span
+              className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
+                codSelected ? 'border-primary bg-primary' : 'border-border bg-white'
+              }`}
+              aria-hidden
+            >
+              {codSelected ? <span className="h-2 w-2 rounded-full bg-white" /> : null}
+            </span>
+
+            <div className="min-w-0 flex-1">
+              <span className="flex items-center gap-2">
+                <HandCoins className="h-5 w-5 text-primary" aria-hidden />
+                <span className="font-arabic text-base font-extrabold text-foreground">{payment.codTitle}</span>
               </span>
-            </label>
-          );
-        })}
+
+              <p className="mt-1.5 text-sm font-bold text-amber-800">{payment.codSubtitle}</p>
+              <p className="text-xs text-muted">{payment.codHint}</p>
+
+              <div className="mt-3 flex items-start gap-2 rounded-xl bg-surface-rose px-3 py-2">
+                <Package className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+                <p className="text-[11px] leading-relaxed text-muted">
+                  سهولة وراحة — متوفر في كل إمارات الدولة
+                </p>
+              </div>
+            </div>
+          </div>
+        </label>
       </div>
     </fieldset>
   );

@@ -8,3 +8,8 @@ export function isCardPaymentEnabled(): boolean {
 export function defaultPaymentMethod(): PaymentMethod {
   return isCardPaymentEnabled() ? 'card' : 'cod';
 }
+
+/** Card first when enabled — matches checkout mockup default */
+export function preferredPaymentMethod(): PaymentMethod {
+  return defaultPaymentMethod();
+}
