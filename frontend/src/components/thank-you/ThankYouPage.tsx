@@ -16,6 +16,7 @@ import {
   Truck,
 } from 'lucide-react';
 import { businessConfig } from '@/config/business';
+import { useCart } from '@/lib/cart';
 import { buildWhatsAppSupportUrl, getLastOrder, type LastOrder } from '@/lib/order-session';
 import { formatPrice } from '@/lib/pricing';
 import { trackPurchase } from '@/lib/tracking';
@@ -151,9 +152,11 @@ function TrustRow() {
 
 function ThankYouInner() {
   const params = useSearchParams();
+  const { clear } = useCart();
   const orderIdParam = params.get('order') ?? '';
   const paymentParam = params.get('payment') ?? '';
   const sessionIdParam = params.get('session_id') ?? '';
+  const redirectStatus = params.get('redirect_status') ?? '';
   const [order, setOrder] = useState<LastOrder | null>(null);
   const isCardReturn = paymentParam === 'card' || Boolean(sessionIdParam);
 
@@ -161,8 +164,17 @@ function ThankYouInner() {
     const stored = getLastOrder();
     if (stored) {
       setOrder(stored);
-      // Purchase fires only for confirmed COD orders stored locally after backend success.
-      if (stored.paymentMethod !== 'CARD') {
+      if (stored.paymentMethod === 'CARD') {
+        if (redirectStatus === 'succeeded' || paymentParam === 'card') {
+          clear();
+          trackPurchase({
+            orderId: stored.orderId,
+            value: stored.total,
+            currency: stored.currency,
+            items: stored.items.map((i) => ({ sku: i.sku, qty: i.qty, price: i.price })),
+          });
+        }
+      } else {
         trackPurchase({
           orderId: stored.orderId,
           value: stored.total,
@@ -171,7 +183,7 @@ function ThankYouInner() {
         });
       }
     }
-  }, []);
+  }, [clear, paymentParam, redirectStatus]);
 
   const orderIdLabel =
     order?.orderIds && order.orderIds.length > 1
