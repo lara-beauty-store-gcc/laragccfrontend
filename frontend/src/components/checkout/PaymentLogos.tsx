@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 
+/** Mastercard, Visa, Discover, Amex — matching premium checkout UI */
 const CARD_BRANDS = [
   { src: '/images/payments/mastercard.svg', alt: 'Mastercard' },
   { src: '/images/payments/visa.svg', alt: 'Visa' },
@@ -9,15 +10,8 @@ const CARD_BRANDS = [
   { src: '/images/payments/amex.svg', alt: 'American Express' },
 ] as const;
 
-const WALLET_BRANDS = [
-  { src: '/images/payments/apple-pay.svg', alt: 'Apple Pay' },
-  { src: '/images/payments/google-pay.svg', alt: 'Google Pay' },
-] as const;
-
 type PaymentLogosProps = {
   size?: 'sm' | 'md' | 'lg';
-  wallets?: boolean;
-  full?: boolean;
   align?: 'start' | 'center';
 };
 
@@ -53,15 +47,8 @@ function BrandBadge({
   );
 }
 
-/** Professional payment brand logos */
-export function PaymentLogos({
-  size = 'md',
-  wallets = false,
-  full = true,
-  align = 'center',
-}: PaymentLogosProps) {
+export function PaymentLogos({ size = 'md', align = 'center' }: PaymentLogosProps) {
   const alignClass = align === 'start' ? 'justify-start' : 'justify-center';
-  const brands = full ? CARD_BRANDS : CARD_BRANDS.slice(0, 2);
 
   return (
     <div
@@ -69,22 +56,13 @@ export function PaymentLogos({
       aria-label="طرق الدفع المقبولة"
       dir="ltr"
     >
-      {brands.map((brand) => (
+      {CARD_BRANDS.map((brand) => (
         <BrandBadge key={brand.alt} src={brand.src} alt={brand.alt} size={size} />
       ))}
-      {wallets
-        ? WALLET_BRANDS.map((brand) => (
-            <BrandBadge key={brand.alt} src={brand.src} alt={brand.alt} size={size} />
-          ))
-        : null}
     </div>
   );
 }
 
-export function PaymentLogosInline() {
-  return <PaymentLogos size="sm" full={false} align="start" />;
-}
-
 export function ExpressPaymentLogos() {
-  return <PaymentLogos size="md" wallets full align="center" />;
+  return <PaymentLogos size="md" align="center" />;
 }

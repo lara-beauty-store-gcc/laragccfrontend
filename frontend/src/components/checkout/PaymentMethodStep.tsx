@@ -36,7 +36,7 @@ export function PaymentMethodStep() {
           </div>
 
           <div className="mt-4 border-t border-[#E8B4B8]/40 pt-4">
-            <PaymentLogos size="md" wallets align="start" />
+            <PaymentLogos size="md" align="start" />
           </div>
 
           <div className="mt-3 flex items-center gap-2 text-[11px] text-muted">

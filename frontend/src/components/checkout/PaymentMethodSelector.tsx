@@ -62,7 +62,7 @@ export function PaymentMethodSelector({ value, onChange, disabled }: PaymentMeth
               <p className="text-xs text-muted">{payment.cardHint}</p>
 
               <div className="mt-3">
-                <PaymentLogos size="sm" wallets align="start" />
+                <PaymentLogos size="sm" align="start" />
               </div>
 
               <div className="mt-3 flex items-start gap-2 rounded-xl bg-white/80 px-3 py-2">

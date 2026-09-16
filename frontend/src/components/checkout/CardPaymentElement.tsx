@@ -31,7 +31,7 @@ export function CardPaymentElement({ onReadyChange }: CardPaymentElementProps) {
         </div>
 
         <div className="mb-4">
-          <PaymentLogos size="sm" wallets align="start" />
+          <PaymentLogos size="sm" align="start" />
         </div>
 
         <p className="mb-4 text-xs leading-relaxed text-muted">
