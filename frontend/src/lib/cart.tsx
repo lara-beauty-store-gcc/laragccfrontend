@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import {
   createContext,
   useCallback,
@@ -62,6 +63,7 @@ function hydrateCartLine(line: Partial<CartLine> & Pick<CartLine, 'productId' | 
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [items, setItems] = useState<CartLine[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [view, setView] = useState<CartView>('cart');
@@ -87,15 +89,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items, hydrated]);
 
+  const goToCheckout = useCallback(() => {
+    setIsOpen(false);
+    router.push('/checkout');
+  }, [router]);
+
   const openCart = useCallback(() => {
-    setView('checkout');
-    setIsOpen(true);
-  }, []);
+    goToCheckout();
+  }, [goToCheckout]);
 
   const openCheckout = useCallback(() => {
-    setView('checkout');
-    setIsOpen(true);
-  }, []);
+    goToCheckout();
+  }, [goToCheckout]);
 
   const close = useCallback(() => {
     setIsOpen(false);
@@ -139,10 +144,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           },
         ];
       });
-      setView('checkout');
-      setIsOpen(true);
+      setIsOpen(false);
+      router.push('/checkout');
     },
-    [],
+    [router],
   );
 
   const remove = useCallback((productId: string, offerId: string) => {

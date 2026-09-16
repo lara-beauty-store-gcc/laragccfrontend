@@ -3,12 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AnnouncementBar } from '@/components/AnnouncementBar';
-import { CheckoutModal } from '@/components/CheckoutModal';
 import { SiteHeader } from '@/components/SiteHeader';
 import { WhatsAppFloatingButton } from '@/components/WhatsAppFloatingButton';
 import { LandingUrlTracker } from '@/components/LandingUrlTracker';
 
-const MINIMAL_CHROME_PREFIXES = ['/lp', '/redirectkiller', '/admin/cod'];
+const MINIMAL_CHROME_PREFIXES = ['/lp', '/redirectkiller', '/admin/cod', '/checkout'];
 
 function isMinimalRoute(pathname: string | null) {
   if (!pathname) return false;
@@ -29,7 +28,6 @@ export function StoreShell({ children }: { children: React.ReactNode }) {
       <AnnouncementBar />
       <SiteHeader />
       <main className="flex-1">{children}</main>
-      <CheckoutModal />
       <WhatsAppFloatingButton />
     </>
   );
