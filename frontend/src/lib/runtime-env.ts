@@ -52,10 +52,21 @@ export function stripeSecretKey(): string {
   return runtimeEnv('STRIPE_SECRET_KEY');
 }
 
+export function stripePublishableKey(): string {
+  return (
+    runtimeEnv('STRIPE_PUBLISHABLE_KEY') ||
+    runtimeEnv('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY')
+  );
+}
+
 export function stripeWebhookSecret(): string {
   return runtimeEnv('STRIPE_WEBHOOK_SECRET');
 }
 
 export function stripeConfigured(): boolean {
   return Boolean(stripeSecretKey());
+}
+
+export function stripeCheckoutReady(): boolean {
+  return stripeConfigured() && Boolean(stripePublishableKey());
 }

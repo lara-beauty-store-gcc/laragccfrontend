@@ -120,7 +120,13 @@ export function CardPaymentUnavailable() {
     <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
       <p className="font-bold">الدفع بالبطاقة غير متاح حالياً</p>
       <p className="mt-2 text-xs leading-relaxed">
-        يرجى إضافة مفتاح Stripe العام (NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) في EasyPanel ثم إعادة النشر.
+        تأكدي من إضافة مفتاح Stripe العام في EasyPanel ثم أعيدي تشغيل الحاوية:
+      </p>
+      <p className="mt-2 rounded-lg bg-white/80 px-3 py-2 font-mono text-[11px] leading-relaxed" dir="ltr">
+        STRIPE_PUBLISHABLE_KEY=pk_live_...
+      </p>
+      <p className="mt-2 text-[11px] leading-relaxed text-amber-800">
+        (نفس المفتاح العام من Stripe Dashboard → API keys — مختلف عن sk_live)
       </p>
     </section>
   );

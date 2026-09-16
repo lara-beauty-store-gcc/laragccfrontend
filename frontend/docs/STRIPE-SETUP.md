@@ -1,49 +1,42 @@
 # Stripe setup — Lara Beauty Store
 
-## Security (important)
-
-- **Never** put `STRIPE_SECRET_KEY` in frontend/client code or git.
-- **Never** paste live secret keys in chat, tickets, or screenshots.
-- If a secret key was exposed, **rotate it immediately** in [Stripe Dashboard → API keys](https://dashboard.stripe.com/apikeys).
-- `pk_live_...` (publishable) is safe for browsers and **required** for inline card fields on `/checkout/card`.
-
 ## EasyPanel env (store / frontend service)
 
 ```env
-# Enable card option in checkout UI
 NEXT_PUBLIC_CARD_PAYMENT_ENABLED=true
 
-# Publishable key — required for card form on checkout page
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
-
-# Server-only (required for card payments)
+# Secret key — server only (sk_live_...)
 STRIPE_SECRET_KEY=sk_live_...
+
+# Publishable key — safe for browser (pk_live_...) — REQUIRED for card form
+STRIPE_PUBLISHABLE_KEY=pk_live_...
+
 STRIPE_WEBHOOK_SECRET=whsec_...
+NEXT_PUBLIC_SITE_URL=https://larabeauty.store
 ```
 
-Redeploy after saving env vars.
+**Important:** `sk_live` and `pk_live` are **two different keys** in Stripe Dashboard → API keys.
 
-## Stripe Dashboard
-
-1. **Payment Intent** is created by `POST /api/stripe/create-payment-intent` when the customer opens `/checkout/card`.
-2. Card fields are shown inline via **Stripe Payment Element** (card number, expiry, CVC — handled by Stripe, not stored on our server).
-3. Add webhook endpoint:
-   - URL: `https://larabeauty.store/api/stripe/webhook`
-   - Events: `payment_intent.succeeded`, `checkout.session.completed` (legacy redirect flow)
-4. Copy **Signing secret** → `STRIPE_WEBHOOK_SECRET` in EasyPanel.
+After saving env vars, **restart/redeploy** the container (no rebuild required for `STRIPE_PUBLISHABLE_KEY`).
 
 ## Verify
 
 ```bash
 curl -s https://larabeauty.store/api/health
-# stripeCheckout should be "configured"
+# stripeCheckout: configured
+# stripePublishableKey: configured
+# stripeCardReady: ready
+
+curl -s https://larabeauty.store/api/stripe/config
+# {"cardPayments":true,"publishableKey":"pk_live_...","ready":true}
 ```
 
-## Pricing
+## Webhook
 
-| Method | Delivery | Example (239 AED subtotal) |
-|--------|----------|----------------------------|
-| Card   | Free     | Total 239 AED              |
-| COD    | +20 AED  | Total 259 AED              |
+- URL: `https://larabeauty.store/api/stripe/webhook`
+- Events: `payment_intent.succeeded`
 
-Payment is confirmed after Stripe webhook `payment_intent.succeeded` (or legacy `checkout.session.completed`) with paid status.
+## Security
+
+- Never commit `STRIPE_SECRET_KEY` to git.
+- `STRIPE_PUBLISHABLE_KEY` is safe in the browser; the app serves it via `/api/stripe/config` at runtime.

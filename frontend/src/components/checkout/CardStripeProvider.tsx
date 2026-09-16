@@ -6,7 +6,7 @@ import { CardPaymentLoading, CardPaymentUnavailable } from '@/components/checkou
 import { getStoredLandingUrl } from '@/components/LandingUrlTracker';
 import { useCart } from '@/lib/cart';
 import { createStripePaymentIntent } from '@/lib/create-stripe-payment-intent';
-import { getStripeBrowser, stripeElementsReady } from '@/lib/stripe-client';
+import { ensureStripeClient, getStripeBrowser } from '@/lib/stripe-client';
 
 type CardStripeContextValue = {
   paymentIntentId: string;
@@ -26,6 +26,7 @@ export function CardStripeProvider({ children, total }: CardStripeProviderProps)
   const [paymentIntentId, setPaymentIntentId] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [stripeReady, setStripeReady] = useState(false);
   const paymentIntentRef = useRef('');
 
   const orderLines = useMemo(
@@ -47,17 +48,23 @@ export function CardStripeProvider({ children, total }: CardStripeProviderProps)
   );
 
   useEffect(() => {
-    if (!stripeElementsReady()) {
-      setLoading(false);
-      setError('stripe_publishable_missing');
-      return;
-    }
-
     let cancelled = false;
 
-    async function ensurePaymentIntent() {
+    async function bootstrap() {
       setLoading(true);
       setError('');
+
+      const stripeConfig = await ensureStripeClient();
+      if (cancelled) return;
+
+      if (!stripeConfig.ready || !stripeConfig.publishableKey) {
+        setStripeReady(false);
+        setLoading(false);
+        setError('stripe_publishable_missing');
+        return;
+      }
+
+      setStripeReady(true);
 
       try {
         const result = await createStripePaymentIntent({
@@ -81,14 +88,14 @@ export function CardStripeProvider({ children, total }: CardStripeProviderProps)
       }
     }
 
-    void ensurePaymentIntent();
+    void bootstrap();
 
     return () => {
       cancelled = true;
     };
   }, [cartSignature, total, orderLines]);
 
-  if (!stripeElementsReady()) {
+  if (!stripeReady && !loading && error === 'stripe_publishable_missing') {
     return <CardPaymentUnavailable />;
   }
 
@@ -96,7 +103,7 @@ export function CardStripeProvider({ children, total }: CardStripeProviderProps)
     return <CardPaymentLoading />;
   }
 
-  if (error || !clientSecret) {
+  if (error || !clientSecret || !stripeReady) {
     return (
       <section className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800">
         تعذّر تجهيز الدفع — جرّبي تحديث الصفحة أو اختاري{' '}
