@@ -1,5 +1,12 @@
 import { listUnsyncedOrderBatches } from '@/lib/order-store';
-import { apiBaseUrl, sheetsWebhookUrl, stripeCheckoutReady, stripeConfigured, stripePublishableKey } from '@/lib/runtime-env';
+import {
+  apiBaseUrl,
+  sheetsWebhookUrl,
+  stripeCheckoutReady,
+  stripeConfigured,
+  stripeEnvDiagnostics,
+  stripePublishableKey,
+} from '@/lib/runtime-env';
 import { sheetsWebhookConfigured } from '@/lib/sheets-webhook';
 
 export async function GET() {
@@ -12,7 +19,7 @@ export async function GET() {
       market: 'UAE',
       countryCode: 'AE',
       currency: 'AED',
-      deployTag: 'stripe-pk-runtime-v62-2026-09-16',
+      deployTag: 'stripe-health-hints-v63-2026-09-16',
       repo: 'laragccfrontend',
       orderFlow: 'sheets-only-then-api-fallback',
       apiUrl: apiBaseUrl() ? 'configured' : 'missing',
@@ -20,6 +27,11 @@ export async function GET() {
       stripeCheckout: stripeConfigured() ? 'configured' : 'missing',
       stripePublishableKey: stripePublishableKey() ? 'configured' : 'missing',
       stripeCardReady: stripeCheckoutReady() ? 'ready' : 'missing',
+      stripeEnv: stripeEnvDiagnostics(),
+      stripeSetupHint:
+        stripeCheckoutReady()
+          ? 'ok'
+          : 'Add STRIPE_SECRET_KEY + STRIPE_PUBLISHABLE_KEY to THIS store service in EasyPanel, then restart container',
       sheetsWebhookHost: sheetsWebhookUrl().replace(/^https?:\/\//, '').split('/')[0] || 'missing',
       unsyncedOrders: batches.reduce((sum, batch) => sum + batch.orderIds.length, 0),
       timestamp: new Date().toISOString(),

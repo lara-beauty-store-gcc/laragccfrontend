@@ -70,3 +70,21 @@ export function stripeConfigured(): boolean {
 export function stripeCheckoutReady(): boolean {
   return stripeConfigured() && Boolean(stripePublishableKey());
 }
+
+/** Safe diagnostics — reports presence only, never values. */
+export function stripeEnvDiagnostics() {
+  const keys = [
+    'STRIPE_SECRET_KEY',
+    'STRIPE_PUBLISHABLE_KEY',
+    'STRIPE_WEBHOOK_SECRET',
+    'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',
+    'NEXT_PUBLIC_CARD_PAYMENT_ENABLED',
+  ] as const;
+
+  const present: Record<string, boolean> = {};
+  for (const key of keys) {
+    present[key] = Boolean(runtimeEnv(key));
+  }
+
+  return present;
+}
