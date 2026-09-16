@@ -1,105 +1,90 @@
 'use client';
 
-import {
-  AmexIcon,
-  ApplePayIcon,
-  DiscoverIcon,
-  GooglePayIcon,
-  MastercardIcon,
-  VisaIcon,
-} from '@/components/checkout/PaymentBrandIcons';
+import Image from 'next/image';
+
+const CARD_BRANDS = [
+  { src: '/images/payments/mastercard.svg', alt: 'Mastercard' },
+  { src: '/images/payments/visa.svg', alt: 'Visa' },
+  { src: '/images/payments/discover.svg', alt: 'Discover' },
+  { src: '/images/payments/amex.svg', alt: 'American Express' },
+] as const;
+
+const WALLET_BRANDS = [
+  { src: '/images/payments/apple-pay.svg', alt: 'Apple Pay' },
+  { src: '/images/payments/google-pay.svg', alt: 'Google Pay' },
+] as const;
 
 type PaymentLogosProps = {
   size?: 'sm' | 'md' | 'lg';
-  /** Show wallet options (Apple Pay, Google Pay) */
   wallets?: boolean;
-  /** Show all card brands including Discover & Amex */
   full?: boolean;
   align?: 'start' | 'center';
 };
 
 function BrandBadge({
-  children,
+  src,
+  alt,
   size,
-  className = '',
 }: {
-  children: React.ReactNode;
+  src: string;
+  alt: string;
   size: 'sm' | 'md' | 'lg';
-  className?: string;
 }) {
-  const heights = {
-    sm: 'h-7 min-w-[42px] px-1.5',
-    md: 'h-9 min-w-[52px] px-2',
-    lg: 'h-11 min-w-[60px] px-2.5',
-  };
+  const sizes = {
+    sm: { box: 'h-8 w-[50px]', img: 40 },
+    md: { box: 'h-10 w-[62px]', img: 52 },
+    lg: { box: 'h-12 w-[74px]', img: 64 },
+  }[size];
 
   return (
     <span
-      className={`inline-flex items-center justify-center rounded-md border border-gray-200/90 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.06)] ${heights[size]} ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-md border border-gray-200 bg-white p-1 shadow-[0_1px_2px_rgba(0,0,0,0.05)] ${sizes.box}`}
       dir="ltr"
     >
-      {children}
+      <Image
+        src={src}
+        alt={alt}
+        width={sizes.img}
+        height={Math.round(sizes.img * 0.57)}
+        className="h-auto w-full object-contain"
+        unoptimized
+      />
     </span>
   );
 }
 
-/** Professional payment brand logos — Visa, Mastercard, Amex, Apple Pay */
+/** Professional payment brand logos */
 export function PaymentLogos({
   size = 'md',
   wallets = false,
   full = true,
   align = 'center',
 }: PaymentLogosProps) {
-  const iconScale = {
-    sm: { mc: 'h-4 w-7', visa: 'h-3.5 w-9', amex: 'h-4 w-7', disc: 'h-4 w-7', wallet: 'h-4 w-10' },
-    md: { mc: 'h-5 w-8', visa: 'h-4 w-10', amex: 'h-5 w-8', disc: 'h-5 w-8', wallet: 'h-5 w-12' },
-    lg: { mc: 'h-6 w-10', visa: 'h-5 w-12', amex: 'h-6 w-10', disc: 'h-6 w-10', wallet: 'h-6 w-14' },
-  }[size];
-
   const alignClass = align === 'start' ? 'justify-start' : 'justify-center';
+  const brands = full ? CARD_BRANDS : CARD_BRANDS.slice(0, 2);
 
   return (
     <div
-      className={`flex flex-wrap items-center gap-2 ${alignClass}`}
+      className={`flex flex-wrap items-center gap-2.5 ${alignClass}`}
       aria-label="طرق الدفع المقبولة"
       dir="ltr"
     >
-      <BrandBadge size={size}>
-        <MastercardIcon className={iconScale.mc} />
-      </BrandBadge>
-      <BrandBadge size={size}>
-        <VisaIcon className={iconScale.visa} />
-      </BrandBadge>
-      {full ? (
-        <>
-          <BrandBadge size={size}>
-            <DiscoverIcon className={iconScale.disc} />
-          </BrandBadge>
-          <BrandBadge size={size}>
-            <AmexIcon className={iconScale.amex} />
-          </BrandBadge>
-        </>
-      ) : null}
-      {wallets ? (
-        <>
-          <BrandBadge size={size} className="text-foreground">
-            <ApplePayIcon className={iconScale.wallet} />
-          </BrandBadge>
-          <BrandBadge size={size}>
-            <GooglePayIcon className={iconScale.wallet} />
-          </BrandBadge>
-        </>
-      ) : null}
+      {brands.map((brand) => (
+        <BrandBadge key={brand.alt} src={brand.src} alt={brand.alt} size={size} />
+      ))}
+      {wallets
+        ? WALLET_BRANDS.map((brand) => (
+            <BrandBadge key={brand.alt} src={brand.src} alt={brand.alt} size={size} />
+          ))
+        : null}
     </div>
   );
 }
 
-/** Compact row for inline use next to labels */
 export function PaymentLogosInline() {
   return <PaymentLogos size="sm" full={false} align="start" />;
 }
 
-/** Express checkout row — wallets + cards */
 export function ExpressPaymentLogos() {
   return <PaymentLogos size="md" wallets full align="center" />;
 }

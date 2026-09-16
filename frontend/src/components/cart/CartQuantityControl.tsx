@@ -25,9 +25,9 @@ export function CartQuantityControl({
       <button
         type="button"
         onClick={onDecrease}
-        disabled={disabled || qty <= 1}
+        disabled={disabled}
         className={`flex ${btn} items-center justify-center rounded-r-xl text-foreground transition hover:bg-surface disabled:cursor-not-allowed disabled:opacity-40`}
-        aria-label="نقصي الكمية"
+        aria-label={qty <= 1 ? 'حذف من السلة' : 'نقصي الكمية'}
       >
         <Minus className={icon} aria-hidden />
       </button>
