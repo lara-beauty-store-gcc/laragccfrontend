@@ -3,6 +3,8 @@
 import {
   ArrowLeft,
   CircleCheckBig,
+  CreditCard,
+  HandCoins,
   HeartHandshake,
   ShieldCheck,
   Star,
@@ -17,7 +19,7 @@ import { ProductImageCarousel } from './ProductImageCarousel';
 import { ProductOfferSelector } from './ProductOfferSelector';
 import { Stars } from '../Stars';
 
-const { cod } = businessConfig;
+const { cod, payment } = businessConfig;
 
 const heroStats = [
   { label: 'علكة في العلبة', value: '60' },
@@ -27,10 +29,10 @@ const heroStats = [
 ];
 
 const miniTrust = [
-  { icon: HeartHandshake, title: cod.paymentLabel, sub: 'بدون دفع أونلاين' },
+  { icon: CreditCard, title: payment.cardTitle, sub: payment.cardSubtitle },
+  { icon: HandCoins, title: payment.codTitle, sub: payment.codSubtitle },
   { icon: Truck, title: 'توصيل 2–4 أيام', sub: businessConfig.market.countryName },
   { icon: ShieldCheck, title: 'ضمان 30 يوم', sub: 'استرجاع كامل' },
-  { icon: CircleCheckBig, title: 'حلال · GMP', sub: 'تركيبة واضحة' },
 ];
 
 const stripIcons = [ShieldCheck, Star, HeartHandshake, Truck] as const;
@@ -101,17 +103,38 @@ export function ProductHero({
               onSelect={onSelectOffer}
             />
 
+            <div
+              className="rounded-2xl border border-border/80 bg-white p-3.5 shadow-sm"
+              aria-label="طرق الدفع المتاحة"
+            >
+              <p className="mb-2.5 text-center font-arabic text-xs font-extrabold text-foreground">
+                طرق الدفع المتاحة
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-xl border border-primary/20 bg-primary/5 px-2.5 py-2.5 text-center">
+                  <CreditCard className="mx-auto h-4 w-4 text-primary" aria-hidden />
+                  <p className="mt-1 font-arabic text-[10px] font-bold text-foreground">{payment.cardTitle}</p>
+                  <p className="text-[9px] font-semibold text-emerald-700">{payment.cardSubtitle}</p>
+                </div>
+                <div className="rounded-xl border border-border bg-surface-rose px-2.5 py-2.5 text-center">
+                  <HandCoins className="mx-auto h-4 w-4 text-primary" aria-hidden />
+                  <p className="mt-1 font-arabic text-[10px] font-bold text-foreground">{payment.codTitle}</p>
+                  <p className="text-[9px] font-semibold text-muted">{payment.codSubtitle}</p>
+                </div>
+              </div>
+            </div>
+
             <div ref={ctaRef} className="space-y-2">
               <button
                 type="button"
                 onClick={onAddToCart}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-sm font-bold text-white shadow-soft transition hover:bg-primary/90 active:scale-[0.99]"
+                className="flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-sm font-bold text-white shadow-soft transition hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.99]"
               >
                 {ctaLabelText}
                 <ArrowLeft className="h-5 w-5 shrink-0" aria-hidden />
               </button>
               <p className="text-center text-[11px] font-medium text-muted">
-                {cod.paymentLabel} · بدون دفع أونلاين
+                {payment.cardTitle} ({payment.cardSubtitle}) أو {payment.codTitle}
               </p>
             </div>
 

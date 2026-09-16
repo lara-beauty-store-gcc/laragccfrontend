@@ -58,8 +58,20 @@ function OrderSummary({ order }: { order: LastOrder }) {
           <span>الجوال</span>
           <span className="font-mono text-foreground">{order.phone}</span>
         </p>
+        {order.subtotal != null ? (
+          <p className="flex justify-between gap-2 text-muted">
+            <span>المجموع الفرعي</span>
+            <span>{formatPrice(order.subtotal)}</span>
+          </p>
+        ) : null}
+        {order.deliveryFee != null ? (
+          <p className="flex justify-between gap-2 text-muted">
+            <span>التوصيل</span>
+            <span>{order.deliveryFee === 0 ? 'مجاني' : formatPrice(order.deliveryFee)}</span>
+          </p>
+        ) : null}
         <p className="flex justify-between gap-2 border-t border-border pt-3 font-arabic text-base font-extrabold text-primary">
-          <span>المجموع (COD)</span>
+          <span>المجموع {order.paymentMethod === 'CARD' ? '(بطاقة)' : '(COD)'}</span>
           <span>{formatPrice(order.total)}</span>
         </p>
       </div>
@@ -140,18 +152,24 @@ function TrustRow() {
 function ThankYouInner() {
   const params = useSearchParams();
   const orderIdParam = params.get('order') ?? '';
+  const paymentParam = params.get('payment') ?? '';
+  const sessionIdParam = params.get('session_id') ?? '';
   const [order, setOrder] = useState<LastOrder | null>(null);
+  const isCardReturn = paymentParam === 'card' || Boolean(sessionIdParam);
 
   useEffect(() => {
     const stored = getLastOrder();
     if (stored) {
       setOrder(stored);
-      trackPurchase({
-        orderId: stored.orderId,
-        value: stored.total,
-        currency: stored.currency,
-        items: stored.items.map((i) => ({ sku: i.sku, qty: i.qty, price: i.price })),
-      });
+      // Purchase fires only for confirmed COD orders stored locally after backend success.
+      if (stored.paymentMethod !== 'CARD') {
+        trackPurchase({
+          orderId: stored.orderId,
+          value: stored.total,
+          currency: stored.currency,
+          items: stored.items.map((i) => ({ sku: i.sku, qty: i.qty, price: i.price })),
+        });
+      }
     }
   }, []);
 
@@ -174,10 +192,13 @@ function ThankYouInner() {
             <CircleCheckBig className="h-10 w-10" strokeWidth={2.5} aria-hidden />
           </span>
         </div>
-        <h1 className="font-arabic text-2xl font-extrabold text-primary sm:text-3xl">تم استلام طلبك!</h1>
+        <h1 className="font-arabic text-2xl font-extrabold text-primary sm:text-3xl">
+          {isCardReturn && !order ? 'تم إرسال الدفع' : 'تم استلام طلبك!'}
+        </h1>
         <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted">
-          شكراً {order?.customerName ? `${order.customerName.split(' ')[0]} ` : ''}
-          — طلبك مسجّل، وفريقنا يتواصل معك قريباً لتأكيد العنوان والتوصيل.
+          {isCardReturn && !order
+            ? 'شكراً — جاري تأكيد الدفع من النظام. ستصلك رسالة تأكيد قريباً.'
+            : `شكراً ${order?.customerName ? `${order.customerName.split(' ')[0]} ` : ''}— طلبك مسجّل، وفريقنا يتواصل معك قريباً لتأكيد العنوان والتوصيل.`}
         </p>
         {orderIdLabel ? (
           <p className="mt-4 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs text-muted shadow-sm">
@@ -234,7 +255,11 @@ function ThankYouInner() {
 
       <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-muted">
         <Smartphone className="h-3.5 w-3.5" aria-hidden />
-        <span>الدفع عند الاستلام فقط — {market.countryName}</span>
+        <span>
+          {order?.paymentMethod === 'CARD' || isCardReturn
+            ? `دفع بالبطاقة — ${market.countryName}`
+            : `الدفع عند الاستلام — ${market.countryName}`}
+        </span>
       </div>
 
       <Link

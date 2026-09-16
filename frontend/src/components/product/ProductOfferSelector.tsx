@@ -16,12 +16,7 @@ export function ProductOfferSelector({
 }) {
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between gap-2">
-        <p className="font-arabic text-sm font-extrabold text-foreground">اختاري العرض:</p>
-        <span className="rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1 text-[10px] font-bold text-primary">
-          نتيجة من العلبة الأولى
-        </span>
-      </div>
+      <p className="font-arabic text-sm font-extrabold text-foreground">اختاري العرض:</p>
       {product.offers.map((offer) => {
         const selected = offer.id === selectedId;
 
@@ -30,7 +25,7 @@ export function ProductOfferSelector({
             key={offer.id}
             type="button"
             onClick={() => onSelect(offer)}
-            className={`flex w-full items-stretch gap-3 rounded-2xl border-2 p-4 text-right transition-all duration-200 ${
+            className={`flex min-h-[4.75rem] w-full items-stretch gap-3 rounded-2xl border-2 p-4 text-right transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
               selected
                 ? 'border-primary bg-primary/5 shadow-soft'
                 : 'border-border bg-white hover:border-primary/30'

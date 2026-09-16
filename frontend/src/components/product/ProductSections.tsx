@@ -494,17 +494,18 @@ export function HowToUseSection({ product }: { product: ProductConfig }) {
 }
 
 export function CODDeliverySection() {
+  const { payment } = businessConfig;
   const steps = [
-    { icon: HandCoins, title: 'اطلبي الآن', body: 'اختاري العرض، اكتبي اسمك ورقمك — بدون دفع أونلاين.' },
+    { icon: HandCoins, title: 'اختاري طريقة الدفع', body: `${payment.cardTitle} (${payment.cardSubtitle}) أو ${payment.codTitle} (+20 د.إ توصيل).` },
     { icon: Phone, title: cod.confirmationPromise, body: 'عربي 100% — نأكد العنوان والكمية.' },
-    { icon: Truck, title: 'استلمي وادفعي', body: 'تدفعين كاش أو كي نت لما يوصلك الطلب.' },
+    { icon: Truck, title: 'استلمي طلبك', body: 'بالبطاقة: دفع آمن عبر Stripe. بالاستلام: كاش أو بطاقة للمندوب.' },
   ];
   return (
     <ProductPageSection variant="white">
       <ProductSectionHeader
         eyebrow="التوصيل والدفع"
         title="كيف يوصلك طلبك — بكل بساطة"
-        subtitle={cod.paymentLabel}
+        subtitle="بطاقة (شحن مجاني) أو دفع عند الاستلام"
       />
       <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-3 md:gap-7">
         {steps.map((s, i) => (

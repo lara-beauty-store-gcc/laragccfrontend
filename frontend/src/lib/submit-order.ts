@@ -15,6 +15,8 @@ export type SubmitOrderPayload = {
   area?: string;
   items: OrderLinePayload[];
   sourceUrl?: string;
+  paymentMethod?: 'COD' | 'card';
+  deliveryFeeAed?: number;
 };
 
 export type SubmitOrderResult = {

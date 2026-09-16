@@ -15,6 +15,8 @@ export type LastOrder = {
   area?: string;
   productSlug?: string;
   items: LastOrderItem[];
+  subtotal?: number;
+  deliveryFee?: number;
   total: number;
   currency: string;
   paymentMethod: string;

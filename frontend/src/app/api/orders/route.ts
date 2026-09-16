@@ -1,4 +1,5 @@
 import { businessConfig } from '@/config/business';
+import { calculateCheckoutTotals } from '@/lib/checkout-pricing';
 import { expandOrderIds, generateLaraOrderIds } from '@/lib/order-ids';
 import { markOrdersSynced, persistOrdersLocally } from '@/lib/order-store';
 import { clientIp } from '@/lib/client-ip';
@@ -27,6 +28,8 @@ type IncomingBody = {
   area?: string;
   items?: RawSheetItem[];
   sourceUrl?: string;
+  paymentMethod?: string;
+  deliveryFeeAed?: number;
 };
 
 const { market } = businessConfig;
@@ -91,6 +94,8 @@ async function forwardToBackendApi(
         area: body.area,
         country: market.countryCode,
         currency: market.currency,
+        paymentMethod: body.paymentMethod || 'COD',
+        deliveryFeeAed: body.deliveryFeeAed,
         skipSheets: true,
         sheetSyncedBy: 'frontend',
         items: normalizedItems.map((item) => ({
@@ -159,6 +164,10 @@ export async function POST(req: Request) {
     }
 
     const normalizedItems = normalizeOrderItems(items);
+    const subtotal = normalizedItems.reduce((sum, item) => sum + item.totalPrice, 0);
+    const paymentMethod = String(body.paymentMethod || 'COD').toUpperCase() === 'CARD' ? 'card' : 'cod';
+    const checkoutTotals = calculateCheckoutTotals(subtotal, paymentMethod);
+    const orderTotal = checkoutTotals.total;
     const localOrderIds = generateLaraOrderIds(normalizedItems.length);
     const rawSourceUrl = String(body.sourceUrl || siteBaseUrl());
     const redirectSlug = extractRedirectSlugFromUrl(rawSourceUrl);
@@ -173,6 +182,10 @@ export async function POST(req: Request) {
       currency: market.currency,
       area: String(body.area || ''),
       sourceUrl: canonicalSourceUrl,
+      paymentMethod: paymentMethod === 'cod' ? 'COD' : 'CARD',
+      subtotal,
+      deliveryFee: checkoutTotals.deliveryFee,
+      total: orderTotal,
       items: normalizedItems.map(({ product, url, sku, quantity, totalPrice }) => ({
         product,
         url,
@@ -249,7 +262,6 @@ export async function POST(req: Request) {
     );
     await markOrdersSynced(local.orderIds);
 
-    const orderTotal = normalizedItems.reduce((sum, item) => sum + item.totalPrice, 0);
     const eventId = `purchase_${orderIds[0]}`;
 
     void sendTiktokEvent(
@@ -295,6 +307,10 @@ export async function POST(req: Request) {
       sheetLatencyMs,
       totalMs: Date.now() - started,
       eventId,
+      subtotal,
+      deliveryFee: checkoutTotals.deliveryFee,
+      total: orderTotal,
+      paymentMethod: payload.paymentMethod,
     });
   } catch {
     return Response.json(

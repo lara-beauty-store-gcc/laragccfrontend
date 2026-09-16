@@ -35,8 +35,11 @@ function snapEventName(name: string) {
       return 'VIEW_CONTENT';
     case 'AddToCart':
       return 'ADD_CART';
+    case 'InitiateCheckout':
     case 'Lead':
       return 'START_CHECKOUT';
+    case 'AddPaymentInfo':
+      return 'ADD_BILLING';
     case 'Purchase':
       return 'PURCHASE';
     default:
@@ -117,6 +120,32 @@ export function trackViewContent(product: {
 
 export function trackAddToCart(payload: TrackPayload) {
   trackEvent('AddToCart', payload);
+}
+
+export function trackInitiateCheckout(payload: {
+  value: number;
+  currency: string;
+  items: Array<{ sku: string; qty: number; price: number }>;
+}) {
+  trackEvent('InitiateCheckout', {
+    content_ids: payload.items.map((i) => i.sku).join(','),
+    content_type: 'product',
+    num_items: payload.items.reduce((n, i) => n + i.qty, 0),
+    value: payload.value,
+    currency: payload.currency,
+  });
+}
+
+export function trackAddPaymentInfo(payload: {
+  value: number;
+  currency: string;
+  paymentMethod: string;
+}) {
+  trackEvent('AddPaymentInfo', {
+    value: payload.value,
+    currency: payload.currency,
+    payment_method: payload.paymentMethod,
+  });
 }
 
 export function trackPurchase(payload: {
