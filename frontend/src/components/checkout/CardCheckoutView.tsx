@@ -10,7 +10,7 @@ import {
   useCardPaymentSubmit,
 } from '@/components/checkout/CardPaymentElement';
 import { CardStripeProvider, useCardStripe } from '@/components/checkout/CardStripeProvider';
-import { PaymentLogos } from '@/components/checkout/PaymentLogos';
+import { ExpressPaymentLogos } from '@/components/checkout/PaymentLogos';
 import { getStoredLandingUrl } from '@/components/LandingUrlTracker';
 import { businessConfig } from '@/config/business';
 import { useCart } from '@/lib/cart';
@@ -45,11 +45,8 @@ export function CardCheckoutView() {
       <div className="grid gap-8 lg:grid-cols-[1fr_380px] lg:gap-10">
         <div className="space-y-6">
           <section className="rounded-2xl border border-border bg-white p-5 shadow-sm">
-            <p className="mb-3 font-arabic text-sm font-extrabold text-foreground">الدفع السريع</p>
-            <PaymentLogos />
-            <p className="mt-3 text-center text-[11px] text-muted">
-              Visa · Mastercard · Apple Pay
-            </p>
+            <p className="mb-4 font-arabic text-sm font-extrabold text-foreground">الدفع السريع</p>
+            <ExpressPaymentLogos />
           </section>
 
           <section className="rounded-2xl border border-border bg-white p-5 shadow-sm">

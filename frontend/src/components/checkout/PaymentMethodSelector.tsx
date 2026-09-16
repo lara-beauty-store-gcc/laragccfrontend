@@ -1,6 +1,7 @@
 'use client';
 
 import { CreditCard, HandCoins, Package, ShieldCheck } from 'lucide-react';
+import { PaymentLogos } from '@/components/checkout/PaymentLogos';
 import { businessConfig } from '@/config/business';
 import type { PaymentMethod } from '@/lib/checkout-pricing';
 
@@ -52,19 +53,17 @@ export function PaymentMethodSelector({ value, onChange, disabled }: PaymentMeth
             </span>
 
             <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-primary" aria-hidden />
-                  <span className="font-arabic text-base font-extrabold text-foreground">{payment.cardTitle}</span>
-                </span>
-                <span className="flex items-center gap-1 text-[10px] font-bold text-muted" dir="ltr">
-                  <span className="rounded border border-border bg-white px-1.5 py-0.5">VISA</span>
-                  <span className="rounded border border-border bg-white px-1.5 py-0.5">MC</span>
-                </span>
+              <div className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5 text-primary" aria-hidden />
+                <span className="font-arabic text-base font-extrabold text-foreground">{payment.cardTitle}</span>
               </div>
 
               <p className="mt-1.5 text-sm font-bold text-emerald-700">{payment.cardSubtitle}</p>
               <p className="text-xs text-muted">{payment.cardHint}</p>
+
+              <div className="mt-3">
+                <PaymentLogos size="sm" wallets align="start" />
+              </div>
 
               <div className="mt-3 flex items-start gap-2 rounded-xl bg-white/80 px-3 py-2">
                 <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />

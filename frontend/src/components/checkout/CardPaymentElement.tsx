@@ -17,21 +17,26 @@ export function CardPaymentElement({ onReadyChange }: CardPaymentElementProps) {
 
   return (
     <section className="rounded-2xl border border-border bg-white p-5 shadow-sm">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="font-arabic text-sm font-extrabold text-foreground">الدفع</h2>
-          <p className="mt-1 text-xs text-muted">جميع المعاملات آمنة ومشفّرة</p>
-        </div>
-        <PaymentLogos size="sm" />
+      <div className="mb-4">
+        <h2 className="font-arabic text-sm font-extrabold text-foreground">الدفع</h2>
+        <p className="mt-1 text-xs text-muted">جميع المعاملات آمنة ومشفّرة</p>
       </div>
 
       <div className="rounded-xl border border-border bg-[#FAFAFA] p-4">
-        <div className="mb-3 flex items-center gap-2">
-          <span className="flex h-4 w-4 items-center justify-center rounded-full border-2 border-primary">
+        <div className="mb-3 flex items-center gap-2.5">
+          <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-primary">
             <span className="h-2 w-2 rounded-full bg-primary" />
           </span>
           <span className="text-sm font-bold text-foreground">الدفع بالبطاقة</span>
         </div>
+
+        <div className="mb-4">
+          <PaymentLogos size="sm" wallets align="start" />
+        </div>
+
+        <p className="mb-4 text-xs leading-relaxed text-muted">
+          ادفعي بسهولة وأمان باستخدام بطاقتك. عملية الدفع مشفّرة وبياناتك محمية.
+        </p>
 
         {!ready ? (
           <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted">
