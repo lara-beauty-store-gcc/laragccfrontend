@@ -41,6 +41,8 @@ export const businessConfig = {
     cashReminder: 'جهّزي المبلغ كاش أو بطاقة عند الاستلام',
   },
   payment: {
+    /** Set NEXT_PUBLIC_CARD_PAYMENT_ENABLED=true in EasyPanel when Stripe backend is live */
+    cardEnabled: process.env.NEXT_PUBLIC_CARD_PAYMENT_ENABLED === 'true',
     codDeliveryFeeAed: 20,
     freeDeliveryLabel: 'مجاني',
     cardTitle: 'الدفع بالبطاقة',

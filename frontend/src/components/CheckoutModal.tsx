@@ -29,10 +29,12 @@ import {
 } from '@/lib/phone';
 import { getStoredLandingUrl } from '@/components/LandingUrlTracker';
 import { orderCurrency, submitOrder } from '@/lib/submit-order';
+import { defaultPaymentMethod, isCardPaymentEnabled } from '@/lib/payment-features';
 import { trackAddPaymentInfo, trackInitiateCheckout, trackEvent } from '@/lib/tracking';
 
 const { market, checkout } = businessConfig;
 const FORM_ID = 'checkout-form';
+const cardPaymentEnabled = isCardPaymentEnabled();
 
 export function CheckoutModal() {
   const router = useRouter();
@@ -41,15 +43,17 @@ export function CheckoutModal() {
   const [name, setName] = useState('');
   const [area, setArea] = useState('');
   const [address, setAddress] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(defaultPaymentMethod());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [pendingOrder, setPendingOrder] = useState<LastOrder | null>(null);
   const submittingRef = useRef(false);
 
+  const effectivePaymentMethod: PaymentMethod = cardPaymentEnabled ? paymentMethod : 'cod';
+
   const totals = useMemo(
-    () => calculateCheckoutTotals(total, paymentMethod),
-    [total, paymentMethod],
+    () => calculateCheckoutTotals(total, effectivePaymentMethod),
+    [total, effectivePaymentMethod],
   );
 
   useEffect(() => {
@@ -112,8 +116,6 @@ export function CheckoutModal() {
     if (!name.trim()) return 'الاسم الكامل مطلوب';
     if (!phone.trim()) return 'رقم الهاتف مطلوب';
     if (!isValidUaePhone(phone)) return uaePhoneErrorMessage(phone);
-    if (!area.trim()) return 'المنطقة مطلوبة';
-    if (!address.trim()) return 'العنوان / تفاصيل التوصيل مطلوبة';
     return null;
   }
 
@@ -224,7 +226,7 @@ export function CheckoutModal() {
     submittingRef.current = true;
 
     try {
-      if (paymentMethod === 'cod') {
+      if (effectivePaymentMethod === 'cod') {
         await submitCod(phoneE164, phoneDisplay);
         return;
       }
@@ -321,11 +323,13 @@ export function CheckoutModal() {
 
               <OrderSummary items={items} totals={totals} />
 
-              <PaymentMethodSelector
-                value={paymentMethod}
-                onChange={setPaymentMethod}
-                disabled={loading}
-              />
+              {cardPaymentEnabled ? (
+                <PaymentMethodSelector
+                  value={paymentMethod}
+                  onChange={setPaymentMethod}
+                  disabled={loading}
+                />
+              ) : null}
 
               <form id={FORM_ID} onSubmit={submit} className="space-y-4">
                 <div>
@@ -368,7 +372,6 @@ export function CheckoutModal() {
                   </label>
                   <select
                     id="checkout-area"
-                    required
                     value={area}
                     onChange={(e) => setArea(e.target.value)}
                     className="w-full rounded-xl border border-border bg-white px-4 py-3.5 text-sm text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
@@ -388,7 +391,6 @@ export function CheckoutModal() {
                   </label>
                   <textarea
                     id="checkout-address"
-                    required
                     rows={2}
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
@@ -400,7 +402,7 @@ export function CheckoutModal() {
                 {error ? <CheckoutError message={error} /> : null}
               </form>
 
-              <PaymentTrustNote method={paymentMethod} />
+              <PaymentTrustNote method={effectivePaymentMethod} />
 
               <p className="text-center text-[10px] leading-relaxed text-muted">{checkout.termsNote}</p>
             </div>
@@ -410,7 +412,7 @@ export function CheckoutModal() {
         {!isEmpty && !isCrosssell ? (
           <div className="shrink-0 border-t border-border/60 bg-[#FAFAF8] px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
             <CheckoutCTA
-              method={paymentMethod}
+              method={effectivePaymentMethod}
               total={totals.total}
               loading={loading}
               formId={FORM_ID}
