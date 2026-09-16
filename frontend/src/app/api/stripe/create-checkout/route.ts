@@ -1,6 +1,8 @@
 import { businessConfig } from '@/config/business';
-import { apiBaseUrl } from '@/lib/runtime-env';
+import { createStripeCheckoutSession } from '@/lib/stripe-checkout-session';
 import { normalizeCustomerName, normalizeUaePhone, uaePhoneErrorMessage } from '@/lib/phone';
+import { apiBaseUrl, runtimeEnv } from '@/lib/runtime-env';
+import { stripeConfigured } from '@/lib/stripe-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,18 +27,80 @@ type IncomingBody = {
 const { market } = businessConfig;
 
 function siteBaseUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL || 'https://larabeauty.store').replace(/\/$/, '');
+  return runtimeEnv('NEXT_PUBLIC_SITE_URL', 'https://larabeauty.store').replace(/\/$/, '');
+}
+
+function normalizeItems(items: IncomingBody['items']) {
+  return (Array.isArray(items) ? items : []).map((item) => {
+    const quantity = Number(item.quantity) || 1;
+    const lineTotal = Number(item.lineTotal) || 0;
+    return {
+      sku: String(item.sku || ''),
+      name: String(item.name || item.productName || ''),
+      slug: String(item.slug || ''),
+      quantity,
+      lineTotalAed: lineTotal,
+    };
+  });
+}
+
+async function forwardToBackendApi(body: IncomingBody, normalizedItems: ReturnType<typeof normalizeItems>) {
+  const apiUrl = apiBaseUrl();
+  if (!apiUrl) return null;
+
+  const customerName = normalizeCustomerName(String(body.customerName || ''));
+  const phoneRaw = String(body.phone || '').trim();
+  const phoneE164 = normalizeUaePhone(phoneRaw);
+  if (!phoneE164) return null;
+
+  const localDigits = phoneE164.replace(/\D/g, '').replace(/^971/, '');
+  const base = siteBaseUrl();
+  const successUrl = `${base}/thank-you?payment=card&session_id={CHECKOUT_SESSION_ID}`;
+  const cancelUrl = `${base}/?checkout=cancelled`;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
+  try {
+    const res = await fetch(`${apiUrl.replace(/\/$/, '')}/api/v1/stripe/create-checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      body: JSON.stringify({
+        customerName,
+        customer_name: customerName,
+        full_name: customerName,
+        phone: localDigits,
+        area: body.area || '',
+        country: market.countryCode,
+        currency: market.currency,
+        paymentMethod: 'card',
+        items: normalizedItems,
+        sourceUrl: body.sourceUrl || base,
+        successUrl,
+        cancelUrl,
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return null;
+
+    const checkoutUrl = String(data.checkoutUrl || data.url || '');
+    if (!checkoutUrl) return null;
+
+    return {
+      checkoutUrl,
+      sessionId: data.sessionId || data.id,
+      orderId: data.orderId || data.orderNumber,
+    };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export async function POST(req: Request) {
-  const apiUrl = apiBaseUrl();
-  if (!apiUrl) {
-    return Response.json(
-      { error: 'api_unavailable', message: 'خدمة الدفع غير متاحة حالياً — جرّبي لاحقاً أو اختاري الدفع عند الاستلام' },
-      { status: 503 },
-    );
-  }
-
   try {
     const body = (await req.json()) as IncomingBody;
     const customerName = normalizeCustomerName(String(body.customerName || ''));
@@ -54,92 +118,52 @@ export async function POST(req: Request) {
       );
     }
 
-    const items = Array.isArray(body.items) ? body.items : [];
-    if (items.length === 0) {
+    const normalizedItems = normalizeItems(body.items);
+    if (normalizedItems.length === 0) {
       return Response.json({ error: 'empty_cart', message: 'السلة فارغة' }, { status: 400 });
     }
 
-    const localDigits = phoneE164.replace(/\D/g, '').replace(/^971/, '');
     const base = siteBaseUrl();
     const successUrl = `${base}/thank-you?payment=card&session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${base}/?checkout=cancelled`;
 
-    const normalizedItems = items.map((item) => {
-      const quantity = Number(item.quantity) || 1;
-      const lineTotal = Number(item.lineTotal) || 0;
-      return {
-        sku: String(item.sku || ''),
-        name: String(item.name || item.productName || ''),
-        productName: String(item.productName || item.name || ''),
-        slug: String(item.slug || ''),
-        quantity,
-        lineTotalAed: lineTotal,
-        unitPriceAed: quantity > 0 ? lineTotal / quantity : lineTotal,
-      };
-    });
-
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
-
-    try {
-      const res = await fetch(`${apiUrl.replace(/\/$/, '')}/api/v1/stripe/create-checkout`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({
-          customerName,
-          customer_name: customerName,
-          full_name: customerName,
-          phone: localDigits,
-          area: body.area || '',
-          country: market.countryCode,
-          currency: market.currency,
-          paymentMethod: 'card',
-          items: normalizedItems,
-          sourceUrl: body.sourceUrl || base,
-          successUrl,
-          cancelUrl,
-        }),
+    if (stripeConfigured()) {
+      const result = await createStripeCheckoutSession({
+        customerName,
+        phone: phoneRaw,
+        area: body.area || '',
+        items: normalizedItems,
+        sourceUrl: body.sourceUrl || base,
+        successUrl,
+        cancelUrl,
       });
 
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        const message =
-          data.message ||
-          (res.status === 404
-            ? 'خدمة الدفع بالبطاقة قيد التفعيل — جرّبي الدفع عند الاستلام أو حاولي لاحقاً'
-            : 'تعذّر إنشاء جلسة الدفع — جرّبي مرة ثانية');
-        return Response.json({ error: data.error || 'stripe_checkout_failed', message }, { status: res.status });
-      }
-
-      const checkoutUrl = String(data.checkoutUrl || data.url || '');
-      if (!checkoutUrl) {
-        return Response.json(
-          { error: 'stripe_checkout_missing_url', message: 'تعذّر تحويلك للدفع — جرّبي مرة ثانية' },
-          { status: 502 },
-        );
-      }
-
-      return Response.json({
-        success: true,
-        checkoutUrl,
-        sessionId: data.sessionId || data.id,
-        orderId: data.orderId || data.orderNumber,
-      });
-    } finally {
-      clearTimeout(timer);
+      return Response.json({ success: true, ...result });
     }
-  } catch (err) {
-    const isTimeout = err instanceof Error && err.name === 'AbortError';
+
+    const backend = await forwardToBackendApi(body, normalizedItems);
+    if (backend) {
+      return Response.json({ success: true, ...backend });
+    }
+
     return Response.json(
       {
-        error: isTimeout ? 'timeout' : 'internal_error',
-        message: isTimeout
-          ? 'انتهت مهلة الاتصال — تحققي من الإنترنت وجربي مرة ثانية'
-          : 'صار خطأ — جرّبي مرة ثانية',
+        error: 'stripe_not_configured',
+        message: 'الدفع بالبطاقة غير مفعّل حالياً — اختاري الدفع عند الاستلام',
       },
-      { status: isTimeout ? 504 : 500 },
+      { status: 503 },
+    );
+  } catch (err) {
+    const message = err instanceof Error ? err.message : '';
+    return Response.json(
+      {
+        error: 'stripe_checkout_failed',
+        message:
+          message === 'stripe_not_configured'
+            ? 'الدفع بالبطاقة غير مفعّل حالياً — اختاري الدفع عند الاستلام'
+            : 'تعذّر إنشاء جلسة الدفع — جرّبي مرة ثانية',
+      },
+      { status: 500 },
     );
   }
 }

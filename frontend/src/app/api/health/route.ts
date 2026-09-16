@@ -1,5 +1,5 @@
 import { listUnsyncedOrderBatches } from '@/lib/order-store';
-import { apiBaseUrl, sheetsWebhookUrl } from '@/lib/runtime-env';
+import { apiBaseUrl, sheetsWebhookUrl, stripeConfigured } from '@/lib/runtime-env';
 import { sheetsWebhookConfigured } from '@/lib/sheets-webhook';
 
 export async function GET() {
@@ -12,11 +12,12 @@ export async function GET() {
       market: 'UAE',
       countryCode: 'AE',
       currency: 'AED',
-      deployTag: 'whatsapp-direct-wa-me-v44-2026-08-01',
+      deployTag: 'stripe-server-checkout-v58-2026-09-16',
       repo: 'laragccfrontend',
       orderFlow: 'sheets-only-then-api-fallback',
       apiUrl: apiBaseUrl() ? 'configured' : 'missing',
       sheetsWebhook: sheetsWebhookConfigured() ? 'configured' : 'missing',
+      stripeCheckout: stripeConfigured() ? 'configured' : 'missing',
       sheetsWebhookHost: sheetsWebhookUrl().replace(/^https?:\/\//, '').split('/')[0] || 'missing',
       unsyncedOrders: batches.reduce((sum, batch) => sum + batch.orderIds.length, 0),
       timestamp: new Date().toISOString(),

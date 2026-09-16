@@ -47,3 +47,15 @@ export function sheetsWebhookSecret(): string {
 export function apiBaseUrl(): string {
   return runtimeEnv('NEXT_PUBLIC_API_URL', 'https://api.larabeauty.store');
 }
+
+export function stripeSecretKey(): string {
+  return runtimeEnv('STRIPE_SECRET_KEY');
+}
+
+export function stripeWebhookSecret(): string {
+  return runtimeEnv('STRIPE_WEBHOOK_SECRET');
+}
+
+export function stripeConfigured(): boolean {
+  return Boolean(stripeSecretKey());
+}
