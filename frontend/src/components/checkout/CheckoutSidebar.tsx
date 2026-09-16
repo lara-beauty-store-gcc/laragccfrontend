@@ -1,20 +1,23 @@
 'use client';
 
 import Image from 'next/image';
-import type { CartLine } from '@/lib/cart';
+import { Trash2 } from 'lucide-react';
+import { CartQuantityControl } from '@/components/cart/CartQuantityControl';
 import { businessConfig } from '@/config/business';
 import type { CheckoutTotals } from '@/lib/checkout-pricing';
+import { useCart } from '@/lib/cart';
 import { formatPrice } from '@/lib/pricing';
 import { cartLineImage } from '@/lib/cart-images';
 
 const { checkout, brand } = businessConfig;
 
 type CheckoutSidebarProps = {
-  items: CartLine[];
   totals: CheckoutTotals;
 };
 
-export function CheckoutSidebar({ items, totals }: CheckoutSidebarProps) {
+export function CheckoutSidebar({ totals }: CheckoutSidebarProps) {
+  const { items, updateQty, remove } = useCart();
+
   return (
     <aside className="lg:sticky lg:top-6 lg:self-start">
       <div className="rounded-2xl border border-border/80 bg-[#FAF8F5] p-5 shadow-card">
@@ -26,20 +29,40 @@ export function CheckoutSidebar({ items, totals }: CheckoutSidebarProps) {
             const units = line.offerQuantity * line.qty;
 
             return (
-              <li key={`${line.productId}-${line.offerId}`} className="flex gap-3">
+              <li key={`${line.productId}-${line.offerId}`} className="flex gap-3 border-b border-border/50 pb-4 last:border-0 last:pb-0">
                 <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-border bg-white">
                   <Image src={cartLineImage(line.slug)} alt={line.name} fill className="object-cover" sizes="64px" />
-                  <span className="absolute -left-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
-                    {units}
-                  </span>
                 </div>
+
                 <div className="min-w-0 flex-1">
-                  <p className="line-clamp-2 font-arabic text-sm font-bold text-foreground">{line.name}</p>
-                  <p className="text-xs text-muted">{line.offerLabel}</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="line-clamp-2 font-arabic text-sm font-bold text-foreground">{line.name}</p>
+                      <p className="mt-0.5 text-xs text-muted">{line.offerLabel}</p>
+                      <p className="mt-0.5 text-[10px] text-muted">× {units} علبة</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => remove(line.productId, line.offerId)}
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted transition hover:bg-red-50 hover:text-red-600"
+                      aria-label={`حذف ${line.offerLabel}`}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                    </button>
+                  </div>
+
+                  <div className="mt-2.5 flex items-center justify-between gap-2">
+                    <CartQuantityControl
+                      qty={line.qty}
+                      size="sm"
+                      onDecrease={() => updateQty(line.productId, line.offerId, line.qty - 1)}
+                      onIncrease={() => updateQty(line.productId, line.offerId, line.qty + 1)}
+                    />
+                    <p className="shrink-0 font-arabic text-sm font-extrabold tabular-nums text-primary">
+                      {formatPrice(lineTotal)}
+                    </p>
+                  </div>
                 </div>
-                <p className="shrink-0 font-arabic text-sm font-extrabold tabular-nums text-primary">
-                  {formatPrice(lineTotal)}
-                </p>
               </li>
             );
           })}

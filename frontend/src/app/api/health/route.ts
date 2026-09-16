@@ -12,7 +12,7 @@ export async function GET() {
       market: 'UAE',
       countryCode: 'AE',
       currency: 'AED',
-      deployTag: 'checkout-multi-step-v60-2026-09-16',
+      deployTag: 'checkout-qty-edit-v61-2026-09-16',
       repo: 'laragccfrontend',
       orderFlow: 'sheets-only-then-api-fallback',
       apiUrl: apiBaseUrl() ? 'configured' : 'missing',

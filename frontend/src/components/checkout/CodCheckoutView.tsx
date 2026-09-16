@@ -16,7 +16,7 @@ const { checkout, payment } = businessConfig;
 const FORM_ID = 'cod-checkout-form';
 
 export function CodCheckoutView() {
-  const { items, total } = useCart();
+  const { total } = useCart();
   const totals = useMemo(() => calculateCheckoutTotals(total, 'cod'), [total]);
   const { loading, error, submitCod } = useCheckoutActions(totals);
 
@@ -86,7 +86,7 @@ export function CodCheckoutView() {
         </div>
 
         <div className="space-y-4">
-          <CheckoutSidebar items={items} totals={totals} />
+          <CheckoutSidebar totals={totals} />
           <div className="hidden lg:block">
             <CheckoutCTA method="cod" total={totals.total} loading={loading} formId={FORM_ID} />
           </div>

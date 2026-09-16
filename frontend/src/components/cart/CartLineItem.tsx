@@ -2,7 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Minus, Plus, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
+import { CartQuantityControl } from '@/components/cart/CartQuantityControl';
 import type { CartLine } from '@/lib/cart';
 import { formatPrice } from '@/lib/pricing';
 import { cartLineImage } from '@/lib/cart-images';
@@ -54,28 +55,11 @@ export function CartLineItem({ line, onRemove, onUpdateQty, compact = false }: C
         </div>
 
         <div className="mt-auto flex items-end justify-between gap-3 pt-2">
-          <div className="inline-flex items-center rounded-xl border border-border bg-surface">
-            <button
-              type="button"
-              onClick={() => onUpdateQty(line.qty - 1)}
-              disabled={line.qty <= 1}
-              className="flex h-9 w-9 items-center justify-center rounded-r-xl text-foreground transition hover:bg-white disabled:opacity-40"
-              aria-label="نقصي الكمية"
-            >
-              <Minus className="h-3.5 w-3.5" aria-hidden />
-            </button>
-            <span className="min-w-[2rem] text-center text-sm font-bold tabular-nums text-foreground">
-              {line.qty}
-            </span>
-            <button
-              type="button"
-              onClick={() => onUpdateQty(line.qty + 1)}
-              className="flex h-9 w-9 items-center justify-center rounded-l-xl text-foreground transition hover:bg-white"
-              aria-label="زيدي الكمية"
-            >
-              <Plus className="h-3.5 w-3.5" aria-hidden />
-            </button>
-          </div>
+          <CartQuantityControl
+            qty={line.qty}
+            onDecrease={() => onUpdateQty(line.qty - 1)}
+            onIncrease={() => onUpdateQty(line.qty + 1)}
+          />
 
           <div className="text-left">
             <p className="font-arabic text-sm font-extrabold tabular-nums text-primary">

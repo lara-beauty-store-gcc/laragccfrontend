@@ -40,7 +40,7 @@ export default function CheckoutPage() {
       <CheckoutShell title="إتمام الطلب" subtitle="اختاري طريقة الدفع للمتابعة" backHref="/">
         <div className="grid gap-8 lg:grid-cols-[1fr_340px] lg:items-start">
           <PaymentMethodStep />
-          <CheckoutSidebar items={items} totals={totals} />
+          <CheckoutSidebar totals={totals} />
         </div>
       </CheckoutShell>
     </CheckoutGate>

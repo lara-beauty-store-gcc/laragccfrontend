@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { Minus, Plus, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
+import { CartQuantityControl } from '@/components/cart/CartQuantityControl';
 import type { CartLine } from '@/lib/cart';
 import { formatPrice } from '@/lib/pricing';
 import { cartLineImage } from '@/lib/cart-images';
@@ -55,28 +56,12 @@ export function CheckoutProductSummary({ items, onUpdateQty, onRemove }: Checkou
                 </div>
 
                 <div className="mt-3 flex items-center justify-between gap-3">
-                  <div className="inline-flex items-center rounded-xl border border-border bg-surface">
-                    <button
-                      type="button"
-                      onClick={() => onUpdateQty(line.productId, line.offerId, line.qty - 1)}
-                      disabled={line.qty <= 1}
-                      className="flex h-8 w-8 items-center justify-center rounded-r-xl text-foreground transition hover:bg-white disabled:opacity-40"
-                      aria-label="نقصي الكمية"
-                    >
-                      <Minus className="h-3.5 w-3.5" aria-hidden />
-                    </button>
-                    <span className="min-w-[2rem] text-center text-sm font-bold tabular-nums text-foreground">
-                      {line.qty}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => onUpdateQty(line.productId, line.offerId, line.qty + 1)}
-                      className="flex h-8 w-8 items-center justify-center rounded-l-xl text-foreground transition hover:bg-white"
-                      aria-label="زيدي الكمية"
-                    >
-                      <Plus className="h-3.5 w-3.5" aria-hidden />
-                    </button>
-                  </div>
+                  <CartQuantityControl
+                    qty={line.qty}
+                    size="sm"
+                    onDecrease={() => onUpdateQty(line.productId, line.offerId, line.qty - 1)}
+                    onIncrease={() => onUpdateQty(line.productId, line.offerId, line.qty + 1)}
+                  />
 
                   <div className="text-left">
                     <p className="font-arabic text-base font-extrabold tabular-nums text-primary">
