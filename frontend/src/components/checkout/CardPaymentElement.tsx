@@ -31,12 +31,8 @@ export function CardPaymentElement({ onReadyChange }: CardPaymentElementProps) {
         </div>
 
         <div className="mb-4">
-          <PaymentLogos size="sm" align="start" />
+          <PaymentLogos size="sm" align="start" showDisclaimer />
         </div>
-
-        <p className="mb-4 text-xs leading-relaxed text-muted">
-          ادفعي بسهولة وأمان باستخدام بطاقتك. عملية الدفع مشفّرة وبياناتك محمية.
-        </p>
 
         {!ready ? (
           <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted">

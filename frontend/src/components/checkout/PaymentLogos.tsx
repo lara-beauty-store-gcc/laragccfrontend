@@ -1,68 +1,79 @@
 'use client';
 
-import Image from 'next/image';
-
-/** Mastercard, Visa, Discover, Amex — matching premium checkout UI */
-const CARD_BRANDS = [
-  { src: '/images/payments/mastercard.svg', alt: 'Mastercard' },
-  { src: '/images/payments/visa.svg', alt: 'Visa' },
-  { src: '/images/payments/discover.svg', alt: 'Discover' },
-  { src: '/images/payments/amex.svg', alt: 'American Express' },
-] as const;
+import {
+  ApplePayMark,
+  GooglePayMark,
+  MastercardMark,
+  VisaMark,
+} from '@/components/checkout/PaymentBrandMarks';
 
 type PaymentLogosProps = {
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md';
   align?: 'start' | 'center';
+  showDisclaimer?: boolean;
 };
 
+type BrandEntry = {
+  id: string;
+  Mark: typeof VisaMark;
+  box: string;
+  dark?: boolean;
+};
+
+const BRANDS: BrandEntry[] = [
+  { id: 'visa', Mark: VisaMark, box: 'w-[46px]' },
+  { id: 'mastercard', Mark: MastercardMark, box: 'w-[40px]' },
+  { id: 'apple-pay', Mark: ApplePayMark, box: 'w-[48px]', dark: true },
+  { id: 'google-pay', Mark: GooglePayMark, box: 'w-[50px]' },
+];
+
 function BrandBadge({
-  src,
-  alt,
+  Mark,
+  box,
+  dark,
   size,
 }: {
-  src: string;
-  alt: string;
-  size: 'sm' | 'md' | 'lg';
+  Mark: typeof VisaMark;
+  box: string;
+  dark?: boolean;
+  size: 'sm' | 'md';
 }) {
-  const sizes = {
-    sm: { box: 'h-8 w-[50px]', img: 40 },
-    md: { box: 'h-10 w-[62px]', img: 52 },
-    lg: { box: 'h-12 w-[74px]', img: 64 },
-  }[size];
+  const height = size === 'sm' ? 'h-7' : 'h-8';
 
   return (
     <span
-      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-md border border-gray-200 bg-white p-1 shadow-[0_1px_2px_rgba(0,0,0,0.05)] ${sizes.box}`}
+      className={`inline-flex ${height} ${box} shrink-0 items-center justify-center rounded border border-gray-200/90 bg-white px-1.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] ${dark ? 'text-gray-900' : ''}`}
       dir="ltr"
     >
-      <Image
-        src={src}
-        alt={alt}
-        width={sizes.img}
-        height={Math.round(sizes.img * 0.57)}
-        className="h-auto w-full object-contain"
-        unoptimized
-      />
+      <Mark className="max-h-[16px] max-w-full" />
     </span>
   );
 }
 
-export function PaymentLogos({ size = 'md', align = 'center' }: PaymentLogosProps) {
-  const alignClass = align === 'start' ? 'justify-start' : 'justify-center';
+/** Visa · Mastercard · Apple Pay · Google Pay */
+export function PaymentLogos({
+  size = 'md',
+  align = 'start',
+  showDisclaimer = false,
+}: PaymentLogosProps) {
+  const alignClass = align === 'center' ? 'justify-center' : 'justify-start';
 
   return (
-    <div
-      className={`flex flex-wrap items-center gap-2.5 ${alignClass}`}
-      aria-label="طرق الدفع المقبولة"
-      dir="ltr"
-    >
-      {CARD_BRANDS.map((brand) => (
-        <BrandBadge key={brand.alt} src={brand.src} alt={brand.alt} size={size} />
-      ))}
+    <div className="space-y-2">
+      <div
+        className={`flex max-w-full flex-wrap items-center gap-1.5 ${alignClass}`}
+        aria-label="طرق الدفع المقبولة عبر Stripe"
+        dir="ltr"
+      >
+        {BRANDS.map(({ id, Mark, box, dark }) => (
+          <BrandBadge key={id} Mark={Mark} box={box} dark={dark} size={size} />
+        ))}
+      </div>
+      {showDisclaimer ? (
+        <p className="text-[10px] leading-relaxed text-muted">
+          الطرق الفعلية المتاحة تُحدَّد عبر Stripe حسب جهازك ومنطقتك.
+        </p>
+      ) : null}
     </div>
   );
-}
-
-export function ExpressPaymentLogos() {
-  return <PaymentLogos size="md" align="center" />;
 }
