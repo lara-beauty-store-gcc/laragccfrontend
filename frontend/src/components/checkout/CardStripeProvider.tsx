@@ -89,31 +89,19 @@ export function CardStripeProvider({ children, total }: CardStripeProviderProps)
   }, [cartSignature, total, orderLines]);
 
   if (!stripeElementsReady()) {
-    return (
-      <>
-        <CardPaymentUnavailable />
-        {children}
-      </>
-    );
+    return <CardPaymentUnavailable />;
   }
 
   if (loading && !clientSecret) {
-    return (
-      <>
-        <CardPaymentLoading />
-        {children}
-      </>
-    );
+    return <CardPaymentLoading />;
   }
 
   if (error || !clientSecret) {
     return (
-      <>
-        <section className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800">
-          تعذّر تجهيز الدفع — جرّبي تحديث الصفحة أو اختاري الدفع عند الاستلام.
-        </section>
-        {children}
-      </>
+      <section className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800">
+        تعذّر تجهيز الدفع — جرّبي تحديث الصفحة أو اختاري{' '}
+        <a href="/checkout/cod" className="font-bold underline">الدفع عند الاستلام</a>.
+      </section>
     );
   }
 

@@ -12,17 +12,19 @@ type CheckoutCTAProps = {
   total: number;
   loading: boolean;
   disabled?: boolean;
-  formId: string;
+  formId?: string;
+  onClick?: () => void;
 };
 
-export function CheckoutCTA({ method, total, loading, disabled, formId }: CheckoutCTAProps) {
+export function CheckoutCTA({ method, total, loading, disabled, formId, onClick }: CheckoutCTAProps) {
   const label = loading ? checkoutLoadingLabel(method) : checkoutCtaLabel(method, total);
 
   return (
     <div className="space-y-2">
       <button
-        type="submit"
-        form={formId}
+        type={onClick ? 'button' : 'submit'}
+        form={onClick ? undefined : formId}
+        onClick={onClick}
         disabled={loading || disabled}
         className="flex min-h-[3.5rem] w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-4 font-arabic text-base font-extrabold text-white shadow-lg transition hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
         aria-busy={loading}
