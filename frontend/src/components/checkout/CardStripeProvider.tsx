@@ -121,19 +121,26 @@ export function CardStripeProvider({ children, total }: CardStripeProviderProps)
         appearance: {
           theme: 'stripe',
           variables: {
-            colorPrimary: '#C2185B',
+            colorPrimary: '#1773b0',
             colorText: '#1a1a1a',
-            borderRadius: '12px',
+            colorTextPlaceholder: '#737373',
+            borderRadius: '6px',
             fontFamily: 'system-ui, sans-serif',
+            spacingUnit: '4px',
           },
           rules: {
             '.Input': {
-              border: '1px solid #e5e7eb',
+              border: '1px solid #d9d9d9',
               boxShadow: 'none',
+              padding: '12px',
             },
             '.Input:focus': {
-              border: '1px solid #C2185B',
-              boxShadow: '0 0 0 2px rgba(194, 24, 91, 0.1)',
+              border: '1px solid #1773b0',
+              boxShadow: '0 0 0 1px #1773b0',
+            },
+            '.Label': {
+              fontWeight: '500',
+              marginBottom: '6px',
             },
           },
         },
