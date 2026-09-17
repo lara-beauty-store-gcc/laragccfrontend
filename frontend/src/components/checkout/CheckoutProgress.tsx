@@ -13,9 +13,33 @@ type CheckoutProgressProps = {
 };
 
 export function CheckoutProgress({ currentStep }: CheckoutProgressProps) {
+  const activeStep = STEPS.find((s) => s.id === currentStep);
+
   return (
-    <nav aria-label="خطوات الطلب" className="hidden sm:block">
-      <ol className="flex items-center justify-center gap-2 md:gap-4">
+    <nav aria-label="خطوات الطلب">
+      {/* Mobile: current step label + dots */}
+      <div className="flex flex-col items-center gap-1.5 sm:hidden">
+        <p className="font-arabic text-xs font-bold text-primary">{activeStep?.label}</p>
+        <ol className="flex items-center gap-1.5">
+          {STEPS.map((step) => {
+            const done = step.id < currentStep;
+            const active = step.id === currentStep;
+            return (
+              <li key={step.id}>
+                <span
+                  className={`block h-2 w-2 rounded-full ${
+                    done || active ? 'bg-primary' : 'bg-gray-200'
+                  }`}
+                  aria-hidden
+                />
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+
+      {/* Tablet+ */}
+      <ol className="hidden items-center justify-center gap-2 sm:flex md:gap-4">
         {STEPS.map((step, index) => {
           const done = step.id < currentStep;
           const active = step.id === currentStep;

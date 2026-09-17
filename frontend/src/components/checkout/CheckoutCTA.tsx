@@ -14,19 +14,37 @@ type CheckoutCTAProps = {
   disabled?: boolean;
   formId?: string;
   onClick?: () => void;
+  /** Shorter button for mobile sticky footer (total shown separately) */
+  compact?: boolean;
 };
 
-export function CheckoutCTA({ method, total, loading, disabled, formId, onClick }: CheckoutCTAProps) {
-  const label = loading ? checkoutLoadingLabel(method) : checkoutCtaLabel(method, total);
+export function CheckoutCTA({
+  method,
+  total,
+  loading,
+  disabled,
+  formId,
+  onClick,
+  compact = false,
+}: CheckoutCTAProps) {
+  const label = loading
+    ? checkoutLoadingLabel(method)
+    : compact
+      ? method === 'card'
+        ? payment.cardCtaPrefix
+        : payment.codCtaPrefix
+      : checkoutCtaLabel(method, total);
 
   return (
-    <div className="space-y-2.5">
+    <div className={compact ? '' : 'space-y-2.5'}>
       <button
         type={onClick ? 'button' : 'submit'}
         form={onClick ? undefined : formId}
         onClick={onClick}
         disabled={loading || disabled}
-        className="flex min-h-[3.5rem] w-full items-center justify-center gap-3 rounded-2xl bg-primary px-5 py-4 font-arabic text-base font-extrabold text-white shadow-lg transition hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+        className={`flex w-full items-center justify-center gap-2 rounded-2xl bg-primary font-arabic font-extrabold text-white shadow-lg transition hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 ${
+          compact ? 'min-h-[2.75rem] px-4 py-2.5 text-sm' : 'min-h-[3.5rem] gap-3 px-5 py-4 text-base'
+        }`}
         aria-busy={loading}
       >
         {loading ? (
@@ -40,9 +58,11 @@ export function CheckoutCTA({ method, total, loading, disabled, formId, onClick 
         )}
       </button>
 
-      <p className="text-center text-[11px] leading-relaxed text-muted">
-        {method === 'card' ? payment.cardRedirectNote : payment.codDeliveryNote}
-      </p>
+      {!compact ? (
+        <p className="text-center text-[11px] leading-relaxed text-muted">
+          {method === 'card' ? payment.cardRedirectNote : payment.codDeliveryNote}
+        </p>
+      ) : null}
     </div>
   );
 }
