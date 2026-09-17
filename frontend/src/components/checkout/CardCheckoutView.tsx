@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { CheckoutCTA } from '@/components/checkout/CheckoutCTA';
 import { CheckoutError } from '@/components/checkout/CheckoutError';
+import { CheckoutFormSection } from '@/components/checkout/CheckoutFormSection';
 import { CheckoutLayout } from '@/components/checkout/CheckoutLayout';
 import { CheckoutMobileStickyFooter } from '@/components/checkout/CheckoutMobileStickyFooter';
 import { CheckoutShell } from '@/components/checkout/CheckoutShell';
@@ -24,6 +25,9 @@ import { useCheckoutActions, type CheckoutFormState } from '@/lib/use-checkout-a
 
 const { checkout, market } = businessConfig;
 
+const INPUT_CLASS =
+  'w-full rounded-md border border-[#d9d9d9] bg-white px-3.5 py-3 text-sm outline-none transition focus:border-[#1773b0] focus:ring-1 focus:ring-[#1773b0]/20';
+
 export function CardCheckoutView() {
   const { total } = useCart();
   const totals = useMemo(() => calculateCheckoutTotals(total, 'card'), [total]);
@@ -38,13 +42,22 @@ export function CardCheckoutView() {
 
   return (
     <CheckoutShell
-      title="الدفع بالبطاقة"
-      subtitle="أكملي معلومات التوصيل وأدخلي بيانات البطاقة بأمان"
+      title="إتمام الطلب"
+      subtitle="أكملي معلومات التوصيل ثم أدخلي بيانات البطاقة"
       backHref="/checkout"
       progressStep={3}
+      layout="form"
     >
       <CardStripeProvider total={totals.total}>
-        <CardCheckoutBody form={form} totals={totals} setName={setName} setPhone={setPhone} setArea={setArea} setAddress={setAddress} setBuilding={setBuilding} />
+        <CardCheckoutBody
+          form={form}
+          totals={totals}
+          setName={setName}
+          setPhone={setPhone}
+          setArea={setArea}
+          setAddress={setAddress}
+          setBuilding={setBuilding}
+        />
       </CardStripeProvider>
     </CheckoutShell>
   );
@@ -73,65 +86,64 @@ function CardCheckoutBody({
     <CheckoutLayout
       totals={totals}
       paymentMethod="card"
+      summaryMode="smooche"
       mobileFooter={
         <CheckoutMobileStickyFooter totals={totals}>
           <CardPaymentCta form={form} totals={totals} paymentReady={paymentReady} compact />
         </CheckoutMobileStickyFooter>
       }
     >
-      <section className="rounded-2xl border border-border bg-white p-5 shadow-sm">
-        <h2 className="mb-4 font-arabic text-sm font-extrabold text-foreground">معلومات التواصل</h2>
-        <div className="space-y-4">
-          <Field label={checkout.nameLabel} id="name" value={form.name} onChange={setName} placeholder={checkout.namePlaceholder} />
-          <div>
-            <label htmlFor="phone" className="mb-2 block text-sm font-bold">{checkout.phoneLabel}</label>
-            <input
-              id="phone"
-              required
-              type="tel"
-              dir="ltr"
-              value={form.phone}
-              onChange={(e) => setPhone(formatUaePhoneInput(e.target.value))}
-              placeholder={checkout.phonePlaceholder}
-              className="w-full rounded-xl border border-border bg-white px-4 py-3.5 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
-            />
-          </div>
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-border bg-white p-5 shadow-sm">
-        <h2 className="mb-4 font-arabic text-sm font-extrabold text-foreground">عنوان التوصيل</h2>
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="area" className="mb-2 block text-sm font-bold">{checkout.areaLabel}</label>
-            <select
-              id="area"
-              required
-              value={form.area}
-              onChange={(e) => setArea(e.target.value)}
-              className="w-full rounded-xl border border-border bg-white px-4 py-3.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
-            >
-              <option value="">{checkout.areaPlaceholder}</option>
-              {market.emirates.map((emirate) => (
-                <option key={emirate} value={emirate}>{emirate}</option>
-              ))}
-            </select>
-          </div>
-          <Field label={checkout.addressLabel} id="address" value={form.address} onChange={setAddress} placeholder={checkout.addressPlaceholder} />
-          <Field
-            label="رقم المبنى / الشقة (اختياري)"
-            id="building"
-            value={form.building}
-            onChange={setBuilding}
-            placeholder="مثال: برج 5، شقة 1204"
-            required={false}
+      <CheckoutFormSection title="معلومات التواصل">
+        <Field label={checkout.nameLabel} id="name" value={form.name} onChange={setName} placeholder={checkout.namePlaceholder} />
+        <div>
+          <label htmlFor="phone" className="mb-1.5 block text-sm font-medium text-foreground">
+            {checkout.phoneLabel}
+          </label>
+          <input
+            id="phone"
+            required
+            type="tel"
+            dir="ltr"
+            value={form.phone}
+            onChange={(e) => setPhone(formatUaePhoneInput(e.target.value))}
+            placeholder={checkout.phonePlaceholder}
+            className={INPUT_CLASS}
           />
         </div>
-      </section>
+      </CheckoutFormSection>
+
+      <CheckoutFormSection title="عنوان التوصيل">
+        <div>
+          <label htmlFor="area" className="mb-1.5 block text-sm font-medium text-foreground">
+            {checkout.areaLabel}
+          </label>
+          <select
+            id="area"
+            required
+            value={form.area}
+            onChange={(e) => setArea(e.target.value)}
+            className={INPUT_CLASS}
+          >
+            <option value="">{checkout.areaPlaceholder}</option>
+            {market.emirates.map((emirate) => (
+              <option key={emirate} value={emirate}>{emirate}</option>
+            ))}
+          </select>
+        </div>
+        <Field label={checkout.addressLabel} id="address" value={form.address} onChange={setAddress} placeholder={checkout.addressPlaceholder} />
+        <Field
+          label="رقم المبنى / الشقة (اختياري)"
+          id="building"
+          value={form.building}
+          onChange={setBuilding}
+          placeholder="مثال: برج 5، شقة 1204"
+          required={false}
+        />
+      </CheckoutFormSection>
 
       <CardPaymentElement onReadyChange={setPaymentReady} />
 
-      <div className="hidden lg:block">
+      <div className="hidden border-t border-border/60 pt-6 lg:block">
         <CardPaymentCta form={form} totals={totals} paymentReady={paymentReady} />
       </div>
     </CheckoutLayout>
@@ -284,14 +296,16 @@ function Field({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="mb-2 block text-sm font-bold">{label}</label>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-foreground">
+        {label}
+      </label>
       <input
         id={id}
         required={required}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="field-input w-full rounded-xl border border-border bg-white px-4 py-3.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+        className={INPUT_CLASS}
       />
     </div>
   );

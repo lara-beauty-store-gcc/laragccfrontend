@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { PhoneCall } from 'lucide-react';
 import { CheckoutCTA } from '@/components/checkout/CheckoutCTA';
 import { CheckoutError } from '@/components/checkout/CheckoutError';
+import { CheckoutFormSection } from '@/components/checkout/CheckoutFormSection';
 import { CheckoutLayout } from '@/components/checkout/CheckoutLayout';
 import { CheckoutMobileStickyFooter } from '@/components/checkout/CheckoutMobileStickyFooter';
 import { CheckoutShell } from '@/components/checkout/CheckoutShell';
@@ -15,6 +16,9 @@ import { useCheckoutActions } from '@/lib/use-checkout-actions';
 
 const { checkout, payment } = businessConfig;
 const FORM_ID = 'cod-checkout-form';
+
+const INPUT_CLASS =
+  'w-full rounded-md border border-[#d9d9d9] bg-white px-3.5 py-3 text-sm outline-none transition focus:border-[#1773b0] focus:ring-1 focus:ring-[#1773b0]/20';
 
 export function CodCheckoutView() {
   const { total } = useCart();
@@ -38,14 +42,16 @@ export function CodCheckoutView() {
 
   return (
     <CheckoutShell
-      title="الدفع عند الاستلام"
+      title="إتمام الطلب"
       subtitle="الاسم والجوال فقط — فريقنا يتصل بيك لتأكيد العنوان"
       backHref="/checkout"
       progressStep={3}
+      layout="form"
     >
       <CheckoutLayout
         totals={totals}
         paymentMethod="cod"
+        summaryMode="smooche"
         mobileFooter={
           <CheckoutMobileStickyFooter totals={totals}>{cta(true)}</CheckoutMobileStickyFooter>
         }
@@ -56,30 +62,31 @@ export function CodCheckoutView() {
             e.preventDefault();
             void submitCod(form);
           }}
-          className="rounded-2xl border border-border bg-white p-5 shadow-sm sm:p-6"
         >
-          <div className="mb-5 flex items-start gap-3 rounded-xl bg-surface-rose px-4 py-3">
+          <div className="mb-5 flex items-start gap-3 rounded-lg border border-primary/20 bg-[#f0f7f2] px-4 py-3">
             <PhoneCall className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden />
             <p className="text-sm leading-relaxed text-muted">{payment.codFormNote}</p>
           </div>
 
-          <h2 className="mb-4 font-arabic text-sm font-extrabold text-foreground">{checkout.codFormTitle}</h2>
-
-          <div className="space-y-4">
+          <CheckoutFormSection title={checkout.codFormTitle}>
             <div>
-              <label htmlFor="cod-name" className="mb-2 block text-sm font-bold">{checkout.nameLabel}</label>
+              <label htmlFor="cod-name" className="mb-1.5 block text-sm font-medium text-foreground">
+                {checkout.nameLabel}
+              </label>
               <input
                 id="cod-name"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={checkout.namePlaceholder}
-                className="w-full rounded-xl border border-border bg-white px-4 py-3.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                className={INPUT_CLASS}
               />
             </div>
 
             <div>
-              <label htmlFor="cod-phone" className="mb-2 block text-sm font-bold">{checkout.phoneLabel}</label>
+              <label htmlFor="cod-phone" className="mb-1.5 block text-sm font-medium text-foreground">
+                {checkout.phoneLabel}
+              </label>
               <input
                 id="cod-phone"
                 required
@@ -88,11 +95,11 @@ export function CodCheckoutView() {
                 value={phone}
                 onChange={(e) => setPhone(formatUaePhoneInput(e.target.value))}
                 placeholder={checkout.phonePlaceholder}
-                className="w-full rounded-xl border border-border bg-white px-4 py-3.5 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                className={INPUT_CLASS}
               />
-              <p className="mt-2 text-[11px] text-muted">{checkout.phoneHint}</p>
+              <p className="mt-1.5 text-[11px] text-muted">{checkout.phoneHint}</p>
             </div>
-          </div>
+          </CheckoutFormSection>
 
           {error ? (
             <div className="mt-4">
@@ -100,7 +107,7 @@ export function CodCheckoutView() {
             </div>
           ) : null}
 
-          <div className="mt-6 hidden lg:block">{cta()}</div>
+          <div className="mt-6 hidden border-t border-border/60 pt-6 lg:block">{cta()}</div>
         </form>
       </CheckoutLayout>
     </CheckoutShell>

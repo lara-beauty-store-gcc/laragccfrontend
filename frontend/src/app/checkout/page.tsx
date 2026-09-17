@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { CheckoutCTA } from '@/components/checkout/CheckoutCTA';
 import { CheckoutEmpty } from '@/components/checkout/CheckoutEmpty';
 import { CheckoutGate } from '@/components/checkout/CheckoutGate';
-import { CheckoutHeroPanel } from '@/components/checkout/CheckoutHeroPanel';
 import { CheckoutLayout } from '@/components/checkout/CheckoutLayout';
 import { CheckoutMobileStickyFooter } from '@/components/checkout/CheckoutMobileStickyFooter';
 import { CheckoutShell } from '@/components/checkout/CheckoutShell';
@@ -23,7 +22,6 @@ export default function CheckoutPage() {
   const [method, setMethod] = useState<PaymentMethod>(preferredPaymentMethod());
 
   const totals = useMemo(() => calculateCheckoutTotals(total, method), [total, method]);
-  const firstSlug = items[0]?.slug;
 
   useEffect(() => {
     if (items.length > 0 && !cardEnabled) {
@@ -62,30 +60,25 @@ export default function CheckoutPage() {
   return (
     <CheckoutGate>
       <CheckoutShell
-        title="اختر طريقة الدفع المناسبة لك"
+        title="اختر طريقة الدفع"
         subtitle="جميع المعاملات آمنة ومشفّرة"
         backHref="/"
         progressStep={2}
+        layout="form"
       >
-        <div className="lg:grid lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-8">
-          <div className="hidden lg:col-start-1 lg:block">
-            <CheckoutHeroPanel productSlug={firstSlug} />
-          </div>
-
-          <div className="lg:col-start-2">
-            <CheckoutLayout
-              totals={totals}
-              paymentMethod={method}
-              mobileFooter={
-                <CheckoutMobileStickyFooter totals={totals}>{cta(true)}</CheckoutMobileStickyFooter>
-              }
-            >
-              <PaymentMethodSelector value={method} onChange={setMethod} />
-              <div className="hidden lg:block">{cta()}</div>
-              <CheckoutTrustFooter />
-            </CheckoutLayout>
-          </div>
-        </div>
+        {/* No basket here — only payment choice + sticky total */}
+        <CheckoutLayout
+          totals={totals}
+          paymentMethod={method}
+          summaryMode="hidden"
+          mobileFooter={
+            <CheckoutMobileStickyFooter totals={totals}>{cta(true)}</CheckoutMobileStickyFooter>
+          }
+        >
+          <PaymentMethodSelector value={method} onChange={setMethod} />
+          <div className="hidden lg:block">{cta()}</div>
+          <CheckoutTrustFooter />
+        </CheckoutLayout>
       </CheckoutShell>
     </CheckoutGate>
   );

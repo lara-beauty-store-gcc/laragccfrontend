@@ -13,6 +13,8 @@ type CheckoutShellProps = {
   subtitle?: string;
   backHref?: string;
   progressStep?: 1 | 2 | 3;
+  /** form = Smooche-style left-aligned checkout flow */
+  layout?: 'default' | 'form';
   children: React.ReactNode;
 };
 
@@ -21,14 +23,16 @@ export function CheckoutShell({
   subtitle,
   backHref = '/checkout',
   progressStep,
+  layout = 'default',
   children,
 }: CheckoutShellProps) {
   const showPremiumHeader = progressStep !== undefined;
+  const isFormLayout = layout === 'form';
 
   return (
-    <div className="min-h-screen bg-[#F7F6F3]">
+    <div className="min-h-screen bg-white">
       <header className="border-b border-border/60 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
           <Link
             href={backHref}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted transition hover:bg-surface hover:text-foreground"
@@ -65,10 +69,12 @@ export function CheckoutShell({
         ) : null}
       </header>
 
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
-        <div className="mb-6 text-center sm:mb-8">
-          <h1 className="font-arabic text-2xl font-extrabold text-foreground sm:text-[1.75rem]">{title}</h1>
-          {subtitle ? <p className="mt-2 text-sm text-muted">{subtitle}</p> : null}
+      <div className={`mx-auto px-4 sm:px-6 ${isFormLayout ? 'max-w-6xl py-6 sm:py-8' : 'max-w-7xl py-6 sm:py-8'}`}>
+        <div className={`mb-6 sm:mb-8 ${isFormLayout ? 'text-start' : 'text-center'}`}>
+          <h1 className={`font-arabic font-extrabold text-foreground ${isFormLayout ? 'text-xl sm:text-2xl' : 'text-2xl sm:text-[1.75rem]'}`}>
+            {title}
+          </h1>
+          {subtitle ? <p className="mt-1.5 text-sm text-muted">{subtitle}</p> : null}
         </div>
         {children}
       </div>
