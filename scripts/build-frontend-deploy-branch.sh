@@ -8,6 +8,8 @@ git checkout main
 MAIN_SHA="$(git rev-parse HEAD)"
 echo "=== Build deploy branch frontend from main @ ${MAIN_SHA} ==="
 
+rm -rf "${ROOT}/frontend/.next" "${ROOT}/frontend/node_modules" 2>/dev/null || true
+
 stage="$(mktemp -d)"
 cp -a "${ROOT}/frontend/." "${stage}/"
 rm -rf "${stage}/node_modules" "${stage}/.next" 2>/dev/null || true

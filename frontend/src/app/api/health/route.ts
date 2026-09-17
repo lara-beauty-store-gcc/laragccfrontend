@@ -19,7 +19,7 @@ export async function GET() {
       market: 'UAE',
       countryCode: 'AE',
       currency: 'AED',
-      deployTag: 'premium-checkout-ui-v64-2026-09-17',
+      deployTag: 'premium-checkout-ui-v65-2026-09-17',
       repo: 'laragccfrontend',
       orderFlow: 'sheets-only-then-api-fallback',
       apiUrl: apiBaseUrl() ? 'configured' : 'missing',
