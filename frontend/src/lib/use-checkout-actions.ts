@@ -8,6 +8,7 @@ import type { CheckoutTotals } from '@/lib/checkout-pricing';
 import { createStripeCheckout } from '@/lib/create-stripe-checkout';
 import { getStoredLandingUrl } from '@/components/LandingUrlTracker';
 import { saveLastOrder, type LastOrder } from '@/lib/order-session';
+import { emailErrorMessage, isValidEmail, normalizeEmail } from '@/lib/email';
 import {
   formatPhoneForDisplay,
   isValidUaePhone,
@@ -21,6 +22,7 @@ import { trackAddPaymentInfo, trackEvent } from '@/lib/tracking';
 const { market } = businessConfig;
 
 export type CheckoutFormState = {
+  email: string;
   name: string;
   phone: string;
   area: string;
@@ -52,6 +54,8 @@ export function useCheckoutActions(totals: CheckoutTotals) {
   }
 
   function validateCod(form: CheckoutFormState): string | null {
+    if (!form.email.trim()) return emailErrorMessage(form.email);
+    if (!isValidEmail(form.email)) return emailErrorMessage(form.email);
     if (!form.name.trim()) return 'الاسم الكامل مطلوب';
     if (!form.phone.trim()) return 'رقم الهاتف مطلوب';
     if (!isValidUaePhone(form.phone)) return uaePhoneErrorMessage(form.phone);
@@ -87,6 +91,7 @@ export function useCheckoutActions(totals: CheckoutTotals) {
       const phoneDisplay = formatPhoneForDisplay(form.phone);
       const { orderId, orderIds } = await submitOrder({
         customerName: form.name.trim(),
+        email: normalizeEmail(form.email),
         phone: form.phone,
         area: buildAreaNotes(form),
         paymentMethod: 'COD',
@@ -99,6 +104,7 @@ export function useCheckoutActions(totals: CheckoutTotals) {
         orderId,
         orderIds,
         customerName: form.name.trim(),
+        email: normalizeEmail(form.email),
         phone: phoneDisplay,
         productSlug: items[0]?.slug,
         items: items.map((i) => ({

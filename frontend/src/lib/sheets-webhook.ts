@@ -7,6 +7,7 @@ export type { SheetsOrderItem };
 
 export type SheetsOrderPayload = {
   customerName: string;
+  email?: string;
   phone: string;
   country: string;
   currency: string;
@@ -49,6 +50,7 @@ function buildFlatRowPayload(
   orderId: string,
 ) {
   const fullName = normalizeCustomerName(payload.customerName);
+  const email = String(payload.email || '').trim().toLowerCase();
   const phoneRaw = String(payload.phone || '').trim();
   const phoneDisplay = formatPhoneForSheet(phoneRaw);
 
@@ -61,6 +63,8 @@ function buildFlatRowPayload(
     name: fullName,
     customer_name: fullName,
     full_name: fullName,
+    email,
+    customer_email: email,
     phone: phoneDisplay,
     phone_e164: phoneDisplay,
     phone_display: phoneDisplay,

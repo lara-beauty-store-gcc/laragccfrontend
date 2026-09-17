@@ -32,6 +32,7 @@ export async function processPaidStripeOrder({ metadata, req }: ProcessPaidOrder
   );
 
   const customerName = String(metadata.customerName || '').trim();
+  const email = String(metadata.email || '').trim().toLowerCase();
   const phone = String(metadata.phone || '').trim();
   const area = String(metadata.area || '').trim();
   const sourceUrl = String(metadata.sourceUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://larabeauty.store');
@@ -46,6 +47,7 @@ export async function processPaidStripeOrder({ metadata, req }: ProcessPaidOrder
 
   const sheetPayload = {
     customerName,
+    email: email || undefined,
     phone,
     country: market.countryCode,
     currency: market.currency,
@@ -68,6 +70,7 @@ export async function processPaidStripeOrder({ metadata, req }: ProcessPaidOrder
   await persistOrdersLocally(
     {
       customerName,
+      email: email || undefined,
       phone,
       country: market.countryCode,
       currency: market.currency,

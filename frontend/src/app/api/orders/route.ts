@@ -16,6 +16,7 @@ import { resolveCanonicalSourceUrl, extractRedirectSlugFromUrl } from '@/lib/red
 import { forwardOrderToSheetsWithRetry } from '@/lib/sheets-webhook';
 import { sendSnapEvent } from '@/lib/snap-capi';
 import { sendTiktokEvent } from '@/lib/tiktok-capi';
+import { emailErrorMessage, isValidEmail, normalizeEmail } from '@/lib/email';
 import { normalizeCustomerName, normalizeUaePhone, formatPhoneForSheet, uaePhoneErrorMessage } from '@/lib/phone';
 
 export const dynamic = 'force-dynamic';
@@ -24,6 +25,7 @@ const API_TIMEOUT_MS = 2500;
 
 type IncomingBody = {
   customerName?: string;
+  email?: string;
   phone?: string;
   area?: string;
   items?: RawSheetItem[];
@@ -90,6 +92,7 @@ async function forwardToBackendApi(
         customerName,
         customer_name: customerName,
         full_name: customerName,
+        email: body.email ? normalizeEmail(String(body.email)) : undefined,
         phone: localDigits,
         area: body.area,
         country: market.countryCode,
@@ -143,12 +146,17 @@ export async function POST(req: Request) {
   try {
     const body = (await req.json()) as IncomingBody;
     const customerName = normalizeCustomerName(String(body.customerName || ''));
+    const email = normalizeEmail(String(body.email || ''));
     const phoneRaw = String(body.phone || '').trim();
     const phoneE164 = normalizeUaePhone(phoneRaw);
     const phoneForSheet = formatPhoneForSheet(phoneRaw);
 
     if (!customerName || customerName.length < 2) {
       return Response.json({ error: 'invalid_name', message: 'الاسم الكامل مطلوب' }, { status: 400 });
+    }
+
+    if (!isValidEmail(email)) {
+      return Response.json({ error: 'invalid_email', message: emailErrorMessage(String(body.email || '')) }, { status: 400 });
     }
 
     if (!phoneE164) {
@@ -177,6 +185,7 @@ export async function POST(req: Request) {
 
     const payload = {
       customerName,
+      email,
       phone: phoneForSheet,
       country: market.countryCode,
       currency: market.currency,
@@ -197,6 +206,7 @@ export async function POST(req: Request) {
 
     const sheetPayload = {
       customerName,
+      email,
       phone: phoneRaw,
       country: market.countryCode,
       currency: market.currency,

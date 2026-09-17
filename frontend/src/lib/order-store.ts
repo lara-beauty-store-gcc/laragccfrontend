@@ -8,6 +8,7 @@ export type StoredOrderRow = {
   orderId: string;
   createdAt: string;
   customerName: string;
+  email?: string;
   phone: string;
   country: string;
   currency: string;
@@ -62,6 +63,7 @@ async function fsWriteAtomic(file: string, content: string) {
 
 export type PersistOrderInput = {
   customerName: string;
+  email?: string;
   phone: string;
   country: string;
   currency: string;
@@ -98,6 +100,7 @@ export async function persistOrdersLocally(input: PersistOrderInput, presetOrder
       orderId,
       createdAt,
       customerName: input.customerName,
+      email: input.email,
       phone: input.phone,
       country: input.country,
       currency: input.currency,

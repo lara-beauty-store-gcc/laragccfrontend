@@ -14,6 +14,7 @@ export type StripePaymentItem = {
 
 export type CreateStripePaymentIntentInput = {
   customerName?: string;
+  email?: string;
   phone?: string;
   area?: string;
   items: StripePaymentItem[];
@@ -29,6 +30,7 @@ function buildMetadata(input: CreateStripePaymentIntentInput, orderIds: string[]
     orderId: orderIds[0],
     orderIds: orderIds.join(','),
     customerName: input.customerName || '',
+    email: input.email || '',
     phone: input.phone || '',
     area: input.area || '',
     sourceUrl: input.sourceUrl,

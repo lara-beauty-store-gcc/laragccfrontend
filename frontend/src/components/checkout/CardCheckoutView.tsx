@@ -21,6 +21,7 @@ import { formatPhoneForDisplay, formatUaePhoneInput } from '@/lib/phone';
 import { saveLastOrder, type LastOrder } from '@/lib/order-session';
 import { orderCurrency } from '@/lib/submit-order';
 import { trackAddPaymentInfo } from '@/lib/tracking';
+import { normalizeEmail } from '@/lib/email';
 import { useCheckoutActions, type CheckoutFormState } from '@/lib/use-checkout-actions';
 
 const { checkout, market } = businessConfig;
@@ -32,13 +33,14 @@ export function CardCheckoutView() {
   const { total } = useCart();
   const totals = useMemo(() => calculateCheckoutTotals(total, 'card'), [total]);
 
+  const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [area, setArea] = useState('');
   const [address, setAddress] = useState('');
   const [building, setBuilding] = useState('');
 
-  const form: CheckoutFormState = { name, phone, area, address, building };
+  const form: CheckoutFormState = { email, name, phone, area, address, building };
 
   return (
     <CheckoutShell
@@ -52,6 +54,7 @@ export function CardCheckoutView() {
         <CardCheckoutBody
           form={form}
           totals={totals}
+          setEmail={setEmail}
           setName={setName}
           setPhone={setPhone}
           setArea={setArea}
@@ -66,6 +69,7 @@ export function CardCheckoutView() {
 function CardCheckoutBody({
   form,
   totals,
+  setEmail,
   setName,
   setPhone,
   setArea,
@@ -74,6 +78,7 @@ function CardCheckoutBody({
 }: {
   form: CheckoutFormState;
   totals: ReturnType<typeof calculateCheckoutTotals>;
+  setEmail: (v: string) => void;
   setName: (v: string) => void;
   setPhone: (v: string) => void;
   setArea: (v: string) => void;
@@ -94,6 +99,23 @@ function CardCheckoutBody({
       }
     >
       <CheckoutFormSection title="معلومات التواصل">
+        <div>
+          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-foreground">
+            {checkout.emailLabel}
+          </label>
+          <input
+            id="email"
+            required
+            type="email"
+            autoComplete="email"
+            dir="ltr"
+            value={form.email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={checkout.emailPlaceholder}
+            className={INPUT_CLASS}
+          />
+          <p className="mt-1.5 text-[11px] text-muted">{checkout.emailHint}</p>
+        </div>
         <Field label={checkout.nameLabel} id="name" value={form.name} onChange={setName} placeholder={checkout.namePlaceholder} />
         <div>
           <label htmlFor="phone" className="mb-1.5 block text-sm font-medium text-foreground">
@@ -209,6 +231,7 @@ function CardPaymentCta({
 
       const intent = await createStripePaymentIntent({
         customerName: form.name.trim(),
+        email: normalizeEmail(form.email),
         phone: form.phone,
         area: buildAreaNotes(),
         items: buildOrderLines(),
@@ -221,6 +244,7 @@ function CardPaymentCta({
         orderId: intent.orderId,
         orderIds: intent.orderIds,
         customerName: form.name.trim(),
+        email: normalizeEmail(form.email),
         phone: phoneDisplay,
         area: buildAreaNotes(),
         productSlug: items[0]?.slug,
@@ -246,6 +270,7 @@ function CardPaymentCta({
       await confirmCardPayment({
         returnUrl: `${base}/thank-you?payment=card&order=${intent.orderId}`,
         customerName: form.name.trim(),
+        email: normalizeEmail(form.email),
         phone: form.phone,
       });
     } catch (err) {

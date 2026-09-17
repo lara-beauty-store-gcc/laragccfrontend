@@ -84,6 +84,7 @@ export function useCardPaymentSubmit() {
   async function confirmCardPayment(params: {
     returnUrl: string;
     customerName: string;
+    email: string;
     phone: string;
   }) {
     if (!stripe || !elements) {
@@ -97,6 +98,7 @@ export function useCardPaymentSubmit() {
         payment_method_data: {
           billing_details: {
             name: params.customerName,
+            email: params.email,
             phone: params.phone,
           },
         },

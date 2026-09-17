@@ -89,6 +89,7 @@ export function RoutineCrossSellPanel({
     try {
       const { orderIds: newOrderIds } = await submitOrder({
         customerName: order.customerName,
+        email: order.email ?? '',
         phone: order.phone,
         area: order.area,
         items: selectedProducts.map((product) => ({

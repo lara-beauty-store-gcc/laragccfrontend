@@ -11,6 +11,7 @@ export type LastOrder = {
   orderId: string;
   orderIds?: string[];
   customerName: string;
+  email?: string;
   phone: string;
   area?: string;
   productSlug?: string;

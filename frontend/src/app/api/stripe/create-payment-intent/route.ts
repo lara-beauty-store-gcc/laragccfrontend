@@ -3,6 +3,7 @@ import {
   createStripePaymentIntent,
   updateStripePaymentIntent,
 } from '@/lib/stripe-payment-intent';
+import { emailErrorMessage, isValidEmail, normalizeEmail } from '@/lib/email';
 import { normalizeCustomerName, normalizeUaePhone } from '@/lib/phone';
 import { runtimeEnv } from '@/lib/runtime-env';
 import { stripeConfigured } from '@/lib/stripe-server';
@@ -11,6 +12,7 @@ export const dynamic = 'force-dynamic';
 
 type IncomingBody = {
   customerName?: string;
+  email?: string;
   phone?: string;
   area?: string;
   paymentIntentId?: string;
@@ -65,8 +67,16 @@ export async function POST(req: Request) {
     }
 
     const customerName = body.customerName ? normalizeCustomerName(String(body.customerName)) : '';
+    const email = body.email ? normalizeEmail(String(body.email)) : '';
     const phoneRaw = String(body.phone || '').trim();
     const phoneE164 = phoneRaw ? normalizeUaePhone(phoneRaw) : null;
+
+    if (email && !isValidEmail(email)) {
+      return Response.json(
+        { error: 'invalid_email', message: emailErrorMessage(String(body.email || '')) },
+        { status: 400 },
+      );
+    }
 
     if (phoneRaw && !phoneE164) {
       return Response.json(
@@ -78,6 +88,7 @@ export async function POST(req: Request) {
     const base = siteBaseUrl();
     const input = {
       customerName,
+      email,
       phone: phoneRaw,
       area: body.area || '',
       items: normalizedItems,

@@ -25,10 +25,11 @@ export function CodCheckoutView() {
   const totals = useMemo(() => calculateCheckoutTotals(total, 'cod'), [total]);
   const { loading, error, submitCod } = useCheckoutActions(totals);
 
+  const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
 
-  const form = { name, phone, area: '', address: '', building: '' };
+  const form = { email, name, phone, area: '', address: '', building: '' };
 
   const cta = (compact = false) => (
     <CheckoutCTA
@@ -69,6 +70,23 @@ export function CodCheckoutView() {
           </div>
 
           <CheckoutFormSection title={checkout.codFormTitle}>
+            <div>
+              <label htmlFor="cod-email" className="mb-1.5 block text-sm font-medium text-foreground">
+                {checkout.emailLabel}
+              </label>
+              <input
+                id="cod-email"
+                required
+                type="email"
+                autoComplete="email"
+                dir="ltr"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={checkout.emailPlaceholder}
+                className={INPUT_CLASS}
+              />
+              <p className="mt-1.5 text-[11px] text-muted">{checkout.emailHint}</p>
+            </div>
             <div>
               <label htmlFor="cod-name" className="mb-1.5 block text-sm font-medium text-foreground">
                 {checkout.nameLabel}

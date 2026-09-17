@@ -11,6 +11,7 @@ export type OrderLinePayload = {
 
 export type SubmitOrderPayload = {
   customerName: string;
+  email: string;
   phone: string;
   area?: string;
   items: OrderLinePayload[];

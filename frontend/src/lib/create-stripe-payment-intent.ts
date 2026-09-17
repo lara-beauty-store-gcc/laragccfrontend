@@ -2,6 +2,7 @@ import type { OrderLinePayload } from '@/lib/submit-order';
 
 export type StripePaymentIntentPayload = {
   customerName?: string;
+  email?: string;
   phone?: string;
   area?: string;
   items: OrderLinePayload[];
