@@ -3,10 +3,10 @@
 import Image from 'next/image';
 
 const BRANDS = [
-  { src: '/images/payments/visa.svg', alt: 'Visa' },
-  { src: '/images/payments/mastercard.svg', alt: 'Mastercard' },
-  { src: '/images/payments/apple-pay.svg', alt: 'Apple Pay' },
-  { src: '/images/payments/google-pay.svg', alt: 'Google Pay' },
+  { src: '/images/payments/visa.png', alt: 'Visa' },
+  { src: '/images/payments/mastercard.png', alt: 'Mastercard' },
+  { src: '/images/payments/apple-pay.png', alt: 'Apple Pay' },
+  { src: '/images/payments/google-pay.png', alt: 'Google Pay' },
 ] as const;
 
 type PaymentLogosProps = {
@@ -24,7 +24,7 @@ function LogoBadge({
   size: 'sm' | 'md';
 }) {
   const box = size === 'sm' ? 'h-8 min-w-[52px] px-2' : 'h-9 min-w-[58px] px-2.5';
-  const imgHeight = size === 'sm' ? 18 : 20;
+  const imgHeight = size === 'sm' ? 16 : 18;
 
   return (
     <span
@@ -34,7 +34,7 @@ function LogoBadge({
       <Image
         src={src}
         alt={alt}
-        width={48}
+        width={52}
         height={imgHeight}
         className="h-auto max-h-full w-auto max-w-full object-contain"
         unoptimized
@@ -43,7 +43,7 @@ function LogoBadge({
   );
 }
 
-/** Official brand marks — LTR row inside RTL checkout */
+/** User-provided official brand marks — LTR row inside RTL checkout */
 export function PaymentLogos({ size = 'md', align = 'start' }: PaymentLogosProps) {
   const alignClass = align === 'center' ? 'justify-center' : 'justify-start';
 
