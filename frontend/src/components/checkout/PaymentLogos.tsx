@@ -1,41 +1,44 @@
 'use client';
 
-import {
-  ApplePayMark,
-  GooglePayMark,
-  MastercardMark,
-  VisaMark,
-} from '@/components/checkout/PaymentBrandMarks';
+import Image from 'next/image';
+
+const BRANDS = [
+  { src: '/images/payments/visa.svg', alt: 'Visa' },
+  { src: '/images/payments/mastercard.svg', alt: 'Mastercard' },
+  { src: '/images/payments/apple-pay.svg', alt: 'Apple Pay' },
+  { src: '/images/payments/google-pay.svg', alt: 'Google Pay' },
+] as const;
 
 type PaymentLogosProps = {
   size?: 'sm' | 'md';
   align?: 'start' | 'center';
 };
 
-const BRANDS = [
-  { id: 'visa', Mark: VisaMark, label: 'Visa' },
-  { id: 'mastercard', Mark: MastercardMark, label: 'Mastercard' },
-  { id: 'apple-pay', Mark: ApplePayMark, label: 'Apple Pay' },
-  { id: 'google-pay', Mark: GooglePayMark, label: 'Google Pay' },
-] as const;
-
 function LogoBadge({
-  Mark,
-  label,
+  src,
+  alt,
   size,
 }: {
-  Mark: typeof VisaMark;
-  label: string;
+  src: string;
+  alt: string;
   size: 'sm' | 'md';
 }) {
   const box = size === 'sm' ? 'h-8 min-w-[52px] px-2' : 'h-9 min-w-[58px] px-2.5';
+  const imgHeight = size === 'sm' ? 18 : 20;
 
   return (
     <span
       className={`inline-flex ${box} shrink-0 items-center justify-center rounded-md border border-gray-200 bg-white`}
-      aria-label={label}
+      aria-label={alt}
     >
-      <Mark />
+      <Image
+        src={src}
+        alt={alt}
+        width={48}
+        height={imgHeight}
+        className="h-auto max-h-full w-auto max-w-full object-contain"
+        unoptimized
+      />
     </span>
   );
 }
@@ -50,8 +53,8 @@ export function PaymentLogos({ size = 'md', align = 'start' }: PaymentLogosProps
       dir="ltr"
       aria-label="طرق الدفع المقبولة"
     >
-      {BRANDS.map(({ id, Mark, label }) => (
-        <LogoBadge key={id} Mark={Mark} label={label} size={size} />
+      {BRANDS.map((brand) => (
+        <LogoBadge key={brand.alt} src={brand.src} alt={brand.alt} size={size} />
       ))}
     </div>
   );
