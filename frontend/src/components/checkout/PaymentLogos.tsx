@@ -10,9 +10,16 @@ const BRANDS = [
 ] as const;
 
 type PaymentLogosProps = {
-  size?: 'sm' | 'md';
-  align?: 'start' | 'center';
+  size?: 'xs' | 'sm' | 'md';
+  align?: 'start' | 'center' | 'end';
+  className?: string;
 };
+
+const SIZE_STYLES = {
+  xs: { box: 'h-5 min-w-[34px] px-1', img: 10 },
+  sm: { box: 'h-7 min-w-[44px] px-1.5', img: 13 },
+  md: { box: 'h-9 min-w-[58px] px-2.5', img: 18 },
+} as const;
 
 function LogoBadge({
   src,
@@ -21,21 +28,20 @@ function LogoBadge({
 }: {
   src: string;
   alt: string;
-  size: 'sm' | 'md';
+  size: keyof typeof SIZE_STYLES;
 }) {
-  const box = size === 'sm' ? 'h-8 min-w-[52px] px-2' : 'h-9 min-w-[58px] px-2.5';
-  const imgHeight = size === 'sm' ? 16 : 18;
+  const { box, img } = SIZE_STYLES[size];
 
   return (
     <span
-      className={`inline-flex ${box} shrink-0 items-center justify-center rounded-md border border-gray-200 bg-white`}
+      className={`inline-flex ${box} shrink-0 items-center justify-center rounded border border-gray-200/90 bg-white`}
       aria-label={alt}
     >
       <Image
         src={src}
         alt={alt}
-        width={52}
-        height={imgHeight}
+        width={44}
+        height={img}
         className="h-auto max-h-full w-auto max-w-full object-contain"
         unoptimized
       />
@@ -43,13 +49,18 @@ function LogoBadge({
   );
 }
 
-/** User-provided official brand marks — LTR row inside RTL checkout */
-export function PaymentLogos({ size = 'md', align = 'start' }: PaymentLogosProps) {
-  const alignClass = align === 'center' ? 'justify-center' : 'justify-start';
+/** Visa · Mastercard · Apple Pay · Google Pay — compact LTR row for RTL checkout */
+export function PaymentLogos({
+  size = 'md',
+  align = 'start',
+  className = '',
+}: PaymentLogosProps) {
+  const alignClass =
+    align === 'center' ? 'justify-center' : align === 'end' ? 'justify-end' : 'justify-start';
 
   return (
     <div
-      className={`flex max-w-full flex-wrap items-center gap-2 ${alignClass}`}
+      className={`flex max-w-full flex-wrap items-center gap-1 ${alignClass} ${className}`}
       dir="ltr"
       aria-label="طرق الدفع المقبولة"
     >

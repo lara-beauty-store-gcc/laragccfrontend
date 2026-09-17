@@ -24,17 +24,19 @@ export function CardPaymentElement({ onReadyChange }: CardPaymentElementProps) {
       </div>
 
       <div className="overflow-hidden rounded-lg border border-[#d9d9d9] bg-white">
-        {/* Selected method row — like Smooche "Pay by card" + logos */}
-        <div className="flex items-center justify-between gap-3 border-b border-[#d9d9d9] bg-[#fafafa] px-4 py-3.5">
-          <label className="flex min-w-0 cursor-default items-center gap-2.5">
-            <span
-              className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-[5px] border-[#1773b0] bg-white"
-              aria-hidden
-            />
-            <span className="text-sm font-semibold text-foreground">الدفع بالبطاقة</span>
-          </label>
-          <div className="shrink-0">
-            <PaymentLogos size="sm" align="start" />
+        {/* Title first on mobile; compact logos on the side / below */}
+        <div className="border-b border-[#d9d9d9] bg-[#fafafa] px-3 py-2.5 sm:px-4 sm:py-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+            <label className="flex min-w-0 cursor-default items-center gap-2">
+              <span
+                className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[4px] border-[#1773b0] bg-white sm:h-[18px] sm:w-[18px] sm:border-[5px]"
+                aria-hidden
+              />
+              <span className="font-arabic text-sm font-bold text-foreground sm:text-[15px]">
+                الدفع بالبطاقة
+              </span>
+            </label>
+            <PaymentLogos size="xs" align="end" className="sm:shrink-0" />
           </div>
         </div>
 

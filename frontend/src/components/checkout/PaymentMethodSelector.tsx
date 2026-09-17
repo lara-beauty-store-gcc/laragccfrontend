@@ -62,17 +62,16 @@ export function PaymentMethodSelector({ value, onChange, disabled }: PaymentMeth
               <RadioIndicator selected={cardSelected} />
 
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 shrink-0 text-primary" aria-hidden />
-                  <span className="font-arabic text-lg font-extrabold text-foreground">{payment.cardTitle}</span>
+                <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <CreditCard className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+                    <span className="font-arabic text-lg font-extrabold text-foreground">{payment.cardTitle}</span>
+                  </div>
+                  <PaymentLogos size="xs" align="end" className="max-w-[48%] sm:max-w-none" />
                 </div>
 
                 <p className="mt-1.5 text-sm font-bold text-emerald-700">{payment.cardSubtitle}</p>
                 <p className="mt-0.5 text-xs text-muted">{payment.cardHint}</p>
-
-                <div className="mt-4">
-                  <PaymentLogos size="sm" align="start" />
-                </div>
 
                 <div className="mt-4 flex items-center gap-2 rounded-xl border border-border/60 bg-white px-3 py-2.5">
                   <ShieldCheck className="h-4 w-4 shrink-0 text-primary" aria-hidden />
