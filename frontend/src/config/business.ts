@@ -55,7 +55,7 @@ export const businessConfig = {
     cardCtaPrefix: 'الدفع بالبطاقة الآن',
     codCtaPrefix: 'تأكيد الطلب',
     cardPopularBadge: 'الأكثر اختياراً',
-    cardRedirectNote: 'ستكملين بيانات البطاقة في الخطوة التالية — الدفع الآمن عبر Stripe',
+    cardRedirectNote: 'ستتم تحويلك إلى صفحة الدفع الآمنة الخاصة بـ Stripe',
     codFormNote: 'نتصل بيك لتأكيد العنوان — الاسم والجوال فقط مطلوبين الآن',
     cardLoadingLabel: 'جارٍ إتمام الدفع...',
     codLoadingLabel: 'جارٍ تأكيد الطلب...',

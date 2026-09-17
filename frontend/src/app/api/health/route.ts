@@ -19,7 +19,7 @@ export async function GET() {
       market: 'UAE',
       countryCode: 'AE',
       currency: 'AED',
-      deployTag: 'stripe-health-hints-v63-2026-09-16',
+      deployTag: 'premium-checkout-ui-v64-2026-09-17',
       repo: 'laragccfrontend',
       orderFlow: 'sheets-only-then-api-fallback',
       apiUrl: apiBaseUrl() ? 'configured' : 'missing',

@@ -10,70 +10,49 @@ import {
 type PaymentLogosProps = {
   size?: 'sm' | 'md';
   align?: 'start' | 'center';
-  showDisclaimer?: boolean;
 };
 
-type BrandEntry = {
-  id: string;
-  Mark: typeof VisaMark;
-  box: string;
-  dark?: boolean;
-};
+const BRANDS = [
+  { id: 'visa', Mark: VisaMark, label: 'Visa' },
+  { id: 'mastercard', Mark: MastercardMark, label: 'Mastercard' },
+  { id: 'apple-pay', Mark: ApplePayMark, label: 'Apple Pay' },
+  { id: 'google-pay', Mark: GooglePayMark, label: 'Google Pay' },
+] as const;
 
-const BRANDS: BrandEntry[] = [
-  { id: 'visa', Mark: VisaMark, box: 'w-[46px]' },
-  { id: 'mastercard', Mark: MastercardMark, box: 'w-[40px]' },
-  { id: 'apple-pay', Mark: ApplePayMark, box: 'w-[48px]', dark: true },
-  { id: 'google-pay', Mark: GooglePayMark, box: 'w-[50px]' },
-];
-
-function BrandBadge({
+function LogoBadge({
   Mark,
-  box,
-  dark,
+  label,
   size,
 }: {
   Mark: typeof VisaMark;
-  box: string;
-  dark?: boolean;
+  label: string;
   size: 'sm' | 'md';
 }) {
-  const height = size === 'sm' ? 'h-7' : 'h-8';
+  const box = size === 'sm' ? 'h-8 min-w-[52px] px-2' : 'h-9 min-w-[58px] px-2.5';
 
   return (
     <span
-      className={`inline-flex ${height} ${box} shrink-0 items-center justify-center rounded border border-gray-200/90 bg-white px-1.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] ${dark ? 'text-gray-900' : ''}`}
-      dir="ltr"
+      className={`inline-flex ${box} shrink-0 items-center justify-center rounded-md border border-gray-200 bg-white`}
+      aria-label={label}
     >
-      <Mark className="max-h-[16px] max-w-full" />
+      <Mark />
     </span>
   );
 }
 
-/** Visa · Mastercard · Apple Pay · Google Pay */
-export function PaymentLogos({
-  size = 'md',
-  align = 'start',
-  showDisclaimer = false,
-}: PaymentLogosProps) {
+/** Official brand marks — LTR row inside RTL checkout */
+export function PaymentLogos({ size = 'md', align = 'start' }: PaymentLogosProps) {
   const alignClass = align === 'center' ? 'justify-center' : 'justify-start';
 
   return (
-    <div className="space-y-2">
-      <div
-        className={`flex max-w-full flex-wrap items-center gap-1.5 ${alignClass}`}
-        aria-label="طرق الدفع المقبولة عبر Stripe"
-        dir="ltr"
-      >
-        {BRANDS.map(({ id, Mark, box, dark }) => (
-          <BrandBadge key={id} Mark={Mark} box={box} dark={dark} size={size} />
-        ))}
-      </div>
-      {showDisclaimer ? (
-        <p className="text-[10px] leading-relaxed text-muted">
-          الطرق الفعلية المتاحة تُحدَّد عبر Stripe حسب جهازك ومنطقتك.
-        </p>
-      ) : null}
+    <div
+      className={`flex max-w-full flex-wrap items-center gap-2 ${alignClass}`}
+      dir="ltr"
+      aria-label="طرق الدفع المقبولة"
+    >
+      {BRANDS.map(({ id, Mark, label }) => (
+        <LogoBadge key={id} Mark={Mark} label={label} size={size} />
+      ))}
     </div>
   );
 }

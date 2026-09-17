@@ -1,22 +1,24 @@
 'use client';
 
-import { BadgeCheck, Headphones, ShieldCheck, Truck } from 'lucide-react';
+import { Headphones, Leaf, ShieldCheck, Truck } from 'lucide-react';
 
-const items = [
-  { icon: BadgeCheck, label: 'منتج أصلي', sub: 'ضمان 100%' },
-  { icon: Headphones, label: 'دعم العملاء', sub: '7/7' },
-  { icon: ShieldCheck, label: 'دفع آمن', sub: 'عبر Stripe' },
-  { icon: Truck, label: 'شحن سريع', sub: 'كل الإمارات' },
-];
+const ITEMS = [
+  { icon: Leaf, label: 'منتج أصلي مضمون 100%' },
+  { icon: ShieldCheck, label: 'دفع آمن عبر Stripe' },
+  { icon: Truck, label: 'شحن سريع في جميع الإمارات' },
+] as const;
 
 export function CheckoutTrustFooter() {
   return (
-    <div className="grid grid-cols-4 gap-2 border-t border-border/60 pt-4">
-      {items.map((item) => (
-        <div key={item.label} className="text-center">
-          <item.icon className="mx-auto h-4 w-4 text-primary" aria-hidden />
-          <p className="mt-1.5 font-arabic text-[9px] font-bold leading-tight text-foreground">{item.label}</p>
-          <p className="text-[8px] leading-tight text-muted">{item.sub}</p>
+    <div className="mt-8 grid grid-cols-3 gap-3 border-t border-border/60 pt-6">
+      {ITEMS.map((item) => (
+        <div key={item.label} className="flex flex-col items-center gap-2 text-center">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <item.icon className="h-4 w-4" aria-hidden />
+          </span>
+          <p className="font-arabic text-[10px] font-bold leading-tight text-muted sm:text-[11px]">
+            {item.label}
+          </p>
         </div>
       ))}
     </div>

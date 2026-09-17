@@ -1,6 +1,6 @@
 'use client';
 
-import { CreditCard, HandCoins, Lock, Package, ShieldCheck } from 'lucide-react';
+import { CreditCard, HandCoins, Lock, ShieldCheck } from 'lucide-react';
 import { PaymentLogos } from '@/components/checkout/PaymentLogos';
 import { businessConfig } from '@/config/business';
 import type { PaymentMethod } from '@/lib/checkout-pricing';
@@ -17,7 +17,7 @@ type PaymentMethodSelectorProps = {
 function RadioIndicator({ selected }: { selected: boolean }) {
   return (
     <span
-      className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+      className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
         selected ? 'border-primary bg-primary' : 'border-gray-300 bg-white'
       }`}
       aria-hidden
@@ -33,16 +33,16 @@ export function PaymentMethodSelector({ value, onChange, disabled }: PaymentMeth
   const codSelected = value === 'cod';
 
   return (
-    <fieldset className="space-y-3" disabled={disabled}>
+    <fieldset className="space-y-4" disabled={disabled}>
       <legend className="sr-only">{payment.selectorTitle}</legend>
 
-      <div className="space-y-3" role="radiogroup" aria-label={payment.selectorTitle}>
+      <div className="space-y-4" role="radiogroup" aria-label={payment.selectorTitle}>
         {cardEnabled ? (
           <label
-            className={`relative block cursor-pointer rounded-2xl border-2 p-4 pe-4 ps-4 transition-all duration-200 ${
+            className={`relative block cursor-pointer rounded-2xl border-2 p-5 transition-all duration-200 ${
               cardSelected
-                ? 'border-[#E8B4B8] bg-[#FFF5F5] shadow-soft'
-                : 'border-border bg-white hover:border-primary/20'
+                ? 'border-primary bg-[#F0F7F2] shadow-soft'
+                : 'border-border bg-white hover:border-primary/25'
             } ${disabled ? 'pointer-events-none opacity-60' : ''}`}
           >
             <input
@@ -54,32 +54,36 @@ export function PaymentMethodSelector({ value, onChange, disabled }: PaymentMeth
               className="sr-only"
             />
 
-            <span className="absolute start-3 top-3 rounded-full bg-secondary px-2.5 py-1 text-[10px] font-bold text-primary-dark">
+            <span className="absolute end-4 top-4 rounded-full bg-[#E6F4EA] px-3 py-1 text-[10px] font-bold text-primary">
               {payment.cardPopularBadge}
             </span>
 
-            <div className="flex items-start gap-3 pt-7">
+            <div className="flex items-start gap-4">
               <RadioIndicator selected={cardSelected} />
 
-              <div className="min-w-0 flex-1 text-right">
-                <div className="flex items-center justify-end gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
                   <CreditCard className="h-5 w-5 shrink-0 text-primary" aria-hidden />
-                  <span className="font-arabic text-base font-extrabold text-foreground">{payment.cardTitle}</span>
+                  <span className="font-arabic text-lg font-extrabold text-foreground">{payment.cardTitle}</span>
                 </div>
 
                 <p className="mt-1.5 text-sm font-bold text-emerald-700">{payment.cardSubtitle}</p>
-                <p className="text-xs text-muted">{payment.cardHint}</p>
+                <p className="mt-0.5 text-xs text-muted">{payment.cardHint}</p>
 
-                <div className="mt-3">
-                  <PaymentLogos size="sm" align="start" showDisclaimer />
+                <div className="mt-4">
+                  <PaymentLogos size="sm" align="start" />
                 </div>
 
-                <div className="mt-3 flex items-start justify-end gap-2 rounded-xl bg-white/70 px-3 py-2">
+                <div className="mt-4 flex items-center gap-2 rounded-xl border border-border/60 bg-white px-3 py-2.5">
+                  <ShieldCheck className="h-4 w-4 shrink-0 text-primary" aria-hidden />
                   <p className="text-[11px] leading-relaxed text-muted">
-                    <Lock className="mb-0.5 inline h-3.5 w-3.5 text-primary" aria-hidden />
-                    {' '}
-                    {payment.secureStripe} — {payment.noCardStorage}
+                    دفع آمن 100% — بياناتك محمية
                   </p>
+                </div>
+
+                <div className="mt-3 flex items-start gap-2 text-[11px] leading-relaxed text-muted">
+                  <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                  <span>{payment.secureStripe} — {payment.noCardStorage}</span>
                 </div>
               </div>
             </div>
@@ -87,10 +91,10 @@ export function PaymentMethodSelector({ value, onChange, disabled }: PaymentMeth
         ) : null}
 
         <label
-          className={`block cursor-pointer rounded-2xl border-2 p-4 transition-all duration-200 ${
+          className={`block cursor-pointer rounded-2xl border-2 p-5 transition-all duration-200 ${
             codSelected
-              ? 'border-primary/40 bg-primary/5 shadow-soft'
-              : 'border-border bg-white hover:border-primary/20'
+              ? 'border-primary/50 bg-[#FAFCFB] shadow-soft'
+              : 'border-border bg-white hover:border-primary/25'
           } ${disabled ? 'pointer-events-none opacity-60' : ''}`}
         >
           <input
@@ -102,25 +106,17 @@ export function PaymentMethodSelector({ value, onChange, disabled }: PaymentMeth
             className="sr-only"
           />
 
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-4">
             <RadioIndicator selected={codSelected} />
 
-            <div className="min-w-0 flex-1 text-right">
-              <div className="flex items-center justify-end gap-2">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
                 <HandCoins className="h-5 w-5 shrink-0 text-primary" aria-hidden />
-                <span className="font-arabic text-base font-extrabold text-foreground">{payment.codTitle}</span>
+                <span className="font-arabic text-lg font-extrabold text-foreground">{payment.codTitle}</span>
               </div>
 
               <p className="mt-1.5 text-sm font-bold text-amber-800">{payment.codSubtitle}</p>
-              <p className="text-xs text-muted">{payment.codHint}</p>
-
-              <div className="mt-3 flex items-start justify-end gap-2 rounded-xl bg-surface-rose px-3 py-2">
-                <p className="text-[11px] leading-relaxed text-muted">
-                  <Package className="mb-0.5 inline h-3.5 w-3.5 text-primary" aria-hidden />
-                  {' '}
-                  سهولة وراحة — متوفر في كل إمارات الدولة
-                </p>
-              </div>
+              <p className="mt-0.5 text-xs text-muted">{payment.codHint}</p>
             </div>
           </div>
         </label>
