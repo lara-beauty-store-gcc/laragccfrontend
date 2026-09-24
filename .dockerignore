@@ -1,0 +1,19 @@
+# Keep build context small — huge folders cause EasyPanel timeouts
+node_modules
+.next
+out
+dist
+.git
+.env
+.env.*
+!.env.example
+npm-debug.log
+coverage
+.turbo
+.vercel
+*.log
+.DS_Store
+data
+# Exclude duplicate uploads — keep product hero gallery PNG in images/products/
+**/ChatGPT Image*.png
+!public/images/products/**
