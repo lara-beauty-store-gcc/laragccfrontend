@@ -14,4 +14,6 @@ coverage
 *.log
 .DS_Store
 data
+# Exclude duplicate uploads — keep product hero gallery PNG in images/products/
 **/ChatGPT Image*.png
+!public/images/products/**

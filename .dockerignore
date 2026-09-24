@@ -18,3 +18,4 @@ coverage
 *.log
 .DS_Store
 **/ChatGPT Image*.png
+!frontend/public/images/products/**
