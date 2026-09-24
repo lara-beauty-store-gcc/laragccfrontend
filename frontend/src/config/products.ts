@@ -1,5 +1,5 @@
 import type { ProductConfig } from './types';
-import { collectionImageFor, productPageImagesFull } from './product-images';
+import { collectionImageFor, productHeroGallery, productPageImagesFull } from './product-images';
 
 const bundleOffers = (labels: { one: string; two: string; three: string }) => [
   {
@@ -101,6 +101,7 @@ export const products: ProductConfig[] = [
     collectionImage: collectionImageFor('magnesium-sleep'),
     collectionImageAlt: 'روتين النوم — علكات مغنيسيوم و L-ثيانين، 60 علكة',
     images: { ...defaultImages, ...productPageImagesFull('magnesium-sleep') },
+    heroGallery: productHeroGallery('magnesium-sleep'),
     imageAlts: {
       heroBeforeAfter: 'قبل وبعد روتين النوم',
       heroProduct: 'علكات المغنيسيوم',
@@ -197,6 +198,7 @@ export const products: ProductConfig[] = [
     collectionImage: collectionImageFor('epimedium-energy'),
     collectionImageAlt: 'روتين الطاقة — علكات عشبة العنزة وفيتامين B12، 60 علكة',
     images: { ...defaultImages, ...productPageImagesFull('epimedium-energy') },
+    heroGallery: productHeroGallery('epimedium-energy'),
     imageAlts: {
       heroBeforeAfter: 'قبل وبعد الطاقة',
       heroProduct: 'علكات عشبة العنزة',
@@ -293,6 +295,7 @@ export const products: ProductConfig[] = [
     collectionImage: collectionImageFor('focus-clarity'),
     collectionImageAlt: 'روتين التركيز — علكات أوميغا 3 وفيتامينات B، 60 علكة',
     images: { ...defaultImages, ...productPageImagesFull('focus-clarity') },
+    heroGallery: productHeroGallery('focus-clarity'),
     imageAlts: {
       heroBeforeAfter: 'قبل وبعد التركيز',
       heroProduct: 'علكات التركيز',

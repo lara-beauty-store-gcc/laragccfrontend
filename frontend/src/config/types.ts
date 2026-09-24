@@ -91,6 +91,8 @@ export type ProductConfig = {
   offers: ProductOffer[];
   upsell: ProductUpsell;
   images: ProductImages;
+  /** Product page hero carousel — first slide shown by default */
+  heroGallery?: string[];
   /** Homepage / collection card only — product page hero stays empty until set */
   collectionImage?: string;
   collectionImageAlt?: string;
