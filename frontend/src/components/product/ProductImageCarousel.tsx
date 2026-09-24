@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import Image from 'next/image';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { ProductConfig } from '@/config/products';
 import { publicProductImageSrc } from '@/config/product-images';
-import { MediaFrame } from '@/components/ui/MediaFrame';
+import { IMAGE_LAYOUT } from '@/config/image-layout';
 
 function slidesFor(product: ProductConfig): { src: string; alt: string }[] {
   const baseAlt = product.imageAlts.heroBeforeAfter ?? product.name;
@@ -18,10 +19,59 @@ function slidesFor(product: ProductConfig): { src: string; alt: string }[] {
   }));
 }
 
-/** Hero gallery — first image is default; swipe / dots when multiple slides */
+function HeroSlide({
+  src,
+  alt,
+  priority,
+  onMissing,
+}: {
+  src: string;
+  alt: string;
+  priority: boolean;
+  onMissing: () => void;
+}) {
+  const preset = IMAGE_LAYOUT.productHero;
+
+  return (
+    <div className={preset.frame}>
+      <div className={`relative ${preset.aspect}`}>
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          className={preset.object}
+          sizes={preset.sizes}
+          priority={priority}
+          unoptimized
+          onError={onMissing}
+        />
+      </div>
+    </div>
+  );
+}
+
+/** Hero gallery — first image default; skips missing files; swipe / dots when 2+ */
 export function ProductImageCarousel({ product }: { product: ProductConfig }) {
-  const slides = slidesFor(product);
+  const allSlides = useMemo(() => slidesFor(product), [product]);
+  const [broken, setBroken] = useState<Set<string>>(() => new Set());
+
+  const markBroken = useCallback((src: string) => {
+    setBroken((prev) => {
+      if (prev.has(src)) return prev;
+      const next = new Set(prev);
+      next.add(src);
+      return next;
+    });
+  }, []);
+
+  const slides = allSlides.filter((s) => !broken.has(s.src));
   const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (index >= slides.length && slides.length > 0) {
+      setIndex(0);
+    }
+  }, [index, slides.length]);
 
   if (slides.length === 0) {
     return (
@@ -29,28 +79,34 @@ export function ProductImageCarousel({ product }: { product: ProductConfig }) {
     );
   }
 
+  const safeIndex = Math.min(index, slides.length - 1);
+  const current = slides[safeIndex];
+  const go = (next: number) => setIndex((next + slides.length) % slides.length);
+
   if (slides.length === 1) {
     return (
-      <MediaFrame src={slides[0].src} alt={slides[0].alt} layout="productHero" priority />
+      <HeroSlide
+        src={current.src}
+        alt={current.alt}
+        priority
+        onMissing={() => markBroken(current.src)}
+      />
     );
   }
 
-  const current = slides[index];
-  const go = (next: number) => setIndex((next + slides.length) % slides.length);
-
   return (
     <div className="relative w-full max-w-lg">
-      <MediaFrame
+      <HeroSlide
+        key={current.src}
         src={current.src}
         alt={current.alt}
-        layout="productHero"
-        priority={index === 0}
-        key={current.src}
+        priority={safeIndex === 0}
+        onMissing={() => markBroken(current.src)}
       />
 
       <button
         type="button"
-        onClick={() => go(index - 1)}
+        onClick={() => go(safeIndex - 1)}
         className="absolute start-2 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/90 text-foreground shadow-md backdrop-blur-sm transition hover:bg-white"
         aria-label="الصورة السابقة"
       >
@@ -58,7 +114,7 @@ export function ProductImageCarousel({ product }: { product: ProductConfig }) {
       </button>
       <button
         type="button"
-        onClick={() => go(index + 1)}
+        onClick={() => go(safeIndex + 1)}
         className="absolute end-2 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/90 text-foreground shadow-md backdrop-blur-sm transition hover:bg-white"
         aria-label="الصورة التالية"
       >
@@ -68,14 +124,14 @@ export function ProductImageCarousel({ product }: { product: ProductConfig }) {
       <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
         {slides.map((_, i) => (
           <button
-            key={i}
+            key={slides[i].src}
             type="button"
             onClick={() => setIndex(i)}
             className={`h-2 rounded-full transition-all ${
-              i === index ? 'w-6 bg-primary' : 'w-2 bg-white/80'
+              i === safeIndex ? 'w-6 bg-primary' : 'w-2 bg-white/80'
             }`}
             aria-label={`صورة ${i + 1}`}
-            aria-current={i === index}
+            aria-current={i === safeIndex}
           />
         ))}
       </div>
